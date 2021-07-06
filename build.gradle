@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group 'com.zf1976'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext{
+    jacksonVersion = "2.10.3"
+}
+
+dependencies {
+    implementation('com.aliyun:aliyun-java-sdk-core:4.4.3')
+    implementation('com.aliyun:aliyun-java-sdk-alidns:2.0.10')
+    implementation 'io.vertx:vertx-core:4.1.0'
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation 'org.yaml:snakeyaml:1.17'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
