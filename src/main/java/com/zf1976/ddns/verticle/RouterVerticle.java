@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.ErrorHandler;
+import io.vertx.ext.web.handler.FaviconHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
@@ -39,6 +40,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
         TemplateEngine engine = ThymeleafTemplateEngine.create(vertx);
         TemplateHandler handler = TemplateHandler.create(engine);
         router.get("/")
+              .handler(FaviconHandler.create(vertx))
               .handler(handler);
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")

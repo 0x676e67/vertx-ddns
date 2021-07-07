@@ -3,6 +3,7 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.annotation.YamlPrefix;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.property.AliyunDnsProperties;
+import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -31,7 +32,7 @@ public class MainVerticle extends AbstractVerticle {
                 }
                 return Future.failedFuture("json config is empty");
             })
-            .onSuccess(aliyunDnsProperties -> {
+            .onSuccess(event -> {
                 startPromise.complete();
             }).onFailure(startPromise::fail);
     }
