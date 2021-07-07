@@ -1,3 +1,9 @@
+common:
+  ipApiList:
+    - https://api-ipv4.ip.sb/ip
+    - https://jsonip.com/
+    - https://myip.ipip.net
+    - https://ddns.oray.com/checkip
 aliyun:
   regionIdList:
     - cn-hangzhou #华东1（杭州）

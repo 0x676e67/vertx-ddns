@@ -1,11 +1,9 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.annotation.YamlPrefix;
 import com.zf1976.ddns.property.AliyunDnsProperties;
 import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 
 /**
  * @author mac

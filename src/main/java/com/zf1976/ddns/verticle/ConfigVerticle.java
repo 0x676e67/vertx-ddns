@@ -1,7 +1,9 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.annotation.YamlPrefix;
+import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.property.AliyunDnsProperties;
+import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -37,8 +39,7 @@ public class ConfigVerticle extends AbstractVerticle {
     private Future<JsonObject> initConfig() {
         final Object load;
         try {
-            load = new Yaml().load(ConfigVerticle.class.getClassLoader()
-                                                       .getResourceAsStream("config.yaml"));
+            load = ConfigProperty.getInstance().getJsonConfig();
             return Future.succeededFuture(JsonObject.mapFrom(load));
         } catch (Exception e) {
             log.error(e.getMessage());
