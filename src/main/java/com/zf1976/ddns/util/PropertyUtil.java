@@ -17,7 +17,6 @@ public final class PropertyUtil {
 
     }
 
-
     public static  <T> T getProperties(Class<T> tClass, JsonObject jsonConfig) {
         final var annotation = tClass.getAnnotation(YamlPrefix.class);
         if (annotation != null) {
@@ -25,15 +24,6 @@ public final class PropertyUtil {
                              .mapTo(tClass);
         }
         return null;
-    }
-
-    public static CommonProperties getCommonProperties() {
-        return getProperties(CommonProperties.class, ConfigProperty.getInstance().getJsonConfig());
-    }
-
-    public static AliyunDnsProperties getAliyunDnsProperties() {
-        return getProperties(AliyunDnsProperties.class, ConfigProperty.getInstance()
-                                                                      .getJsonConfig());
     }
 
 }

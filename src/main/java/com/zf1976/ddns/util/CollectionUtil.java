@@ -9,8 +9,8 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/7
  */
-public class CollectionUtils {
-    public CollectionUtils() {
+public class CollectionUtil {
+    public CollectionUtil() {
     }
 
     public static boolean isEmpty(@Nullable Collection<?> collection) {

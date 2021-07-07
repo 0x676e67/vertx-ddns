@@ -1,6 +1,6 @@
 package com.zf1976.ddns;
 
-import com.zf1976.ddns.verticle.ConfigVerticle;
+import com.zf1976.ddns.verticle.MainVerticle;
 import io.vertx.core.Vertx;
 
 /**
@@ -9,6 +9,6 @@ import io.vertx.core.Vertx;
  */
 public class DDNSApplication {
     public static void main(String[] args) {
-        Vertx.vertx().deployVerticle(new ConfigVerticle());
+        Vertx.vertx().deployVerticle(new MainVerticle());
     }
 }

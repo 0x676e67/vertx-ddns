@@ -199,13 +199,13 @@ public abstract class Assert {
     }
 
     public static void notEmpty(@Nullable Collection<?> collection, String message) {
-        if (CollectionUtils.isEmpty(collection)) {
+        if (CollectionUtil.isEmpty(collection)) {
             throw new IllegalArgumentException(message);
         }
     }
 
     public static void notEmpty(@Nullable Collection<?> collection, Supplier<String> messageSupplier) {
-        if (CollectionUtils.isEmpty(collection)) {
+        if (CollectionUtil.isEmpty(collection)) {
             throw new IllegalArgumentException(nullSafeGet(messageSupplier));
         }
     }
@@ -245,13 +245,13 @@ public abstract class Assert {
     }
 
     public static void notEmpty(@Nullable Map<?, ?> map, String message) {
-        if (CollectionUtils.isEmpty(map)) {
+        if (CollectionUtil.isEmpty(map)) {
             throw new IllegalArgumentException(message);
         }
     }
 
     public static void notEmpty(@Nullable Map<?, ?> map, Supplier<String> messageSupplier) {
-        if (CollectionUtils.isEmpty(map)) {
+        if (CollectionUtil.isEmpty(map)) {
             throw new IllegalArgumentException(nullSafeGet(messageSupplier));
         }
     }

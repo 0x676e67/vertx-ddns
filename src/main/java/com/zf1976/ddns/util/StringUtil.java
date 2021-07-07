@@ -538,7 +538,7 @@ public abstract class StringUtil {
     }
 
     public static String[] toStringArray(@Nullable Collection<String> collection) {
-        return !CollectionUtils.isEmpty(collection) ? (String[])collection.toArray(EMPTY_STRING_ARRAY) : EMPTY_STRING_ARRAY;
+        return !CollectionUtil.isEmpty(collection) ? (String[])collection.toArray(EMPTY_STRING_ARRAY) : EMPTY_STRING_ARRAY;
     }
 
     public static String[] toStringArray(@Nullable Enumeration<String> enumeration) {
@@ -743,7 +743,7 @@ public abstract class StringUtil {
     }
 
     public static String collectionToDelimitedString(@Nullable Collection<?> coll, String delim, String prefix, String suffix) {
-        if (CollectionUtils.isEmpty(coll)) {
+        if (CollectionUtil.isEmpty(coll)) {
             return "";
         } else {
             StringBuilder sb = new StringBuilder();

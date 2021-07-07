@@ -11,10 +11,18 @@ import java.util.List;
 @YamlPrefix(value = "aliyun")
 public class AliyunDnsProperties {
 
+    private String accessKeyId;
+
+    private String secret;
+    /**
+     * 默认地域id
+     */
+    private String defaultRegionId;
+
     /**
      * 地域id集合
      */
-    List<String> regionIdList;
+    private List<String> regionIdList;
 
     public List<String> getRegionIdList() {
         return regionIdList;
@@ -25,10 +33,30 @@ public class AliyunDnsProperties {
         return this;
     }
 
-    @Override
-    public String toString() {
-        return "AliyunDnsProperties{" +
-                "regionIdList=" + regionIdList +
-                '}';
+    public String getDefaultRegionId() {
+        return defaultRegionId;
+    }
+
+    public AliyunDnsProperties setDefaultRegionId(String defaultRegionId) {
+        this.defaultRegionId = defaultRegionId;
+        return this;
+    }
+
+    public String getAccessKeyId() {
+        return accessKeyId;
+    }
+
+    public AliyunDnsProperties setAccessKeyId(String accessKeyId) {
+        this.accessKeyId = accessKeyId;
+        return this;
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public AliyunDnsProperties setSecret(String secret) {
+        this.secret = secret;
+        return this;
     }
 }

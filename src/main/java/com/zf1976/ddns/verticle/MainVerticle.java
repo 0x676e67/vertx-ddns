@@ -17,7 +17,7 @@ import org.yaml.snakeyaml.Yaml;
  * @author mac
  * @date 2021/7/6
  */
-public class ConfigVerticle extends AbstractVerticle {
+public class MainVerticle extends AbstractVerticle {
 
     private final Logger log = LoggerFactory.getLogger("[ConfigVerticle]");
     @Override

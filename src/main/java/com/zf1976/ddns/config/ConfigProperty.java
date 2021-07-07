@@ -1,5 +1,7 @@
 package com.zf1976.ddns.config;
 
+import com.zf1976.ddns.property.AliyunDnsProperties;
+import com.zf1976.ddns.property.CommonProperties;
 import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.json.JsonObject;
 import org.yaml.snakeyaml.Yaml;
@@ -33,6 +35,15 @@ public class ConfigProperty {
                                                               .getResourceAsStream("config.yaml"));
         return JsonObject.mapFrom(jsonStr);
     }
+
+    public static CommonProperties getCommonProperties() {
+        return PropertyUtil.getProperties(CommonProperties.class, getInstance().getJsonConfig());
+    }
+
+    public static AliyunDnsProperties getAliyunDnsProperties() {
+        return PropertyUtil.getProperties(AliyunDnsProperties.class, getInstance().getJsonConfig());
+    }
+
 
     public JsonObject getJsonConfig() {
         return this.jsonConfig;
