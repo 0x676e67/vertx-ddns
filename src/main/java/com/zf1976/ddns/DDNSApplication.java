@@ -8,7 +8,9 @@ import io.vertx.core.Vertx;
  * @date 2021/7/6
  */
 public class DDNSApplication {
+
     public static void main(String[] args) {
         Vertx.vertx().deployVerticle(new MainVerticle());
     }
+
 }

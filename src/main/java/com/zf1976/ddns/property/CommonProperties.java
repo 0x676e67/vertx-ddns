@@ -11,7 +11,9 @@ import java.util.List;
 @YamlPrefix(value = "common")
 public class CommonProperties {
 
-    List<String> ipApiList;
+    private String serverPort;
+
+    private List<String> ipApiList;
 
     public List<String> getIpApiList() {
         return ipApiList;
@@ -22,10 +24,20 @@ public class CommonProperties {
         return this;
     }
 
+    public String getServerPort() {
+        return serverPort;
+    }
+
+    public CommonProperties setServerPort(String serverPort) {
+        this.serverPort = serverPort;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "CommonProperties{" +
-                "ipApiList=" + ipApiList +
+                "serverPort='" + serverPort + '\'' +
+                ", ipApiList=" + ipApiList +
                 '}';
     }
 }
