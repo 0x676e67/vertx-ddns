@@ -11,17 +11,20 @@ repositories {
 
 ext{
     jacksonVersion = "2.10.3"
+    vertxVersion = "4.1.0"
+    junitVersion = "5.7.0"
 }
 
 dependencies {
-    implementation('com.aliyun:aliyun-java-sdk-core:4.4.3')
-    implementation('com.aliyun:aliyun-java-sdk-alidns:2.0.10')
-    implementation 'io.vertx:vertx-core:4.1.0'
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation 'com.aliyun:aliyun-java-sdk-core:4.4.3'
+    implementation 'com.aliyun:aliyun-java-sdk-alidns:2.0.10'
+    implementation "io.vertx:vertx-core:${vertxVersion}"
+    implementation "io.vertx:vertx-web:${vertxVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation 'org.yaml:snakeyaml:1.17'
     implementation 'org.slf4j:slf4j-simple:1.7.25'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
 
 test {

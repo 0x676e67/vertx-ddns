@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * @author mac
  * @date 2021/7/6
  */
-@SuppressWarnings("UnusedReturnValue")
+@SuppressWarnings({"UnusedReturnValue", "RegExpRedundantEscape"})
 public final class HttpUtil {
 
     private static final Logger log = LoggerFactory.getLogger("[HttpUtil]");
