@@ -50,11 +50,11 @@ public abstract class RouterVerticle extends AbstractVerticle {
         router.getWithRegex(".+\\.html")
               .handler(handler);
         // 路径定义错误处理器
-        router.route().failureHandler(this::returnError);
+        router.route("/api/*").failureHandler(this::returnError);
 
     }
 
-    protected void returnError(RoutingContext routingContext) {
+    private void returnError(RoutingContext routingContext) {
         JsonObject result = new JsonObject();
         int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
         // 不懂 Vert.x 为什么 EventBus 和 Web 是两套异常系统

@@ -5,7 +5,6 @@ import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.ErrorHandler;
 
 /**
  * @author mac
@@ -22,7 +21,6 @@ public class ApiVerticle extends RouterVerticle {
               .consumes("application/json")
               .handler(this::storeAccount);
 
-        router.route("/**").failureHandler(ErrorHandler.create(vertx));
         httpServer.requestHandler(router)
                   .listen(8080)
                   .onSuccess(event -> {
