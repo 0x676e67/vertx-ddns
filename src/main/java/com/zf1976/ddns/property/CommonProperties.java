@@ -11,8 +11,14 @@ import java.util.List;
 @YamlPrefix(value = "common")
 public class CommonProperties {
 
-    private String serverPort;
+    /**
+     * 服务端口
+     */
+    private Integer serverPort;
 
+    /**
+     * ip Api
+     */
     private List<String> ipApiList;
 
     public List<String> getIpApiList() {
@@ -24,11 +30,11 @@ public class CommonProperties {
         return this;
     }
 
-    public String getServerPort() {
+    public Integer getServerPort() {
         return serverPort;
     }
 
-    public CommonProperties setServerPort(String serverPort) {
+    public CommonProperties setServerPort(Integer serverPort) {
         this.serverPort = serverPort;
         return this;
     }

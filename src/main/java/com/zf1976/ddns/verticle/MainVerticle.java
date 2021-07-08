@@ -6,8 +6,8 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author mac
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MainVerticle extends AbstractVerticle {
 
-    private final Logger log = LoggerFactory.getLogger("[ConfigVerticle]");
+    private final Logger log = LogManager.getLogger("[MainVerticle]");
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         this.initConfig()
@@ -28,7 +28,11 @@ public class MainVerticle extends AbstractVerticle {
             })
             .onSuccess(event -> {
                 startPromise.complete();
-            }).onFailure(startPromise::fail);
+            }).onFailure(err -> {
+                log.error(err.getMessage(), err.getCause());
+                log.info("ApiVerticle deploy failure");
+                System.exit(0);
+            });
     }
 
     private Future<JsonObject> initConfig() {

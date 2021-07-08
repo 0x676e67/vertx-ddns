@@ -5,12 +5,16 @@ import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author mac
  * @date 2021/7/6
  */
 public class ApiVerticle extends RouterVerticle {
+
+    private final Logger log = LogManager.getLogger(ApiVerticle.class);
 
     public ApiVerticle() {
 
@@ -27,10 +31,10 @@ public class ApiVerticle extends RouterVerticle {
               .handler(this::storeAccount);
 
         httpServer.requestHandler(router)
-                  .listen(8080)
+                  .listen(configProperty.getServerPort())
                   .onSuccess(event -> {
-                      System.out.println("DDNS服务启动...");
-                      startPromise.complete();
+                     log.info("DDNS service started...");
+                     startPromise.complete();
                   })
                   .onFailure(startPromise::fail);
 

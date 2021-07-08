@@ -1,5 +1,7 @@
 package com.zf1976.ddns.verticle;
 
+import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.property.CommonProperties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
@@ -26,6 +28,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger(RouterVerticle.class);
     private volatile static Router router;
+    protected static CommonProperties configProperty = ConfigProperty.getCommonProperties();
 
     protected synchronized Router getRouter() {
         return router;
