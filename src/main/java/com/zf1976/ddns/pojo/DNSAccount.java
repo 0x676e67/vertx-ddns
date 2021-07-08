@@ -6,7 +6,7 @@ import com.zf1976.ddns.verticle.DNSServiceType;
  * @author mac
  * @date 2021/7/8
  */
-public class DNSAccountDTO {
+public class DNSAccount {
 
     /**
      * id 可能为空，某些DNS服务商只使用token
@@ -27,7 +27,7 @@ public class DNSAccountDTO {
         return id;
     }
 
-    public DNSAccountDTO setId(String id) {
+    public DNSAccount setId(String id) {
         this.id = id;
         return this;
     }
@@ -36,7 +36,7 @@ public class DNSAccountDTO {
         return secret;
     }
 
-    public DNSAccountDTO setSecret(String secret) {
+    public DNSAccount setSecret(String secret) {
         this.secret = secret;
         return this;
     }
@@ -45,7 +45,7 @@ public class DNSAccountDTO {
         return dnsServiceType;
     }
 
-    public DNSAccountDTO setDnsServiceType(DNSServiceType dnsServiceType) {
+    public DNSAccount setDnsServiceType(DNSServiceType dnsServiceType) {
         this.dnsServiceType = dnsServiceType;
         return this;
     }

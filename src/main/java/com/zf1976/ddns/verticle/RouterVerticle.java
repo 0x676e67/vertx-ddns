@@ -29,7 +29,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
     private final Logger log = LogManager.getLogger(RouterVerticle.class);
     private volatile static Router router;
     protected static CommonProperties configProperty = ConfigProperty.getCommonProperties();
-
+    protected static String workDir = null;
     protected synchronized Router getRouter() {
         return router;
     }
@@ -70,6 +70,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
                                         System.exit(0);
                                     });
                       }
+                      RouterVerticle.workDir = absolutePath;
                   })
                   .onFailure(err -> {
                      log.error(err.getMessage(), err.getCause());
