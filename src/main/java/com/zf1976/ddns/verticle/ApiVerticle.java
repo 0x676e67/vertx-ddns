@@ -33,7 +33,7 @@ public class ApiVerticle extends RouterVerticle {
         httpServer.requestHandler(router)
                   .listen(configProperty.getServerPort())
                   .onSuccess(event -> {
-                     log.info("DDNS service started...");
+                     log.info("Vertx web server initialized with port(s): " + configProperty.getServerPort() + " (http)");
                      startPromise.complete();
                   })
                   .onFailure(startPromise::fail);
