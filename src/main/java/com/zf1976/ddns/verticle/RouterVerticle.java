@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
-import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 
@@ -44,16 +44,14 @@ public abstract class RouterVerticle extends AbstractVerticle {
         TemplateHandler handler = TemplateHandler.create(engine);
         // 设置默认模版
         handler.setIndexTemplate("index.html");
+        // Body处理
+        router.route().handler(BodyHandler.create());
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(handler);
-        // 静态资源处理
-        router.route("/*")
-              .handler(StaticHandler.create());
-        /*
-         * 定义错误处理器
-         */
+        // 路径定义错误处理器
         router.route().failureHandler(this::returnError);
+
     }
 
     protected void returnError(RoutingContext routingContext) {

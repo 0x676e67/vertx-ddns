@@ -5,7 +5,7 @@ import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.ErrorHandler;
 
 /**
  * @author mac
@@ -17,13 +17,12 @@ public class ApiVerticle extends RouterVerticle {
     public void start(Promise<Void> startPromise) {
         final var router = getRouter();
         final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
-        router.route().handler(BodyHandler.create());
         // 存储DNS服务商密钥
         router.post("/api/storeAccount")
               .consumes("application/json")
               .handler(this::storeAccount);
 
-
+        router.route("/**").failureHandler(ErrorHandler.create(vertx));
         httpServer.requestHandler(router)
                   .listen(8080)
                   .onSuccess(event -> {
