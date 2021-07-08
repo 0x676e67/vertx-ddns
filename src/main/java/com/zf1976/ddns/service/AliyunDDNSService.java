@@ -10,8 +10,8 @@ import com.aliyuncs.profile.DefaultProfile;
 import com.zf1976.ddns.property.AliyunDnsProperties;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 /**
  * 暂时只支持A记录类型解析

@@ -4,25 +4,12 @@ package com.zf1976.ddns.util;
  * @author mac
  * @date 2021/7/7
  */
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.StringTokenizer;
-import java.util.TimeZone;
 
 import com.zf1976.ddns.annotation.Nullable;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public abstract class StringUtil {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
@@ -67,6 +54,7 @@ public abstract class StringUtil {
         return false;
     }
 
+    @SuppressWarnings("IfStatementWithIdenticalBranches")
     public static boolean containsWhitespace(@Nullable CharSequence str) {
         if (!hasLength(str)) {
             return false;
@@ -87,6 +75,7 @@ public abstract class StringUtil {
         return containsWhitespace((CharSequence)str);
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     public static String trimWhitespace(String str) {
         if (!hasLength(str)) {
             return str;
@@ -538,7 +527,7 @@ public abstract class StringUtil {
     }
 
     public static String[] toStringArray(@Nullable Collection<String> collection) {
-        return !CollectionUtil.isEmpty(collection) ? (String[])collection.toArray(EMPTY_STRING_ARRAY) : EMPTY_STRING_ARRAY;
+        return !CollectionUtil.isEmpty(collection) ? collection.toArray(EMPTY_STRING_ARRAY) : EMPTY_STRING_ARRAY;
     }
 
     public static String[] toStringArray(@Nullable Enumeration<String> enumeration) {
@@ -590,7 +579,7 @@ public abstract class StringUtil {
                 }
             }
 
-            return toStringArray((Collection)result);
+            return toStringArray(result);
         }
     }
 
@@ -645,7 +634,7 @@ public abstract class StringUtil {
 
     @Nullable
     public static Properties splitArrayElementsIntoProperties(String[] array, String delimiter) {
-        return splitArrayElementsIntoProperties(array, delimiter, (String)null);
+        return splitArrayElementsIntoProperties(array, delimiter, null);
     }
 
     @Nullable
@@ -702,7 +691,7 @@ public abstract class StringUtil {
     }
 
     public static String[] delimitedListToStringArray(@Nullable String str, @Nullable String delimiter) {
-        return delimitedListToStringArray(str, delimiter, (String)null);
+        return delimitedListToStringArray(str, delimiter, null);
     }
 
     public static String[] delimitedListToStringArray(@Nullable String str, @Nullable String delimiter, @Nullable String charsToDelete) {

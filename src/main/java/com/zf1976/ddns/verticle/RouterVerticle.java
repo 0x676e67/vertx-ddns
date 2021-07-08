@@ -3,9 +3,13 @@ package com.zf1976.ddns.verticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.ReplyException;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
-import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
@@ -43,12 +47,35 @@ public abstract class RouterVerticle extends AbstractVerticle {
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(handler);
-        // 错误处理
-        router.route("/*")
-              .failureHandler(ErrorHandler.create(vertx));
         // 静态资源处理
         router.route("/*")
               .handler(StaticHandler.create());
+        /*
+         * 定义错误处理器
+         */
+        router.route().failureHandler(this::returnError);
+    }
 
+    protected void returnError(RoutingContext routingContext) {
+        JsonObject result = new JsonObject();
+        int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
+        // 不懂 Vert.x 为什么 EventBus 和 Web 是两套异常系统
+        if (routingContext.failure() instanceof ReplyException) {
+            errorCode = ((ReplyException) routingContext.failure()).failureCode();
+        }
+        result.put("errorCode", errorCode);
+        if (routingContext.failure() != null) {
+            result.put("reason", routingContext.failure().getMessage());
+        }
+        setCommonHeader(routingContext.response()
+                                      .setStatusCode(errorCode)
+                                      .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
+                .end(result.encodePrettily());
+    }
+
+    private HttpServerResponse setCommonHeader(HttpServerResponse response) {
+        return response
+                .putHeader("Access-Control-Allow-Origin", "*")
+                .putHeader("Cache-Control", "no-cache");
     }
 }

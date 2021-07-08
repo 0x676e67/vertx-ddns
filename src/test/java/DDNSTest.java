@@ -1,15 +1,9 @@
-import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsRequest;
-import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
-import com.aliyuncs.alidns.model.v20150109.UpdateDomainRecordRequest;
-import com.aliyuncs.alidns.model.v20150109.UpdateDomainRecordResponse;
 import com.google.gson.Gson;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.service.AliyunDDNSService;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * @author mac
@@ -47,7 +41,7 @@ public class DDNSTest {
     @Test
     public void aliyunFindTest() {
         final var ddns = new AliyunDDNSService(ConfigProperty.getAliyunDnsProperties());
-        final var describeDomainRecords = ddns.findDescribeDomainRecords("demo.innas.cn");
+        final var describeDomainRecords = ddns.findDescribeDomainRecords("innas.cn");
         logPrint("demo", describeDomainRecords.getDomainRecords());
     }
 }
