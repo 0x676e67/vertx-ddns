@@ -2,6 +2,7 @@ package com.zf1976.ddns.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -126,7 +127,7 @@ public final class HttpUtil {
         final var split = domain.split("\\.");
         final var length = split.length;
         final String mainDomain = split[length-2] + "." + split[length-1];
-        String record = "@";
+        String record = "";
         if (length > 2) {
             final var mainDomainIndex = domain.lastIndexOf(mainDomain);
             record = domain.substring(0, mainDomainIndex - 1);

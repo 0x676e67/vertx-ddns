@@ -6,7 +6,7 @@ import io.vertx.core.Promise;
  * @author mac
  * @date 2021/7/6
  */
-public class AliyunDDNSVerticle extends RouterVerticle {
+public class ApiVerticle extends RouterVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -17,10 +17,15 @@ public class AliyunDDNSVerticle extends RouterVerticle {
                   final var response = request.response();
                   response.end("hello aliyun");
               });
+        router.get("/tencent")
+              .handler(request -> {
+                  final var response = request.response();
+                  response.end("hello tencent");
+              });
         httpServer.requestHandler(router)
                   .listen(8080)
                   .onSuccess(event -> {
-                      System.out.println("阿里云DDNS服务启动...");
+                      System.out.println("DDNS服务启动...");
                   })
                   .onFailure(System.out::println);
         startPromise.complete();
