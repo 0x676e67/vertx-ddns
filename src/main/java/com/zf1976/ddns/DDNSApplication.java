@@ -10,6 +10,7 @@ import io.vertx.core.Vertx;
 public class DDNSApplication {
 
     public static void main(String[] args) {
+        // 将日志实现强制设为 Log4j 2
         Vertx.vertx().deployVerticle(new MainVerticle());
     }
 

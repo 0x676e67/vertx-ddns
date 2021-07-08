@@ -13,6 +13,10 @@ import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.nio.file.Paths;
 
 /**
  * @author mac
@@ -20,6 +24,7 @@ import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
  */
 public abstract class RouterVerticle extends AbstractVerticle {
 
+    private final Logger log = LogManager.getLogger(RouterVerticle.class);
     private volatile static Router router;
 
     protected synchronized Router getRouter() {
@@ -32,11 +37,41 @@ public abstract class RouterVerticle extends AbstractVerticle {
             synchronized (RouterVerticle.class) {
                 if (router == null) {
                     router = Router.router(vertx);
+                    this.initProjectDir(vertx);
                     this.handleTemplate(router, vertx);
                 }
             }
         }
         super.init(vertx, context);
+    }
+
+    /**
+     * 初始化项目工作目录
+     *
+     * @param vertx vertx
+     */
+    private void initProjectDir(Vertx vertx) {
+        final var fileSystem = vertx.fileSystem();
+        final var path = Paths.get(System.getProperty("user.home"), ".ddns");
+        final var absolutePath = path.toFile().getAbsolutePath();
+        fileSystem.exists(absolutePath)
+                  .onSuccess(bool -> {
+                      // 目录不存在则创建
+                      if (!bool) {
+                          fileSystem.mkdirs(absolutePath)
+                                    .onSuccess(v -> {
+                                        log.info("Create project working directory：" + absolutePath);
+                                    })
+                                    .onFailure(err -> {
+                                        log.error(err.getMessage(), err.getCause());
+                                        System.exit(0);
+                                    });
+                      }
+                  })
+                  .onFailure(err -> {
+                     log.error(err.getMessage(), err.getCause());
+                     System.exit(0);
+                  });
     }
 
     private void handleTemplate(Router router, Vertx vertx) {
@@ -75,5 +110,15 @@ public abstract class RouterVerticle extends AbstractVerticle {
         return response
                 .putHeader("Access-Control-Allow-Origin", "*")
                 .putHeader("Cache-Control", "no-cache");
+    }
+
+    protected void returnJsonWithCache(RoutingContext routingContext, JsonObject jsonObject) {
+        routingContext.response()
+                      .putHeader("content-type", "application/json; charset=utf-8")
+                      .end(jsonObject.encodePrettily());
+    }
+
+    protected void returnJsonWithCache(RoutingContext routingContext) {
+        this.returnJsonWithCache(routingContext, new JsonObject());
     }
 }

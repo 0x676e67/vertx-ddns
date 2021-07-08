@@ -1,12 +1,13 @@
 common:
+  serverPort: 8080
   ipApiList:
     - https://api-ipv4.ip.sb/ip
     - https://jsonip.com/
     - https://myip.ipip.net
     - https://ddns.oray.com/checkip
 aliyun:
-  accessKeyId:
-  secret:
+  accessKeyId: LTAI5tDQhy5qHf9AvJocLX7G
+  secret: RzGsKDseCshfB9MS3u7d46o7zLNWik
   defaultRegionId: cn-shenzhen  #默认地域id
   regionIdList: #阿里云所有地域id集合
     - cn-hangzhou #华东1（杭州）

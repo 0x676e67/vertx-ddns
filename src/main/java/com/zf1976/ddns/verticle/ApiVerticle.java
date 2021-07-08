@@ -1,9 +1,9 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.pojo.DNSAccountDTO;
+import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -12,10 +12,15 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class ApiVerticle extends RouterVerticle {
 
+    public ApiVerticle() {
+
+    }
+
     @Override
     public void start(Promise<Void> startPromise) {
         final var router = getRouter();
-        final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
+        final var httpServer = vertx.createHttpServer()
+                                    .exceptionHandler(Throwable::printStackTrace);
         // 存储DNS服务商密钥
         router.post("/api/storeAccount")
               .consumes("application/json")
@@ -35,22 +40,34 @@ public class ApiVerticle extends RouterVerticle {
         try {
             final var dnsAccountDTO = routingContext.getBodyAsJson()
                                                     .mapTo(DNSAccountDTO.class);
-            final var validated = Validator.of(dnsAccountDTO)
-                                           .with(v -> v.getDnsServiceType() != null)
-                                           .with(v -> v.getSecret() != null)
-                                           .Validated();
-            System.out.println(validated);
-            routingContext.response().end();
+            switch (dnsAccountDTO.getDnsServiceType()) {
+                case ALIYUN:
+                case HUAWEI:
+                case DNSPOD:
+                    Validator.of(dnsAccountDTO)
+                             .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId()
+                                                                                     .isBlank(),
+                                     () -> new RuntimeException("ID cannot be empty"))
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret()
+                                                                                         .isBlank(),
+                                     () -> new RuntimeException("The Secret cannot be empty"));
+                    break;
+                case CLOUDFLARE:
+                    Validator.of(dnsAccountDTO)
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()),
+                                     () -> new RuntimeException("The Secret cannot be empty"));
+                default:
+            }
+        } catch (RuntimeException e) {
+            routingContext.fail(400, e);
         } catch (Exception e) {
             routingContext.fail(400, new RuntimeException("Parameter abnormal"));
         }
     }
 
+    private void storeAndHandle(RoutingContext routingContext, DNSAccountDTO dnsAccountDTO) {
+        final var fileSystem = vertx.fileSystem();
 
-
-    private void returnJsonWithCache(RoutingContext routingContext, JsonObject jsonObject) {
-        routingContext.response()
-                      .putHeader("content-type", "application/json; charset=utf-8")
-                      .end(jsonObject.encodePrettily());
+        this.returnJsonWithCache(routingContext);
     }
 }
