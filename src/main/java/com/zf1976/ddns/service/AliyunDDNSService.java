@@ -140,9 +140,8 @@ public class AliyunDDNSService {
             // 调用SDK发送请求
             return this.iAcsClient.getAcsResponse(request);
         } catch (ClientException e) {
-            log.error(e.getMessage(), e.getCause());
             // 发生调用错误，抛出运行时异常
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 

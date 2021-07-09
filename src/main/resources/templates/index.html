@@ -37,22 +37,22 @@
         <div class="card">
           <div class="card-header">DNS服务器商</div>
           <div class="card-body">
-            <ul class="nav nav-tabs ">
-              <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#aliyun" onchange="setDDNSType()">Alidns(阿里云)</a>
+            <ul class="nav nav-tabs" id="DDNSul">
+              <li class="nav-item" onclick="setAliyunType()">
+                <a class="nav-link" data-toggle="tab" href="#aliyun">Alidns(阿里云)</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" onclick="setDnspodType()">
                 <a class="nav-link" data-toggle="tab" href="#dnspod">Dnspod(腾讯云)</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" onclick="setCloudflareType()">
                 <a class="nav-link" data-toggle="tab" href="#cloudflare">CloudFlare</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" onclick="setHuaweiType()">
                 <a class="nav-link" data-toggle="tab" href="#huawei">华为云</a>
               </li>
             </ul>
             <!-- 选项卡对应内容 -->
-            <div class="tab-content">
+            <div class="tab-content" id="tab-content">
 <!--              阿里云选项卡-->
               <div class="tab-pane active container" id="aliyun">
                   <form style="margin-top: 10px; ">
@@ -118,15 +118,19 @@
             <div class="card-body">
                 <div class="input-group mb-1" style="margin-top: 5px">
                     <span class="input-group-text" id="basic-addon8">domain</span>
-                    <input aria-describedby="basic-addon8" aria-label="域名" class="form-control" onchange="" placeholder="请输入需要查询的域名" type="text">
+                    <input aria-describedby="basic-addon8" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary submit_btn"  onclick="clearInput()">清空</button>
+                    </div>
                 </div>
                 <table class="table table-bordered">
                     <caption>边框表格布局</caption>
                     <thead>
                     <tr>
-                        <th>名称</th>
-                        <th>城市</th>
-                        <th>邮编</th>
+                        <th>域名</th>
+                        <th>记录</th>
+                        <th>指向IP</th>
+                        <th>描述</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -134,16 +138,19 @@
                         <td>Tanmay</td>
                         <td>Bangalore</td>
                         <td>560001</td>
+                        <td>560001</td>
                     </tr>
                     <tr>
                         <td>Sachin</td>
                         <td>Mumbai</td>
                         <td>400003</td>
+                        <td>560001</td>
                     </tr>
                     <tr>
                         <td>Uma</td>
                         <td>Pune</td>
                         <td>411027</td>
+                        <td>560001</td>
                     </tr>
                     </tbody>
                 </table>
@@ -158,196 +165,49 @@
 
 
 <script>
-    function setDDNSType(param) {
-        console.log(param)
+    const aliyunType = "ALIYUN"
+    const dnspodType = "DNSPOD"
+    const cloudflareType = "CLOUDFLARE"
+    const huaweiType = "HUAWEI"
+
+    // 默认类型
+    let selectDDNSType = aliyunType
+
+    function setAliyunType() {
+        selectDDNSType = aliyunType;
     }
 
-    function findRecords() {
-        document.getElementById("aliyun")
+    function setDnspodType() {
+        selectDDNSType = dnspodType
     }
+
+    function setCloudflareType() {
+        selectDDNSType = cloudflareType
+    }
+
+    function setHuaweiType() {
+        selectDDNSType = huaweiType
+    }
+    function findRecords(e) {
+        let evt = window.event || e;
+        if (evt.keyCode == 13) {
+            //回车事件
+            let inputDomain = document.getElementById("inputDomain");
+            let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
+            axios.post('/api/ddnsRecords?' + param)
+                .then(function (response) {
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+    }
+    function clearInput(){
+        $("#inputDomain").val("");
+    }
+
 </script>
-<!--  <script>-->
-<!--    $(function(){-->
-<!--      $(".submit_btn").on('click',function(e) {-->
-<!--        e.preventDefault();-->
-<!--        $('body').animate({ scrollTop: 0 }, 300);-->
-<!--        $.ajax({-->
-<!--          method: "POST",-->
-<!--          url: "/save",-->
-<!--          data: $('form').serialize(),-->
-<!--          success: function (result) {-->
-<!--            $('.alert').css("display", "block");-->
-<!--            if (result !== "ok") {-->
-<!--              $('.alert').addClass("alert-danger")-->
-<!--              $('#resultMsg').html(result)-->
-<!--            } else {-->
-<!--              // ok-->
-<!--              setTimeout(function(){-->
-<!--                $('.alert').css("display", "none");-->
-<!--              }, 3000)-->
-<!--            }-->
-<!--          },-->
-<!--          error: function(jqXHR) {-->
-<!--            alert(jqXHR.statusText);-->
-<!--          }-->
-<!--        })-->
-<!--      })-->
 
-<!--    })-->
-
-<!--    var beforeDnsID=""-->
-
-<!--    function alidnsCheckedFun() {-->
-<!--      document.getElementById("DnsID").hidden = false-->
-<!--      document.getElementById("DnsID").disabled= false-->
-<!--      if (beforeDnsID)-->
-<!--        document.getElementById("DnsID").value= beforeDnsID-->
-
-<!--      document.getElementById("dnsIdLabel").innerHTML = "AccessKey ID"-->
-<!--      document.getElementById("dnsSecretLabel").innerHTML = "AccessKey Secret"-->
-<!--      document.getElementById("dns_help").innerHTML = "<a target='_blank' href='https://ram.console.aliyun.com/manage/ak?spm=5176.12818093.nav-right.dak.488716d0mHaMgg'>创建 AccessKey</a>"-->
-<!--    }-->
-
-<!--    function dnspodCheckedFun() {-->
-<!--      document.getElementById("DnsID").hidden = false-->
-<!--      document.getElementById("DnsID").disabled= false-->
-<!--      if (beforeDnsID)-->
-<!--        document.getElementById("DnsID").value= beforeDnsID-->
-
-<!--      document.getElementById("dnsIdLabel").innerHTML = "ID"-->
-<!--      document.getElementById("dnsSecretLabel").innerHTML = "Token"-->
-<!--      document.getElementById("dns_help").innerHTML = "<a target='_blank' href='https://console.dnspod.cn/account/token'>创建密钥</a>"-->
-<!--    }-->
-
-<!--    function cloudflareCheckedFun() {-->
-<!--      document.getElementById("dnsIdLabel").innerHTML = ""-->
-<!--      beforeDnsID = document.getElementById("DnsID").value-->
-<!--      document.getElementById("DnsID").hidden = true-->
-<!--      document.getElementById("DnsID").value= ""-->
-<!--      document.getElementById("dnsSecretLabel").innerHTML = "Token"-->
-<!--      document.getElementById("dns_help").innerHTML = "<a target='_blank' href='https://dash.cloudflare.com/profile/api-tokens'>创建令牌->编辑区域 DNS(使用模板)</a>"-->
-<!--    }-->
-
-<!--    function huaweicloudCheckedFun() {-->
-<!--      document.getElementById("DnsID").hidden = false-->
-<!--      document.getElementById("DnsID").disabled= false-->
-<!--      if (beforeDnsID)-->
-<!--        document.getElementById("DnsID").value= beforeDnsID-->
-<!--      document.getElementById("dnsIdLabel").innerHTML = "Access Key Id"-->
-<!--      document.getElementById("dnsSecretLabel").innerHTML = "Secret Access Key"-->
-<!--      document.getElementById("dns_help").innerHTML = "<a target='_blank' href='https://console.huaweicloud.com/iam/?locale=zh-cn#/mine/accessKey'>新增访问密钥</a>"-->
-<!--    }-->
-
-<!--    var dnsName = '{{$.DNS.Name}}'-->
-
-<!--    switch(dnsName){-->
-<!--      case "dnspod": {-->
-<!--        dnspodCheckedFun()-->
-<!--        break;-->
-<!--      }-->
-<!--      case "cloudflare": {-->
-<!--        cloudflareCheckedFun()-->
-<!--        break;-->
-<!--      }-->
-<!--      case "huaweicloud": {-->
-<!--        huaweicloudCheckedFun()-->
-<!--        break;-->
-<!--      }-->
-<!--      default: {-->
-<!--        alidnsCheckedFun()-->
-<!--        break;-->
-<!--      }-->
-<!--    }-->
-<!--  </script>-->
-
-<!--<script>-->
-<!--  function getLogs() {-->
-<!--    $.get("/logs", function(result){-->
-<!--      $("#logs").html(result)-->
-<!--    })-->
-<!--  }-->
-<!--  getLogs()-->
-<!--  setInterval(getLogs, 5 * 1000)-->
-<!--</script>-->
-
-<!--<script>-->
-<!--  var ipv4GetType = '{{$.Ipv4.GetType}}'-->
-<!--  var ipv6GetType = '{{$.Ipv6.GetType}}'-->
-<!--  if (ipv4GetType === "netInterface") {-->
-<!--    netInterfaceClick("ipv4")-->
-<!--  } else {-->
-<!--    urlClick("ipv4")-->
-<!--  }-->
-
-<!--  if (ipv6GetType === "netInterface") {-->
-<!--    netInterfaceClick("ipv6")-->
-<!--  } else {-->
-<!--    urlClick("ipv6")-->
-<!--  }-->
-
-<!--  // 点击接口获取-->
-<!--  function urlClick(label) {-->
-<!--    $("#"+label+"_netInterface_select").css("display", "none")-->
-<!--    $("#"+label+"_url").css("display", "block")-->
-
-<!--    if (label === "ipv4") {-->
-<!--      $("#ipv4_url_help").html("填写的URL需返回公网IPv4地址。如：https://api-ipv4.ip.sb/ip、https://myip.ipip.net、https://ddns.oray.com/checkip")-->
-<!--    } else {-->
-<!--      $("#ipv6_url_help").html("填写的URL需返回公网IPv6地址。如：https://api-ipv6.ip.sb/ip、https://v6.myip.la/json、https://speed.neu6.edu.cn/getIP.php")-->
-<!--    }-->
-<!--  }-->
-
-<!--  // 点击网卡获取-->
-<!--  function netInterfaceClick(label) {-->
-<!--    $("#"+label+"_url").css("display", "none")-->
-<!--    $("#"+label+"_netInterface_select").css("display", "block")-->
-<!--    if (label === "ipv4") {-->
-<!--      $("#ipv4_url_help").html("通过网卡获取IP, 建议在多宽带的路由器中使用")-->
-<!--    } else {-->
-<!--      $("#ipv6_url_help").html("通过网卡获取IP, 默认使用第一个IPv6地址(一般为非临时的IPv6)")-->
-<!--    }-->
-
-<!--    $.get("/"+label+"NetInterface", function(result) {-->
-<!--      $("#"+label+"_netInterface_select").empty()-->
-<!--      if(result) {-->
-<!--        var resultJson = JSON.parse(result)-->
-<!--        for (var i=0; i<resultJson.length; i++) {-->
-<!--          $("#"+label+"_netInterface_select").append(-->
-<!--            `<option value='${resultJson[i].Name}'>-->
-<!--            ${resultJson[i].Name}(${resultJson[i].Address[0]})-->
-<!--            </option>`-->
-<!--          );-->
-<!--        }-->
-<!--        // 选中-->
-<!--        if ("{{$.Ipv4.NetInterface}}" !== "") {-->
-<!--          $("#"+label+"_netInterface_select").val("{{$.Ipv4.NetInterface}}")-->
-<!--        }-->
-<!--      } else {-->
-<!--        $("#"+label+"_url_help").html("<span style='color: red'>没有找到可用的网卡</span>")-->
-<!--      }-->
-<!--    })-->
-<!--  }-->
-<!--</script>-->
-<!--<script>-->
-<!--  $(function(){-->
-<!--    $("#webhookTestBtn").on("click", function(e) {-->
-<!--      e.preventDefault();-->
-<!--      $.ajax({-->
-<!--          method: "POST",-->
-<!--          url: "/webhookTest",-->
-<!--          data: {"URL": $("#WebhookURL").val(), "RequestBody": $("#WebhookRequestBody").val()},-->
-<!--          success: function() {-->
-<!--            $("#webhookTestBtn_help").text("提交模拟测试成功, 如修改记得保存配置")-->
-<!--            setTimeout(function(){-->
-<!--              $("#webhookTestBtn_help").text("")-->
-<!--            }, 5000)-->
-<!--          },-->
-<!--          error: function(jqXHR) {-->
-<!--            alert(jqXHR.statusText);-->
-<!--          }-->
-<!--        })-->
-<!--    })-->
-<!--  })-->
-<!--</script>-->
 </body>
 </html>

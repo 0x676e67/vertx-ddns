@@ -86,20 +86,21 @@ public abstract class RouterVerticle extends AbstractVerticle {
         // 设置默认模版
         handler.setIndexTemplate("index.html");
         // Body处理
-        router.route().handler(BodyHandler.create());
+
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(handler);
         // 静态资源处理
-        router.route().handler(StaticHandler.create());
+        router.get().handler(StaticHandler.create());
         // 路径定义错误处理器/设置Content-Type
-        router.route("/api/*")
+        router.route()
               .consumes("application/json")
-              .failureHandler(this::returnError);
+              .handler(BodyHandler.create());
+
 
     }
 
-    private void returnError(RoutingContext routingContext) {
+    protected void returnError(RoutingContext routingContext) {
         int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
         // 不懂 Vert.x 为什么 EventBus 和 Web 是两套异常系统
         if (routingContext.failure() instanceof ReplyException) {

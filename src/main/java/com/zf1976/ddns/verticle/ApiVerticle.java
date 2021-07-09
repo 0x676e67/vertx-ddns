@@ -10,6 +10,7 @@ import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -41,8 +42,11 @@ public class ApiVerticle extends RouterVerticle {
 
         // 查询DNS服务商域名解析记录
         router.post("/api/ddnsRecords")
-              .handler(this::findDDNSRecord);
+              .handler(this::findDDNSRecordsHandler);
 
+        // 异常处理
+        router.route("/api/*")
+              .failureHandler(this::returnError);
         httpServer.requestHandler(router)
                   .listen(configProperty.getServerPort())
                   .onSuccess(event -> {
@@ -53,24 +57,30 @@ public class ApiVerticle extends RouterVerticle {
 
     }
 
-    protected void findDDNSRecord(RoutingContext routingContext) {
+    protected void findDDNSRecordsHandler(RoutingContext routingContext) {
         final var request = routingContext.request();
         final var param = request.getParam(ApiConstants.DDNS_SERVICE_TYPE);
         final var type = DDNSServiceType.checkType(param);
-        if (ObjectUtil.isEmpty(type)) {
-            throw new RuntimeException("The DDNS service provider does not exist");
-        }
-        final var domain = request.getParam(ApiConstants.DOMAIN);
-        switch (type) {
-            case ALIYUN:
-                final var domainRecords = this.aliyunDDNSService.findDescribeDomainRecords(domain)
-                                                                .getDomainRecords();
-                super.returnJsonWithCache(routingContext, domainRecords);
-                break;
-            case CLOUDFLARE:
-            case HUAWEI:
-            case DNSPOD:
-            default:
+        try {
+            if (ObjectUtil.isEmpty(type)) {
+                throw new RuntimeException("The DDNS service provider does not exist");
+            }
+            final var domain = request.getParam(ApiConstants.DOMAIN);
+            switch (type) {
+                case ALIYUN:
+                    final var domainRecords = this.aliyunDDNSService.findDescribeDomainRecords(domain)
+                                                                    .getDomainRecords();
+                    super.returnJsonWithCache(routingContext, domainRecords);
+                    break;
+                case CLOUDFLARE:
+                case HUAWEI:
+                case DNSPOD:
+                default:
+            }
+        } catch (RuntimeException exception) {
+            this.handleBad(routingContext, exception);
+        } catch (Exception exception) {
+            this.handleError(routingContext, new RuntimeException("Parameter abnormal"));
         }
     }
 
