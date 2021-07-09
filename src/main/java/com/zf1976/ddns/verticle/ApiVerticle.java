@@ -5,6 +5,7 @@ import com.zf1976.ddns.util.JSONUtil;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.util.Validator;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -69,7 +70,9 @@ public class ApiVerticle extends RouterVerticle {
                                      () -> new RuntimeException("The Secret cannot be empty"));
                 default:
             }
-            this.storeAccountAndHandle(routingContext, dnsAccountDTO);
+            this.storeAccountAndHandle(routingContext, dnsAccountDTO)
+                .onSuccess(success -> this.returnJsonWithCache(routingContext))
+                .onFailure(err -> this.handleError(routingContext, err));
         } catch (RuntimeException e) {
             routingContext.fail(400, e);
         } catch (Exception e) {
@@ -77,67 +80,52 @@ public class ApiVerticle extends RouterVerticle {
         }
     }
 
-    private void storeAccountAndHandle(RoutingContext routingContext, DNSAccount dnsAccount) {
+    private Future<Void> storeAccountAndHandle(RoutingContext routingContext, DNSAccount dnsAccount) {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = workDir + "/account.json";
-        fileSystem.exists(configFilePath)
-                  .compose(v -> {
-                      // 配置文件不存在,则创建
-                      if (!v) {
-                          return fileSystem.createFile(configFilePath)
-                                           .compose(create -> fileSystem.readFile(configFilePath));
-                      }
-                      return fileSystem.readFile(configFilePath);
-                  })
-                  .onComplete(v -> {
-                      if (v.succeeded()) {
-                          // 数据为空
-                          if (ObjectUtil.isEmpty(v.result().getBytes())) {
-                              List<DNSAccount> accountList = new ArrayList<>();
-                              accountList.add(dnsAccount);
-                              final var json = JSONUtil.toJsonString(accountList);
-                              vertx.fileSystem()
-                                   .writeFile(configFilePath, Buffer.buffer(json))
-                                   .onFailure(err -> {
-                                       log.error(err.getMessage(), err.getCause());
-                                       routingContext.fail(500);
-                                   })
-                                   .onSuccess(success -> {
-                                       this.returnJsonWithCache(routingContext);
-                                   });
-                          } else {
-                              try {
-                                  List<DNSAccount> ddnsAccountList = new ArrayList<>();
-                                  final var list = JSONUtil.readValue(v.result().toString(), List.class);
-                                  if (list != null) {
-                                      for (Object obj : list) {
-                                          final var decodeDnsAccount = JsonObject.mapFrom(obj).mapTo(DNSAccount.class);
-                                          ddnsAccountList.add(decodeDnsAccount);
-                                      }
-                                      ddnsAccountList.add(dnsAccount);
-                                      fileSystem.writeFile(configFilePath, Buffer.buffer(JSONUtil.toJsonString(ddnsAccountList)))
-                                                .onSuccess(success -> {
-                                                    this.returnJsonWithCache(routingContext);
-                                                })
-                                                .onFailure(err -> {
-                                                    log.error(err.getMessage(), err.getCause());
-                                                    routingContext.fail(500);
-                                                });
-                                  }
-                              } catch (Exception e) {
-                                  log.error(e.getMessage(), e.getCause());
-                                  routingContext.fail(500);
-                              }
-
-                          }
-                      } else {
-                          log.error(v.cause());
-                          routingContext.fail(500);
-                      }
-                  });
+        return fileSystem.exists(configFilePath)
+                         .compose(v -> {
+                             // 配置文件不存在,则创建
+                             if (!v) {
+                                 return fileSystem.createFile(configFilePath)
+                                                  .compose(create -> fileSystem.readFile(configFilePath));
+                             }
+                             return fileSystem.readFile(configFilePath);
+                         })
+                         .compose(buffer -> this.accountHandler(buffer, dnsAccount, configFilePath));
     }
 
-    private void storeAccountConfig(DNSAccount dnsAccountDTO, String path) {
-
+    private Future<Void> accountHandler(Buffer buffer, DNSAccount dnsAccount, String configFilePath) {
+        // 数据为空
+        if (ObjectUtil.isEmpty(buffer.getBytes())) {
+            List<DNSAccount> accountList = new ArrayList<>();
+            accountList.add(dnsAccount);
+            return this.writeFile(configFilePath, JSONUtil.toJsonString(accountList));
+        } else {
+            try {
+                List<DNSAccount> ddnsAccountList = new ArrayList<>();
+                final var list = JSONUtil.readValue(buffer.toString(), List.class);
+                if (list != null) {
+                    for (Object obj : list) {
+                        final var decodeDnsAccount = JsonObject.mapFrom(obj).mapTo(DNSAccount.class);
+                        ddnsAccountList.add(decodeDnsAccount);
+                    }
+                    ddnsAccountList.add(dnsAccount);
+                    return this.writeFile(configFilePath, JSONUtil.toJsonString(ddnsAccountList));
+                } else {
+                    // 手动修改配置文件后 可能会读取错误
+                    return Future.failedFuture(new RuntimeException("File read error configuration"));
+                }
+            } catch (Exception e) {
+                return Future.failedFuture(new RuntimeException("Server Error"));
+            }
+        }
     }
+
+    public Future<Void> writeFile(String configFilePath, String json) {
+        return vertx.fileSystem()
+                    .writeFile(configFilePath, Buffer.buffer(json));
+    }
+
+
 }

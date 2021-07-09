@@ -1,7 +1,9 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.property.CommonProperties;
+import com.zf1976.ddns.util.JSONUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
@@ -94,20 +96,17 @@ public abstract class RouterVerticle extends AbstractVerticle {
     }
 
     private void returnError(RoutingContext routingContext) {
-        JsonObject result = new JsonObject();
         int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
         // 不懂 Vert.x 为什么 EventBus 和 Web 是两套异常系统
         if (routingContext.failure() instanceof ReplyException) {
             errorCode = ((ReplyException) routingContext.failure()).failureCode();
         }
-        result.put("errorCode", errorCode);
-        if (routingContext.failure() != null) {
-            result.put("reason", routingContext.failure().getMessage());
-        }
+        final var result = DataResult.fail(errorCode, routingContext.failure()
+                                                                  .getMessage());
         setCommonHeader(routingContext.response()
                                       .setStatusCode(errorCode)
                                       .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
-                .end(result.encodePrettily());
+                .end(JSONUtil.toJsonString(result));
     }
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {
@@ -124,5 +123,18 @@ public abstract class RouterVerticle extends AbstractVerticle {
 
     protected void returnJsonWithCache(RoutingContext routingContext) {
         this.returnJsonWithCache(routingContext, new JsonObject());
+    }
+
+    protected void handleError(RoutingContext routingContext, Throwable throwable) {
+        this.handleException(routingContext, 500, throwable);
+    }
+
+    protected void handleBad(RoutingContext routingContext, Throwable throwable) {
+        this.handleException(routingContext, 400, throwable);
+    }
+
+    protected void handleException(RoutingContext routingContext, int statusCode, Throwable throwable) {
+        log.error(throwable.getMessage(), throwable.getCause());
+        routingContext.fail(statusCode, throwable);
     }
 }

@@ -202,16 +202,22 @@ public class JSONUtil {
         }
     }
 
-    public static ObjectMapper getJsonMapper(){
-        return JSON_MAPPER;
+    public static boolean isJson(String json) {
+        if (!StringUtil.isEmpty(json)) {
+            return json.endsWith("}") == json.startsWith("{");
+        }
+        return false;
     }
 
     public static <T> T readValue(String json, Class<T> tClass) {
         try {
             return JSON_MAPPER.readValue(json, tClass);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return null;
         }
+    }
+
+    public static ObjectMapper getJsonMapper(){
+        return JSON_MAPPER;
     }
 }
