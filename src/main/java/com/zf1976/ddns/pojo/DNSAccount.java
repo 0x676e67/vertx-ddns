@@ -1,6 +1,6 @@
 package com.zf1976.ddns.pojo;
 
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DDNSServiceType;
 
 /**
  * @author mac
@@ -21,7 +21,7 @@ public class DNSAccount {
     /**
      * 服务商类型
      */
-    private DNSServiceType dnsServiceType;
+    private DDNSServiceType dnsServiceType;
 
     public String getId() {
         return id;
@@ -41,11 +41,11 @@ public class DNSAccount {
         return this;
     }
 
-    public DNSServiceType getDnsServiceType() {
+    public DDNSServiceType getDnsServiceType() {
         return dnsServiceType;
     }
 
-    public DNSAccount setDnsServiceType(DNSServiceType dnsServiceType) {
+    public DNSAccount setDnsServiceType(DDNSServiceType dnsServiceType) {
         this.dnsServiceType = dnsServiceType;
         return this;
     }

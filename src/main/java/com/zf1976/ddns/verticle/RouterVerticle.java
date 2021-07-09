@@ -3,14 +3,13 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.property.CommonProperties;
-import com.zf1976.ddns.util.JSONUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
@@ -90,8 +89,10 @@ public abstract class RouterVerticle extends AbstractVerticle {
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(handler);
-        // 路径定义错误处理器
-        router.route("/api/*").failureHandler(this::returnError);
+        // 路径定义错误处理器/设置Content-Type
+        router.route("/api/*")
+              .consumes("application/json")
+              .failureHandler(this::returnError);
 
     }
 
@@ -101,28 +102,27 @@ public abstract class RouterVerticle extends AbstractVerticle {
         if (routingContext.failure() instanceof ReplyException) {
             errorCode = ((ReplyException) routingContext.failure()).failureCode();
         }
-        final var result = DataResult.fail(errorCode, routingContext.failure()
-                                                                  .getMessage());
+        final var result = DataResult.fail(errorCode, routingContext.failure().getMessage());
         setCommonHeader(routingContext.response()
                                       .setStatusCode(errorCode)
                                       .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
-                .end(JSONUtil.toJsonString(result));
+                .end(Json.encodePrettily(result));
     }
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {
         return response
-                .putHeader("Access-Control-Allow-Origin", "*")
-                .putHeader("Cache-Control", "no-cache");
+                .putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
     }
 
-    protected void returnJsonWithCache(RoutingContext routingContext, JsonObject jsonObject) {
+    protected void returnJsonWithCache(RoutingContext routingContext, Object object) {
         routingContext.response()
-                      .putHeader("content-type", "application/json; charset=utf-8")
-                      .end(jsonObject.encodePrettily());
+                      .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
+                      .end(Json.encodePrettily(DataResult.success(object)));
     }
 
     protected void returnJsonWithCache(RoutingContext routingContext) {
-        this.returnJsonWithCache(routingContext, new JsonObject());
+        this.returnJsonWithCache(routingContext, null);
     }
 
     protected void handleError(RoutingContext routingContext, Throwable throwable) {
