@@ -10,4 +10,6 @@ public interface ApiConstants {
 
     String DOMAIN = "domain";
 
+    String RECORD_ID = "recordId";
+
 }

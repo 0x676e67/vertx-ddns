@@ -217,6 +217,14 @@ public class JSONUtil {
         }
     }
 
+    public static <T> T readValue(Object json, Class<T> tClass) {
+        try {
+            return JSON_MAPPER.readValue(toJsonString(json), tClass);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
     public static ObjectMapper getJsonMapper(){
         return JSON_MAPPER;
     }

@@ -1,3 +1,4 @@
+import com.aliyuncs.alidns.model.v20150109.DeleteDomainRecordResponse;
 import com.google.gson.Gson;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.service.AliyunDDNSService;
@@ -43,5 +44,12 @@ public class DDNSTest {
         final var ddns = new AliyunDDNSService(ConfigProperty.getAliyunDnsProperties());
         final var describeDomainRecords = ddns.findDescribeDomainRecords("innas.cn");
         logPrint("demo", describeDomainRecords.getDomainRecords());
+    }
+
+    @Test
+    public void aliyunDeleteTest() {
+        final var aliyunDDNSService = new AliyunDDNSService(ConfigProperty.getAliyunDnsProperties());
+        final var deleteDomainRecordResponse = aliyunDDNSService.deleteDomainRecordResponse("706593109020680192");
+        logPrint("demo", deleteDomainRecordResponse);
     }
 }

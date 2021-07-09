@@ -113,50 +113,34 @@
                       </div>
                   </form>
               </div>
+                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto">保存Account</button>
             </div>
           </div>
             <div class="card-body">
                 <div class="input-group mb-1" style="margin-top: 5px">
                     <span class="input-group-text" id="basic-addon8">domain</span>
-                    <input aria-describedby="basic-addon8" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
+                    <input aria-describedby="basic-addon8" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要绑定的域名" type="text">
                     <div class="input-group-append">
-                        <button class="btn btn-primary submit_btn"  onclick="clearInput()">清空</button>
+                        <button class="btn btn-primary submit_btn"  onclick="clearInput()">绑定主域名</button>
                     </div>
                 </div>
-                <table class="table table-bordered">
-                    <caption>边框表格布局</caption>
+                <hr  width="100%" color=#987cb9 size="3">
+                <table class="table table-bordered" style="overflow: hidden">
+                    <caption>DDNS域名指向记录表</caption>
                     <thead>
                     <tr>
+                        <th>记录ID</th>
                         <th>域名</th>
                         <th>记录</th>
                         <th>指向IP</th>
-                        <th>描述</th>
+                        <th>操作</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                        <td>Tanmay</td>
-                        <td>Bangalore</td>
-                        <td>560001</td>
-                        <td>560001</td>
-                    </tr>
-                    <tr>
-                        <td>Sachin</td>
-                        <td>Mumbai</td>
-                        <td>400003</td>
-                        <td>560001</td>
-                    </tr>
-                    <tr>
-                        <td>Uma</td>
-                        <td>Pune</td>
-                        <td>411027</td>
-                        <td>560001</td>
-                    </tr>
-                    </tbody>
+                    <tbody id="tbMain"></tbody>
                 </table>
             </div>
           <div class="card-footer">
-              <button class="btn btn-primary submit_btn" style="margin-bottom: 15px;">保存编辑</button>
+
           </div>
         </div>
       </div>
@@ -165,6 +149,29 @@
 
 
 <script>
+
+
+    const axiosInstance = axios.create();
+    axiosInstance.defaults.headers.post['Content-Type'] = 'application/json';
+    // 添加请求拦截器
+    axiosInstance.interceptors.request.use(function (config) {
+        // 在发送请求之前做些什么
+        return config;
+    }, function (error) {
+        // 对请求错误做些什么
+        return Promise.reject(error);
+    });
+
+    // 添加响应拦截器
+    axiosInstance.interceptors.response.use(function (response) {
+        // 对响应数据做点什么
+        return response;
+    }, function (error) {
+        // 对响应错误做点什么
+        confirm.show(error.response.data.errMsg)
+        return Promise.reject(error);
+    });
+
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
     const cloudflareType = "CLOUDFLARE"
@@ -172,6 +179,96 @@
 
     // 默认类型
     let selectDDNSType = aliyunType
+
+    function findRecords(e) {
+        let evt = window.event || e;
+        if (evt.keyCode == 13) {
+            //回车事件
+            let inputDomain = document.getElementById("inputDomain");
+            let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
+            findDDNSRecordsRequest(param)
+        }
+    }
+    function clearInput(){
+        $("#inputDomain").val("");
+    }
+
+    function storeAccountConfig() {
+
+    }
+
+    function bindDomain() {
+
+    }
+
+    window.onload = function(){
+        // let param = "ddnsServiceType=" + selectDDNSType
+        // findDDNSRecordsRequest(param)
+    }
+
+    function findDDNSRecordsRequest(param) {
+        if (param !== undefined && param !== "") {
+            axiosInstance.post('/api/ddnsRecord?' + param)
+                .then(function (response) {
+                    setTable(response.data.data)
+                })
+        }
+    }
+
+    function setTable(data) {
+        $("#tbMain").empty()
+        const tbody = document.getElementById('tbMain');
+        for(let i = 0; i < data.length; i++){ //遍历一下json数据
+            const trow = getDataRow(data[i]) //定义一个方法,返回tr数据
+            tbody.appendChild(trow);
+        }
+    }
+
+    function getDataRow(h){
+        const row = document.createElement('tr') //创建行
+
+        //创建第零列记录ID
+        let recordIdCell = document.createElement('td')
+        recordIdCell.innerHTML = h.recordId
+        row.appendChild(recordIdCell)
+
+        //创建第一列域名
+        const domainNameCell = document.createElement('td')
+        domainNameCell.innerHTML = h.domainName
+        row.appendChild(domainNameCell)
+
+        //创建第二列记录
+        let rrCell = document.createElement('td')
+        rrCell.innerHTML = h.rr
+        row.appendChild(rrCell)
+
+        //创建第三列指向IP
+        let ipCell = document.createElement('td')
+        ipCell.innerHTML = h.value
+        row.appendChild(ipCell)
+
+        //到这里，json中的数据已经添加到表格中，下面为每行末尾添加删除按钮
+        const delCell = document.createElement('td')//创建第四列，操作列
+        row.appendChild(delCell)
+        const btnDel = document.createElement('input')
+        btnDel.setAttribute('type','button')
+        btnDel.setAttribute('value','删除')
+        btnDel.setAttribute('class','btn btn-outline-danger')
+
+        //删除操作
+        btnDel.onclick = function(){
+            let tr = this.parentNode.parentNode;
+            let recordId = tr.childNodes[0].innerHTML
+            axiosInstance.delete("/api/ddnsRecord?recordId=" + recordId)
+                        .then(res => {
+
+                        })
+        }
+        //把删除按钮加入td，别忘了
+        delCell.appendChild(btnDel);
+        //返回tr数据
+        return row;
+    }
 
     function setAliyunType() {
         selectDDNSType = aliyunType;
@@ -188,26 +285,38 @@
     function setHuaweiType() {
         selectDDNSType = huaweiType
     }
-    function findRecords(e) {
-        let evt = window.event || e;
-        if (evt.keyCode == 13) {
-            //回车事件
-            let inputDomain = document.getElementById("inputDomain");
-            let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
-            axios.post('/api/ddnsRecords?' + param)
-                .then(function (response) {
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+    /**
+     * 确认框
+     */
+    const confirm = {
+        /**
+         * 显示提示框
+         * @param message
+         */
+        show: function (message) {
+            const html = '<form class="modal fade" id="confirmModal" tabindex="-1"' +
+                'role="dialog" aria-hidden="true" data-backdrop="static">' +
+                '<div class="modal-dialog modal-sm">' +
+                '<div class="modal-content">' +
+                '<div class="modal-body">' + message + '</div>' +
+                '<div class="modal-footer" align="center">' +
+                '<button type="button" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">我知道了</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</form>';
+            $(document.body).append(html);
+            $('#confirmModal').modal('show').on('hide.bs.modal', function () {
+                $(this).remove();
+            })
+        },
+        /**
+         * 移除确认框
+         */
+        remove: function () {
+            $('#confirmModal').modal('hide');
         }
-    }
-    function clearInput(){
-        $("#inputDomain").val("");
-    }
-
+    };
 </script>
-
 </body>
 </html>

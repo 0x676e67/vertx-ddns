@@ -27,6 +27,7 @@ public class AliyunDDNSService {
     private DescribeDomainRecordsRequest describeDomainRecordsRequest = new DescribeDomainRecordsRequest();
     private UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
     private AddDomainRecordRequest addDomainRecordRequest = new AddDomainRecordRequest();
+    private DeleteDomainRecordRequest deleteDomainRecordRequest = new DeleteDomainRecordRequest();
     private static final String RECORD_TYPE = "A";
 
     public AliyunDDNSService(AliyunDnsProperties properties) {
@@ -54,7 +55,9 @@ public class AliyunDDNSService {
      * 获取域名的所有解析记录列表
      */
     public DescribeDomainRecordsResponse findDescribeDomainRecords(){
-        this.describeDomainRecordsRequest.setType(RECORD_TYPE);
+        if (ObjectUtil.isEmpty(this.describeDomainRecordsRequest)) {
+            throw new RuntimeException("describeDomainRecordsRequest cannot been null");
+        }
         return this.getAcsResponse(this.describeDomainRecordsRequest);
     }
 
@@ -68,10 +71,7 @@ public class AliyunDDNSService {
         if (ObjectUtil.isEmpty(this.describeDomainRecordsRequest)) {
             throw new RuntimeException("describeDomainRecordsRequest cannot been null");
         }
-        final var domainRecord = HttpUtil.extractDomain(domain);
-        if (ObjectUtil.isEmpty(domainRecord)) {
-            return this.findDescribeDomainRecords();
-        }
+        final var domainRecord = validateDomainRecord(domain);
         this.describeDomainRecordsRequest.setDomainName(domainRecord[0]);
         this.describeDomainRecordsRequest.setRRKeyWord(domainRecord[1]);
         this.describeDomainRecordsRequest.setType(RECORD_TYPE);
@@ -82,6 +82,9 @@ public class AliyunDDNSService {
      * 修改解析记录
      */
     public UpdateDomainRecordResponse updateDomainRecord(){
+        if (ObjectUtil.isEmpty(this.updateDomainRecordRequest)) {
+            throw new RuntimeException("updateDomainRecordRequest cannot been null");
+        }
         return this.getAcsResponse(this.updateDomainRecordRequest);
     }
 
@@ -109,6 +112,9 @@ public class AliyunDDNSService {
      * 新增解析记录
      */
     public AddDomainRecordResponse addDomainRecord() {
+        if (ObjectUtil.isEmpty(this.addDomainRecordRequest)) {
+            throw new RuntimeException("addDomainRecordRequest cannot been null");
+        }
         return this.getAcsResponse(this.addDomainRecordRequest);
     }
 
@@ -124,10 +130,7 @@ public class AliyunDDNSService {
             throw new RuntimeException("addDomainRecordRequest cannot been null");
         }
         this.checkIp(ip);
-        final var domainRecord = HttpUtil.extractDomain(domain);
-        if (ObjectUtil.isEmpty(domainRecord)) {
-            throw new RuntimeException("Domain name cannot be empty");
-        }
+        final var domainRecord = validateDomainRecord(domain);
         this.addDomainRecordRequest.setDomainName(domainRecord[0]);
         this.addDomainRecordRequest.setRR(domainRecord[1]);
         this.addDomainRecordRequest.setValue(ip);
@@ -135,7 +138,12 @@ public class AliyunDDNSService {
         return this.getAcsResponse(addDomainRecordRequest);
     }
 
-    public <T extends AcsResponse> T getAcsResponse(AcsRequest<T> request) {
+    public DeleteDomainRecordResponse deleteDomainRecordResponse(String recordId) {
+        this.deleteDomainRecordRequest.setRecordId(recordId);
+        return this.getAcsResponse(this.deleteDomainRecordRequest);
+    }
+
+    private  <T extends AcsResponse> T getAcsResponse(AcsRequest<T> request) {
         try {
             // 调用SDK发送请求
             return this.iAcsClient.getAcsResponse(request);
@@ -151,6 +159,14 @@ public class AliyunDDNSService {
         }
     }
 
+    private String[] validateDomainRecord(String domain) {
+        final var domainRecord = HttpUtil.extractDomain(domain);
+        if (ObjectUtil.isEmpty(domainRecord)) {
+            throw new RuntimeException("Domain name cannot be empty");
+        }
+        return domainRecord;
+    }
+
     public void setDescribeDomainRecordsRequest(DescribeDomainRecordsRequest describeDomainRecordsRequest) {
         this.describeDomainRecordsRequest = describeDomainRecordsRequest;
     }
@@ -161,6 +177,15 @@ public class AliyunDDNSService {
 
     public AliyunDDNSService setAddDomainRecordRequest(AddDomainRecordRequest addDomainRecordRequest) {
         this.addDomainRecordRequest = addDomainRecordRequest;
+        return this;
+    }
+
+    public DeleteDomainRecordRequest getDeleteDomainRecordRequest() {
+        return deleteDomainRecordRequest;
+    }
+
+    public AliyunDDNSService setDeleteDomainRecordRequest(DeleteDomainRecordRequest deleteDomainRecordRequest) {
+        this.deleteDomainRecordRequest = deleteDomainRecordRequest;
         return this;
     }
 

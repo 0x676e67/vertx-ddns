@@ -1,7 +1,8 @@
 package com.zf1976.ddns.verticle;
 
+import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
 import com.zf1976.ddns.config.ConfigProperty;
-import com.zf1976.ddns.pojo.DNSAccount;
+import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.service.AliyunDDNSService;
 import com.zf1976.ddns.util.JSONUtil;
 import com.zf1976.ddns.util.ObjectUtil;
@@ -10,7 +11,6 @@ import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
@@ -34,19 +34,15 @@ public class ApiVerticle extends RouterVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
         final var router = getRouter();
-        final var httpServer = vertx.createHttpServer()
-                                    .exceptionHandler(Throwable::printStackTrace);
+        final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
         // 存储DNS服务商密钥
-        router.post("/api/storeAccount")
-              .handler(this::storeDDNSAccountHandle);
-
+        router.post("/api/storeConfig").handler(this::storeDDNSConfigHandle);
         // 查询DNS服务商域名解析记录
-        router.post("/api/ddnsRecords")
-              .handler(this::findDDNSRecordsHandler);
-
+        router.post("/api/ddnsRecord").handler(this::findDDNSRecordsHandler);
+        // 删除解析记录
+        router.delete("/api/ddnsRecord").handler(this::deleteDDNSRecordHandler);
         // 异常处理
-        router.route("/api/*")
-              .failureHandler(this::returnError);
+        router.route("/api/*").failureHandler(this::returnError);
         httpServer.requestHandler(router)
                   .listen(configProperty.getServerPort())
                   .onSuccess(event -> {
@@ -54,7 +50,6 @@ public class ApiVerticle extends RouterVerticle {
                      startPromise.complete();
                   })
                   .onFailure(startPromise::fail);
-
     }
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
@@ -68,9 +63,13 @@ public class ApiVerticle extends RouterVerticle {
             final var domain = request.getParam(ApiConstants.DOMAIN);
             switch (type) {
                 case ALIYUN:
-                    final var domainRecords = this.aliyunDDNSService.findDescribeDomainRecords(domain)
-                                                                    .getDomainRecords();
-                    super.returnJsonWithCache(routingContext, domainRecords);
+                    DescribeDomainRecordsResponse describeDomainRecordsResponse;
+                    if (domain != null) {
+                        describeDomainRecordsResponse = this.aliyunDDNSService.findDescribeDomainRecords(domain);
+                    } else {
+                        describeDomainRecordsResponse = this.aliyunDDNSService.findDescribeDomainRecords();
+                    }
+                    super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
                     break;
                 case CLOUDFLARE:
                 case HUAWEI:
@@ -84,10 +83,20 @@ public class ApiVerticle extends RouterVerticle {
         }
     }
 
-    protected void storeDDNSAccountHandle(RoutingContext routingContext) {
+    protected void deleteDDNSRecordHandler(RoutingContext routingContext) {
+        try {
+            final var recordId = routingContext.request().getParam(ApiConstants.RECORD_ID);
+            this.aliyunDDNSService.deleteDomainRecordResponse(recordId);
+            this.returnJsonWithCache(routingContext);
+        } catch (Exception e) {
+            this.handleBad(routingContext, e);
+        }
+    }
+
+    protected void storeDDNSConfigHandle(RoutingContext routingContext) {
         try {
             final var dnsAccountDTO = routingContext.getBodyAsJson()
-                                                    .mapTo(DNSAccount.class);
+                                                    .mapTo(DDNSConfig.class);
             switch (dnsAccountDTO.getDnsServiceType()) {
                 case ALIYUN:
                 case HUAWEI:
@@ -106,7 +115,7 @@ public class ApiVerticle extends RouterVerticle {
                                      () -> new RuntimeException("The Secret cannot be empty"));
                 default:
             }
-            this.storeDDNSAccount(dnsAccountDTO)
+            this.storeDDNSConfig(dnsAccountDTO)
                 .onSuccess(success -> this.returnJsonWithCache(routingContext))
                 .onFailure(err -> this.handleError(routingContext, err));
         } catch (RuntimeException exception) {
@@ -116,9 +125,9 @@ public class ApiVerticle extends RouterVerticle {
         }
     }
 
-    private Future<Void> storeDDNSAccount(DNSAccount dnsAccount) {
+    private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
         final var fileSystem = vertx.fileSystem();
-        final String configFilePath = workDir + "/account.json";
+        final String configFilePath = workDir + "/ddns_config.json";
         return fileSystem.exists(configFilePath)
                          .compose(v -> {
                              // 配置文件不存在,则创建
@@ -128,26 +137,26 @@ public class ApiVerticle extends RouterVerticle {
                              }
                              return fileSystem.readFile(configFilePath);
                          })
-                         .compose(buffer -> this.accountWriteHandle(buffer, dnsAccount, configFilePath));
+                         .compose(buffer -> this.ddnsConfigWriteHandle(buffer, ddnsConfig, configFilePath));
     }
 
-    private Future<Void> accountWriteHandle(Buffer buffer, DNSAccount dnsAccount, String configFilePath) {
+    private Future<Void> ddnsConfigWriteHandle(Buffer buffer, DDNSConfig ddnsConfig, String configFilePath) {
         // 数据为空
         if (ObjectUtil.isEmpty(buffer.getBytes())) {
-            List<DNSAccount> accountList = new ArrayList<>();
-            accountList.add(dnsAccount);
-            return this.writeAccount(configFilePath, JSONUtil.toJsonString(accountList));
+            List<DDNSConfig> accountList = new ArrayList<>();
+            accountList.add(ddnsConfig);
+            return this.writeConfig(configFilePath, JSONUtil.toJsonString(accountList));
         } else {
             try {
-                List<DNSAccount> ddnsAccountList = new ArrayList<>();
+                List<DDNSConfig> configArrayList = new ArrayList<>();
                 final var list = JSONUtil.readValue(buffer.toString(), List.class);
                 if (list != null) {
                     for (Object obj : list) {
-                        final var decodeDnsAccount = JsonObject.mapFrom(obj).mapTo(DNSAccount.class);
-                        ddnsAccountList.add(decodeDnsAccount);
+                        final var decodeDnsConfig = JSONUtil.readValue(obj, DDNSConfig.class);
+                        configArrayList.add(decodeDnsConfig);
                     }
-                    ddnsAccountList.add(dnsAccount);
-                    return this.writeAccount(configFilePath, JSONUtil.toJsonString(ddnsAccountList));
+                    configArrayList.add(ddnsConfig);
+                    return this.writeConfig(configFilePath, JSONUtil.toJsonString(configArrayList));
                 } else {
                     // 手动修改配置文件后 可能会读取错误
                     return Future.failedFuture(new RuntimeException("File read error configuration"));
@@ -158,7 +167,7 @@ public class ApiVerticle extends RouterVerticle {
         }
     }
 
-    private Future<Void> writeAccount(String configFilePath, String json) {
+    private Future<Void> writeConfig(String configFilePath, String json) {
         return vertx.fileSystem()
                     .writeFile(configFilePath, Buffer.buffer(json));
     }
