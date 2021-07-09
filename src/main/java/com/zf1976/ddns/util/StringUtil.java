@@ -1,9 +1,5 @@
 package com.zf1976.ddns.util;
 
-/**
- * @author mac
- * @date 2021/7/7
- */
 
 import com.zf1976.ddns.annotation.Nullable;
 
@@ -11,6 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.*;
 
+/**
+ * @author mac
+ * @date 2021/7/7
+ */
+@SuppressWarnings("unused")
 public abstract class StringUtil {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String FOLDER_SEPARATOR = "/";
@@ -381,7 +382,7 @@ public abstract class StringUtil {
                 }
 
                 String[] pathArray = delimitedListToStringArray(pathToUse, "/");
-                LinkedList<String> pathElements = new LinkedList();
+                LinkedList<String> pathElements = new LinkedList<>();
                 int tops = 0;
 
                 int i;
@@ -568,12 +569,10 @@ public abstract class StringUtil {
         } else if (ObjectUtil.isEmpty(array2)) {
             return array1;
         } else {
-            List<String> result = new ArrayList(Arrays.asList(array1));
-            String[] var3 = array2;
+            List<String> result = new ArrayList<>(Arrays.asList(array1));
             int var4 = array2.length;
 
-            for(int var5 = 0; var5 < var4; ++var5) {
-                String str = var3[var5];
+            for (String str : array2) {
                 if (!result.contains(str)) {
                     result.add(str);
                 }
@@ -584,12 +583,10 @@ public abstract class StringUtil {
     }
 
     public static String[] sortStringArray(String[] array) {
-        if (ObjectUtil.isEmpty(array)) {
-            return array;
-        } else {
+        if (!ObjectUtil.isEmpty(array)) {
             Arrays.sort(array);
-            return array;
         }
+        return array;
     }
 
     public static String[] trimArrayElements(String[] array) {
@@ -611,7 +608,7 @@ public abstract class StringUtil {
         if (ObjectUtil.isEmpty(array)) {
             return array;
         } else {
-            Set<String> set = new LinkedHashSet(Arrays.asList(array));
+            Set<String> set = new LinkedHashSet<>(Arrays.asList(array));
             return toStringArray(set);
         }
     }
@@ -700,7 +697,7 @@ public abstract class StringUtil {
         } else if (delimiter == null) {
             return new String[]{str};
         } else {
-            List<String> result = new ArrayList();
+            List<String> result = new ArrayList<>();
             int pos;
             if (delimiter.isEmpty()) {
                 for(pos = 0; pos < str.length(); ++pos) {
@@ -725,10 +722,9 @@ public abstract class StringUtil {
         return delimitedListToStringArray(str, ",");
     }
 
-    @SuppressWarnings("unchecked")
     public static Set<String> commaDelimitedListToSet(@Nullable String str) {
         String[] tokens = commaDelimitedListToStringArray(str);
-        return new LinkedHashSet(Arrays.asList(tokens));
+        return new LinkedHashSet<>(Arrays.asList(tokens));
     }
 
     public static String collectionToDelimitedString(@Nullable Collection<?> coll, String delim, String prefix, String suffix) {
@@ -736,7 +732,7 @@ public abstract class StringUtil {
             return "";
         } else {
             StringBuilder sb = new StringBuilder();
-            Iterator it = coll.iterator();
+            @SuppressWarnings("rawtypes") Iterator it = coll.iterator();
 
             while(it.hasNext()) {
                 sb.append(prefix).append(it.next()).append(suffix);
