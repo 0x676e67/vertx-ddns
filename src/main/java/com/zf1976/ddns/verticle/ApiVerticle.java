@@ -66,6 +66,7 @@ public class ApiVerticle extends RouterVerticle {
                 final var domainRecords = this.aliyunDDNSService.findDescribeDomainRecords(domain)
                                                                 .getDomainRecords();
                 super.returnJsonWithCache(routingContext, domainRecords);
+                break;
             case CLOUDFLARE:
             case HUAWEI:
             case DNSPOD:

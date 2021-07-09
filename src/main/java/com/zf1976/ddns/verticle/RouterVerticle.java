@@ -14,6 +14,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 import org.apache.logging.log4j.LogManager;
@@ -89,6 +90,8 @@ public abstract class RouterVerticle extends AbstractVerticle {
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(handler);
+        // 静态资源处理
+        router.route().handler(StaticHandler.create());
         // 路径定义错误处理器/设置Content-Type
         router.route("/api/*")
               .consumes("application/json")

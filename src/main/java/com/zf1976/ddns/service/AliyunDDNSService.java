@@ -38,12 +38,23 @@ public class AliyunDDNSService {
                 this.properties.getSecret()
         );
         this.iAcsClient = new DefaultAcsClient(profile);
+        this.initRequestRecordType();
+    }
+
+    /**
+     * 初始化请求域名解析类型
+     */
+    private void initRequestRecordType() {
+        this.describeDomainRecordsRequest.setType(RECORD_TYPE);
+        this.updateDomainRecordRequest.setType(RECORD_TYPE);
+        this.addDomainRecordRequest.setType(RECORD_TYPE);
     }
 
     /**
      * 获取域名的所有解析记录列表
      */
     public DescribeDomainRecordsResponse findDescribeDomainRecords(){
+        this.describeDomainRecordsRequest.setType(RECORD_TYPE);
         return this.getAcsResponse(this.describeDomainRecordsRequest);
     }
 
@@ -57,7 +68,10 @@ public class AliyunDDNSService {
         if (ObjectUtil.isEmpty(this.describeDomainRecordsRequest)) {
             throw new RuntimeException("describeDomainRecordsRequest cannot been null");
         }
-        final var domainRecord = this.getDomainRecord(domain);
+        final var domainRecord = HttpUtil.extractDomain(domain);
+        if (ObjectUtil.isEmpty(domainRecord)) {
+            return this.findDescribeDomainRecords();
+        }
         this.describeDomainRecordsRequest.setDomainName(domainRecord[0]);
         this.describeDomainRecordsRequest.setRRKeyWord(domainRecord[1]);
         this.describeDomainRecordsRequest.setType(RECORD_TYPE);
@@ -110,7 +124,10 @@ public class AliyunDDNSService {
             throw new RuntimeException("addDomainRecordRequest cannot been null");
         }
         this.checkIp(ip);
-        final var domainRecord = this.getDomainRecord(domain);
+        final var domainRecord = HttpUtil.extractDomain(domain);
+        if (ObjectUtil.isEmpty(domainRecord)) {
+            throw new RuntimeException("Domain name cannot be empty");
+        }
         this.addDomainRecordRequest.setDomainName(domainRecord[0]);
         this.addDomainRecordRequest.setRR(domainRecord[1]);
         this.addDomainRecordRequest.setValue(ip);
@@ -127,14 +144,6 @@ public class AliyunDDNSService {
             // 发生调用错误，抛出运行时异常
             throw new RuntimeException(e);
         }
-    }
-
-    private String[] getDomainRecord(String domain) {
-        final var extractDomain = HttpUtil.extractDomain(domain);
-        if (ObjectUtil.isEmpty(extractDomain)) {
-            throw new RuntimeException("Please fill in the correct domain name");
-        }
-        return extractDomain;
     }
 
     private void checkIp(String ip) {
