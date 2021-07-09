@@ -1,16 +1,15 @@
 package com.zf1976.ddns.util;
 
-/**
- * @author mac
- * @date 2021/7/7
- */
 
 import com.zf1976.ddns.annotation.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
-
-@SuppressWarnings({"unchecked", "unused"})
+/**
+ * @author mac
+ * @date 2021/7/7
+ */
+@SuppressWarnings({"unchecked", "unused", "SimplifyOptionalCallChains"})
 public abstract class ObjectUtil {
     private static final int INITIAL_HASH = 7;
     private static final int MULTIPLIER = 31;
@@ -113,7 +112,6 @@ public abstract class ObjectUtil {
     }
 
     public static boolean containsConstant(Enum<?>[] enumValues, String constant, boolean caseSensitive) {
-        Enum[] var3 = enumValues;
         int var4 = enumValues.length;
         int var5 = 0;
 
@@ -122,7 +120,7 @@ public abstract class ObjectUtil {
                 return false;
             }
 
-            Enum<?> candidate = var3[var5];
+            Enum<?> candidate = ((Enum[]) enumValues)[var5];
             if (caseSensitive) {
                 if (candidate.toString().equals(constant)) {
                     break;
@@ -138,11 +136,10 @@ public abstract class ObjectUtil {
     }
 
     public static <E extends Enum<?>> E caseInsensitiveValueOf(E[] enumValues, String constant) {
-        Enum[] var2 = enumValues;
         int var3 = enumValues.length;
 
         for(int var4 = 0; var4 < var3; ++var4) {
-            E candidate = (E) var2[var4];
+            E candidate = (E) ((Enum[]) enumValues)[var4];
             if (candidate.toString().equalsIgnoreCase(constant)) {
                 return candidate;
             }
