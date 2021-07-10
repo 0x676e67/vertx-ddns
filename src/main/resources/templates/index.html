@@ -139,7 +139,7 @@
                                     <legend class="col-form-label col-sm-2 pt-0">启用</legend>
                                     <div class="col-sm-10">
                                         <div class="form-check form-check-inline">
-                                            <label for="ipv4Enable"></label><input class="form-check-input" type="checkbox" id="ipv4Enable">
+                                            <label for="ipv4Enable"></label><input class="form-check-input" type="checkbox" id="ipv4Enable" >
                                         </div>
                                     </div>
                                 </fieldset>
@@ -261,7 +261,7 @@
                 </table>
             </div>
             <div class="card-footer">
-                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeAccountConfig()">保存配置</button>
+                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeDDNSConfig()">保存配置</button>
             </div>
           </div>
         </div>
@@ -307,6 +307,33 @@
     function getDDNSConfig() {
 
     }
+
+    function storeDDNSConfig() {
+        let ipv4Config = {
+            "enable": document.getElementById("ipv4Enable").checked,
+            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked,
+            "selectIpApi" : document.getElementById("ipv4ApiInput"),
+            "domainList" : document.getElementById("ipv4_domains").value.split('\n')
+        }
+
+        let ipv4Config = {
+            "enable": document.getElementById("ipv6Enable").checked,
+            "selectIpMethod": document.getElementsByName("ipv6Radios")[1].checked,
+            "selectIpApi" : document.getElementById("ipv6ApiInput"),
+            "domainList" : document.getElementById("ipv6_domains").value.split('\n')
+        }
+
+        let data = {
+            "id": document.getElementById("aliyunAccount").value,
+            "secret": document.getElementById("aliyunSecret").value,
+            "dnsServiceType" : selectDDNSType
+        }
+        axiosInstance.post("/api/storeConfig", data)
+            .then(res => {
+                confirm.show("保存成功")
+            })
+    }
+
     function findRecords(e) {
         let evt = window.event || e;
         if (evt.keyCode === 13) {
@@ -343,18 +370,6 @@
     function selectIp6Tow() {
         document.getElementById("ipv6_netInterface_select").hidden = false
         document.getElementById("ipv6ApiInput").hidden = true
-    }
-
-    function storeAccountConfig() {
-        let data = {
-            "id": document.getElementById("aliyunAccount").value,
-            "secret": document.getElementById("aliyunSecret").value,
-            "dnsServiceType" : selectDDNSType
-        }
-        axiosInstance.post("/api/storeConfig", data)
-                    .then(res => {
-                        confirm.show("保存成功")
-                    })
     }
 
     function bindDomain() {

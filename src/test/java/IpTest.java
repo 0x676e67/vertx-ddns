@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.Test;
 
+import java.net.SocketException;
+
 /**
  * @author mac
  * @date 2021/7/6
@@ -7,7 +9,8 @@ import org.junit.jupiter.api.Test;
 public class IpTest {
 
     @Test
-    public void ipApiTest() {
+    public void ipApiTest() throws SocketException {
 
     }
+
 }
