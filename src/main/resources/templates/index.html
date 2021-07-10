@@ -147,26 +147,26 @@
                                     <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
                                     <div class="col-sm-10" >
                                         <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIp4One()" type="radio" name="ipv4Radios" id="ipv4Radios1" value="true" checked>
+                                            <input class="form-check-input" onclick="selectIpv4ForApi()" type="radio" name="ipv4Radios" id="ipv4Radios1" value="true" checked>
                                             <label class="form-check-label" for="ipv4Radios1">
                                                 通过接口获取
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIp4Tow()" type="radio" name="ipv4Radios" id="ipv4Radios2" value="false">
+                                            <input class="form-check-input" onclick="selectIpv4vForNetwork()" type="radio" name="ipv4Radios" id="ipv4Radios2" value="false">
                                             <label class="form-check-label" for="ipv4Radios2">
                                                 通过网卡获取
                                             </label>
                                         </div>
-                                        <div class="input-group mb-3" id="ipv4ApiInput">
-                                            <input type="text" class="form-control" placeholder="ipv4 接口">
+                                        <div class="input-group mb-3" id="ipv4ApiInputDiv">
+                                            <input id="ipv4ApiInput" type="text" class="form-control" placeholder="ipv4 接口">
                                             <small
                                                     class="form-text text-muted"
                                                     th:text="${'填写的URL需返回公网IPv4地址,如：' + common.ipApiList[0] + '，' + common.ipApiList[1] + '，' + common.ipApiList[2] + '，' + common.ipApiList[3]}">
                                             </small>
                                         </div>
-                                        <div id="ipv4_netInterface_select">
-                                            <select class="form-control" name="Ipv4NetInterface"></select>
+                                        <div class="form-select mb-3" id="ipv4_netInterface_select">
+                                            <select id="selectIpv4Value" class="form-control" name="Ipv4NetInterface"></select>
                                             <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
                                         </div>
                                     </div>
@@ -198,26 +198,26 @@
                                     <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
                                     <div class="col-sm-10" >
                                         <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIp6One()" type="radio" name="ipv6Radios" id="ipv6Radios1" value="true" checked>
+                                            <input class="form-check-input" onclick="selectIpv6ForApi()" type="radio" name="ipv6Radios" id="ipv6Radios1" value="true" checked>
                                             <label class="form-check-label" for="ipv6Radios1">
                                                 通过接口获取
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIp6Tow()" type="radio" name="ipv6Radios" id="ipv6Radios2" value="false">
+                                            <input class="form-check-input" onclick="selectIpv6ForNetwork()" type="radio" name="ipv6Radios" id="ipv6Radios2" value="false">
                                             <label class="form-check-label" for="ipv6Radios2">
                                                 通过网卡获取
                                             </label>
                                         </div>
-                                        <div class="input-group mb-3" id="ipv6ApiInput">
-                                            <input type="text" class="form-control" placeholder="ipv6 接口">
+                                        <div class="input-group mb-3" id="ipv6ApiInputDiv">
+                                            <input id="ipv6ApiInput" type="text" class="form-control" placeholder="ipv6 接口">
                                             <small
                                                     class="form-text text-muted"
                                                     th:text="${'填写的URL需返回公网IPv6地址,如：' + common.ipApiList[4] + '，' + common.ipApiList[5] + '，' + common.ipApiList[6]}">
                                             </small>
                                         </div>
-                                        <div id="ipv6_netInterface_select">
-                                            <select class="form-control" name="Ipv6NetInterface"></select>
+                                        <div class="form-select mb-3" id="ipv6_netInterface_select">
+                                            <select id="selectIpv6Value" class="form-control" name="Ipv6NetInterface"></select>
                                             <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
                                         </div>
                                     </div>
@@ -270,10 +270,10 @@
 </main>
 
 
-<script>
+<script th:inline="javascript">
 
-    selectIp4One()
-    selectIp6One()
+    selectIpv4ForApi()
+    selectIpv6ForApi()
 
     const axiosInstance = axios.create();
     axiosInstance.defaults.headers.post['Content-Type'] = 'application/json';
@@ -309,29 +309,55 @@
     }
 
     function storeDDNSConfig() {
-        let ipv4Config = {
-            "enable": document.getElementById("ipv4Enable").checked,
-            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked,
-            "selectIpApi" : document.getElementById("ipv4ApiInput"),
-            "domainList" : document.getElementById("ipv4_domains").value.split('\n')
+        let ipv4Address
+        let ipv6Address
+        let ipv4Condition = false
+        let ipv6Condition = false
+        // 从Api获取Ipv4
+        if (document.getElementsByName("ipv4Radios")[0].checked) {
+            ipv4Address = document.getElementById("ipv4ApiInput").value
+        } else {
+            ipv4Condition = true
+            ipv4Address = document.getElementById("selectIpv4Value").value
+        }
+
+        // 从Api获取Ipv4
+        if (document.getElementsByName("ipv6Radios")[0].checked) {
+            ipv6Address = document.getElementById("ipv6ApiInput").value
+        } else {
+            ipv6Condition = true
+            ipv6Address = document.getElementById("selectIpv6Value").value
         }
 
         let ipv4Config = {
+            "enable": document.getElementById("ipv4Enable").checked,
+            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked,
+            "selectIpApi" : document.getElementById("ipv4ApiInput").value,
+            "networkIp": ipv4Condition ? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
+            "domainList" : document.getElementById("ipv4_domains").value.split('\n')
+        }
+
+        let ipv6Config = {
             "enable": document.getElementById("ipv6Enable").checked,
             "selectIpMethod": document.getElementsByName("ipv6Radios")[1].checked,
-            "selectIpApi" : document.getElementById("ipv6ApiInput"),
-            "domainList" : document.getElementById("ipv6_domains").value.split('\n')
+            "selectIpApi": document.getElementById("ipv6ApiInput").value,
+            "networkIp": ipv6Condition? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
+            "domainList": document.getElementById("ipv6_domains").value.split('\n')
         }
 
         let data = {
             "id": document.getElementById("aliyunAccount").value,
             "secret": document.getElementById("aliyunSecret").value,
-            "dnsServiceType" : selectDDNSType
+            "dnsServiceType" : selectDDNSType,
+            "ipv4Config": ipv4Config,
+            "ipv6Config": ipv6Config
         }
-        axiosInstance.post("/api/storeConfig", data)
-            .then(res => {
-                confirm.show("保存成功")
-            })
+        console.log(data)
+
+        // axiosInstance.post("/api/storeConfig", data)
+        //     .then(res => {
+        //         confirm.show("保存成功")
+        //     })
     }
 
     function findRecords(e) {
@@ -352,33 +378,42 @@
         $("#tbMain").empty()
     }
 
-    function selectIp4One() {
+    function selectIpv4ForApi() {
         document.getElementById("ipv4_netInterface_select").hidden = true
-        document.getElementById("ipv4ApiInput").hidden = false
+        document.getElementById("ipv4ApiInputDiv").hidden = false
     }
 
-    function selectIp4Tow() {
+    function selectIpv4vForNetwork() {
         document.getElementById("ipv4_netInterface_select").hidden = false
-        document.getElementById("ipv4ApiInput").hidden = true
+        document.getElementById("ipv4ApiInputDiv").hidden = true
+        var selectIpv4List = document.getElementById("selectIpv4Value");
+        let networkIpv4List = [[${ipv4}]]
+        if (networkIpv4List.length !== 0) {
+            for (let i = 0; i < networkIpv4List.length; i++) {
+                $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+            }
+        } else {
+            $("#ipv4_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+        }
     }
 
-    function selectIp6One() {
+    function selectIpv6ForApi() {
         document.getElementById("ipv6_netInterface_select").hidden = true
-        document.getElementById("ipv6ApiInput").hidden = false
+        document.getElementById("ipv6ApiInputDiv").hidden = false
     }
 
-    function selectIp6Tow() {
+    function selectIpv6ForNetwork() {
         document.getElementById("ipv6_netInterface_select").hidden = false
-        document.getElementById("ipv6ApiInput").hidden = true
-    }
-
-    function bindDomain() {
-
-    }
-
-    window.onload = function(){
-        // let param = "ddnsServiceType=" + selectDDNSType
-        // findDDNSRecordsRequest(param)
+        document.getElementById("ipv6ApiInputDiv").hidden = true
+        var selectIpv6List = document.getElementById("selectIpv6Value");
+        let networkIpv6List = [[${ipv6}]]
+        if (networkIpv6List.length !== 0) {
+            for (let i = 0; i < networkIpv6List.length; i++) {
+                $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+            }
+        } else {
+            $("#ipv6_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+        }
     }
 
     function findDDNSRecordsRequest(param) {

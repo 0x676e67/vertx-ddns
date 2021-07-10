@@ -3,6 +3,7 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.property.CommonProperties;
+import com.zf1976.ddns.util.IpUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
@@ -89,6 +90,8 @@ public abstract class RouterVerticle extends AbstractVerticle {
         router.getWithRegex(".+\\.html")
               .handler(ctx -> {
                   ctx.put("common",ConfigProperty.getCommonProperties());
+                  ctx.put("ipv4", IpUtil.getNetworkIpv4List());
+                  ctx.put("ipv6", IpUtil.getNetworkIpv6List());
                   handler.handle(ctx);
               });
         // 静态资源处理

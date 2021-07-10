@@ -92,6 +92,7 @@ public class DDNSConfig implements Serializable {
         private Boolean enable;
         private Boolean selectIpMethod;
         private String selectIpApi;
+        private String networkIp;
         private List<String> domainList;
 
         public List<String> getDomainList() {
@@ -130,12 +131,22 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
+        public String getNetworkIp() {
+            return networkIp;
+        }
+
+        public Ipv4Config setNetworkIp(String networkIp) {
+            this.networkIp = networkIp;
+            return this;
+        }
+
         @Override
         public String toString() {
             return "Ipv4Config{" +
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
                     ", selectIpApi='" + selectIpApi + '\'' +
+                    ", networkIp='" + networkIp + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }
@@ -145,6 +156,7 @@ public class DDNSConfig implements Serializable {
         private Boolean enable;
         private Boolean selectIpMethod;
         private String selectIpApi;
+        private String networkIp;
         private List<String> domainList;
 
         public Boolean getEnable() {
@@ -174,6 +186,15 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
+        public String getNetworkIp() {
+            return networkIp;
+        }
+
+        public Ipv6Config setNetworkIp(String networkIp) {
+            this.networkIp = networkIp;
+            return this;
+        }
+
         public List<String> getDomainList() {
             return domainList;
         }
@@ -189,6 +210,7 @@ public class DDNSConfig implements Serializable {
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
                     ", selectIpApi='" + selectIpApi + '\'' +
+                    ", networkIp='" + networkIp + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }
