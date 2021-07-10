@@ -24,10 +24,6 @@ public class DDNSConfig implements Serializable {
      */
     private DDNSServiceType dnsServiceType;
     /**
-     * 主域名
-     */
-    private List<String> domainList;
-    /**
      * ipv4配置
      */
     private Ipv4Config ipv4Config;
@@ -81,22 +77,12 @@ public class DDNSConfig implements Serializable {
         return this;
     }
 
-    public List<String> getDomainList() {
-        return domainList;
-    }
-
-    public DDNSConfig setDomainList(List<String> domainList) {
-        this.domainList = domainList;
-        return this;
-    }
-
     @Override
     public String toString() {
         return "DDNSConfig{" +
                 "id='" + id + '\'' +
                 ", secret='" + secret + '\'' +
                 ", dnsServiceType=" + dnsServiceType +
-                ", domainList=" + domainList +
                 ", ipv4Config=" + ipv4Config +
                 ", ipv6Config=" + ipv6Config +
                 '}';
@@ -104,8 +90,8 @@ public class DDNSConfig implements Serializable {
 
     public static class Ipv4Config {
         private Boolean enable;
-        private Boolean getIpMethod;
-        private Boolean getIpUrl;
+        private Boolean selectIpMethod;
+        private String selectIpApi;
         private List<String> domainList;
 
         public List<String> getDomainList() {
@@ -114,6 +100,15 @@ public class DDNSConfig implements Serializable {
 
         public Ipv4Config setDomainList(List<String> domainList) {
             this.domainList = domainList;
+            return this;
+        }
+
+        public String getSelectIpApi() {
+            return selectIpApi;
+        }
+
+        public Ipv4Config setSelectIpApi(String selectIpApi) {
+            this.selectIpApi = selectIpApi;
             return this;
         }
 
@@ -126,12 +121,12 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
-        public Boolean getGetIpMethod() {
-            return getIpMethod;
+        public Boolean getSelectIpMethod() {
+            return selectIpMethod;
         }
 
-        public Ipv4Config setGetIpMethod(Boolean getIpMethod) {
-            this.getIpMethod = getIpMethod;
+        public Ipv4Config setSelectIpMethod(Boolean selectIpMethod) {
+            this.selectIpMethod = selectIpMethod;
             return this;
         }
 
@@ -139,7 +134,8 @@ public class DDNSConfig implements Serializable {
         public String toString() {
             return "Ipv4Config{" +
                     "enable=" + enable +
-                    ", getIpMethod=" + getIpMethod +
+                    ", selectIpMethod=" + selectIpMethod +
+                    ", selectIpApi='" + selectIpApi + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }
@@ -147,8 +143,8 @@ public class DDNSConfig implements Serializable {
 
     public static class Ipv6Config{
         private Boolean enable;
-        private Boolean getIpMethod;
-        private String getIpUrl;
+        private Boolean selectIpMethod;
+        private String selectIpApi;
         private List<String> domainList;
 
         public Boolean getEnable() {
@@ -160,21 +156,21 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
-        public Boolean getGetIpMethod() {
-            return getIpMethod;
+        public String getSelectIpApi() {
+            return selectIpApi;
         }
 
-        public Ipv6Config setGetIpMethod(Boolean getIpMethod) {
-            this.getIpMethod = getIpMethod;
+        public Ipv6Config setSelectIpApi(String selectIpApi) {
+            this.selectIpApi = selectIpApi;
             return this;
         }
 
-        public String getGetIpUrl() {
-            return getIpUrl;
+        public Boolean getSelectIpMethod() {
+            return selectIpMethod;
         }
 
-        public Ipv6Config setGetIpUrl(String getIpUrl) {
-            this.getIpUrl = getIpUrl;
+        public Ipv6Config setSelectIpMethod(Boolean selectIpMethod) {
+            this.selectIpMethod = selectIpMethod;
             return this;
         }
 
@@ -191,8 +187,8 @@ public class DDNSConfig implements Serializable {
         public String toString() {
             return "Ipv6Config{" +
                     "enable=" + enable +
-                    ", getIpMethod=" + getIpMethod +
-                    ", getIpUrl='" + getIpUrl + '\'' +
+                    ", selectIpMethod=" + selectIpMethod +
+                    ", selectIpApi='" + selectIpApi + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }
