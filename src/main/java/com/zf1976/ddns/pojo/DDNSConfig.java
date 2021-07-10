@@ -15,21 +15,44 @@ public class DDNSConfig implements Serializable {
      * id 可能为空，某些DNS服务商只使用token
      */
     private String id;
-
     /**
      * 密钥
      */
     private String secret;
-
     /**
      * 服务商类型
      */
     private DDNSServiceType dnsServiceType;
-
     /**
      * 主域名
      */
     private List<String> domainList;
+    /**
+     * ipv4配置
+     */
+    private Ipv4Config ipv4Config;
+    /**
+     * ipv6配置
+     */
+    private Ipv6Config ipv6Config;
+
+    public Ipv6Config getIpv6Config() {
+        return ipv6Config;
+    }
+
+    public DDNSConfig setIpv6Config(Ipv6Config ipv6Config) {
+        this.ipv6Config = ipv6Config;
+        return this;
+    }
+
+    public Ipv4Config getIpv4Config() {
+        return ipv4Config;
+    }
+
+    public DDNSConfig setIpv4Config(Ipv4Config ipv4Config) {
+        this.ipv4Config = ipv4Config;
+        return this;
+    }
 
     public String getId() {
         return id;
@@ -74,6 +97,8 @@ public class DDNSConfig implements Serializable {
                 ", secret='" + secret + '\'' +
                 ", dnsServiceType=" + dnsServiceType +
                 ", domainList=" + domainList +
+                ", ipv4Config=" + ipv4Config +
+                ", ipv6Config=" + ipv6Config +
                 '}';
     }
 

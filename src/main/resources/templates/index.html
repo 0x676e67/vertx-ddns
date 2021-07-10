@@ -1,4 +1,5 @@
-<!--suppress HtmlUnknownTarget -->
+<!--suppress ALL -->
+
 <html lang="zh">
 
 <head>
@@ -179,30 +180,32 @@
                                 </fieldset>
                             </form>
                         </div>
-                        <div class="input-group mb-1" style="margin-top: 5px;width: 400px">
-                            <span class="input-group-text" id="basic-addon8">domain</span>
-                            <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
-<!--                            <div class="input-group-append">-->
-<!--                                <button class="btn btn-primary submit_btn"  onclick="clearInput()">绑定主域名</button>-->
-<!--                            </div>-->
-                        </div>
-                        <table class="table table-bordered" style="overflow: hidden">
-                            <caption>DDNS域名指向记录表</caption>
-                            <thead>
-                            <tr>
-                                <th>记录ID</th>
-                                <th>域名</th>
-                                <th>记录</th>
-                                <th>指向IP</th>
-                                <th>操作</th>
-                            </tr>
-                            </thead>
-                            <tbody id="tbMain"></tbody>
-                        </table>
                     </div>
                     <!--              ipv6选项卡-->
                     <div class="tab-pane fade container" id="ipv6">
                     </div>
+                </div>
+                <div class="mb-3">
+                    <div class="input-group mb-1" style="margin-top: 5px;width: 400px">
+                        <span class="input-group-text" id="basic-addon8">domain</span>
+                        <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary submit_btn"  onclick="clearInput()">清空</button>
+                        </div>
+                    </div>
+                    <table class="table table-bordered" style="overflow: hidden">
+                        <caption>DDNS域名指向记录表</caption>
+                        <thead>
+                        <tr>
+                            <th>记录ID</th>
+                            <th>域名</th>
+                            <th>记录</th>
+                            <th>指向IP</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tbMain"></tbody>
+                    </table>
                 </div>
             </div>
             <div class="card-footer">
@@ -263,7 +266,8 @@
         }
     }
     function clearInput(){
-        $("#inputDomain").val("");
+        $("#inputDomain").val("")
+        $("#tbMain").empty()
     }
 
     function selectIp4One() {
