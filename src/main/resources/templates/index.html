@@ -48,7 +48,7 @@
                 <a class="nav-link" data-toggle="tab" href="#dnspod">Dnspod(腾讯云)</a>
               </li>
               <li class="nav-item" onclick="setCloudflareType()">
-                <a class="nav-link" data-toggle="tab" href="#cloudflare">CloudFlare</a>
+                <a class="nav-link" data-toggle="tab" href="#cloudflare">Cloudflare</a>
               </li>
               <li class="nav-item" onclick="setHuaweiType()">
                 <a class="nav-link" data-toggle="tab" href="#huawei">华为云</a>
@@ -158,7 +158,7 @@
                                                 通过网卡获取
                                             </label>
                                         </div>
-                                        <div class="input-group mb-3" id="ipv4ApiInputDiv">
+                                        <div class="input-group mb-0" id="ipv4ApiInputDiv">
                                             <input id="ipv4ApiInput" type="text" class="form-control" placeholder="ipv4 接口">
                                             <small
                                                     class="form-text text-muted"
@@ -209,7 +209,7 @@
                                                 通过网卡获取
                                             </label>
                                         </div>
-                                        <div class="input-group mb-3" id="ipv6ApiInputDiv">
+                                        <div class="input-group mb-0" id="ipv6ApiInputDiv">
                                             <input id="ipv6ApiInput" type="text" class="form-control" placeholder="ipv6 接口">
                                             <small
                                                     class="form-text text-muted"
@@ -389,6 +389,7 @@
         var selectIpv4List = document.getElementById("selectIpv4Value");
         let networkIpv4List = [[${ipv4}]]
         if (networkIpv4List.length !== 0) {
+            document.getElementById("selectIpv4Value").options.length = 0
             for (let i = 0; i < networkIpv4List.length; i++) {
                 $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
             }
@@ -408,6 +409,7 @@
         var selectIpv6List = document.getElementById("selectIpv6Value");
         let networkIpv6List = [[${ipv6}]]
         if (networkIpv6List.length !== 0) {
+            document.getElementById("selectIpv6Value").options.length = 0
             for (let i = 0; i < networkIpv6List.length; i++) {
                 $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
             }

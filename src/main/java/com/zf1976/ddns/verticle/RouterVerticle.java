@@ -92,6 +92,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
                   ctx.put("common",ConfigProperty.getCommonProperties());
                   ctx.put("ipv4", IpUtil.getNetworkIpv4List());
                   ctx.put("ipv6", IpUtil.getNetworkIpv6List());
+                  ctx.put("ddnsConfig","");
                   handler.handle(ctx);
               });
         // 静态资源处理

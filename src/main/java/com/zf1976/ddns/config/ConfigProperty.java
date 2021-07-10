@@ -16,7 +16,7 @@ public class ConfigProperty {
     private static ConfigProperty config;
 
     private ConfigProperty() {
-        this.jsonConfig = loadJsonConfig();
+        this.jsonConfig = loadLocalConfig();
     }
 
     public static ConfigProperty getInstance() {
@@ -30,9 +30,8 @@ public class ConfigProperty {
        return config;
     }
 
-    private JsonObject loadJsonConfig() {
-        final var jsonStr = new Yaml().load(PropertyUtil.class.getClassLoader()
-                                                              .getResourceAsStream("config.yaml"));
+    private JsonObject loadLocalConfig() {
+        final var jsonStr = new Yaml().load(PropertyUtil.class.getClassLoader().getResourceAsStream("config.yaml"));
         return JsonObject.mapFrom(jsonStr);
     }
 
