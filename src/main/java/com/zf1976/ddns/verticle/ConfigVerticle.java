@@ -13,12 +13,12 @@ import org.apache.logging.log4j.Logger;
  * @author mac
  * @date 2021/7/6
  */
-public class MainVerticle extends AbstractVerticle {
+public class ConfigVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger("[MainVerticle]");
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        this.initConfig()
+        this.init()
             .compose(json -> {
                 if (json != null) {
                     return Future.<Void>succeededFuture()
@@ -35,7 +35,7 @@ public class MainVerticle extends AbstractVerticle {
             });
     }
 
-    private Future<JsonObject> initConfig() {
+    private Future<JsonObject> init() {
         final Object load;
         try {
             load = ConfigProperty.getInstance().getJsonConfig();

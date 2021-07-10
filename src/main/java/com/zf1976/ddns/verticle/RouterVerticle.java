@@ -55,7 +55,7 @@ public abstract class RouterVerticle extends AbstractVerticle {
      *
      * @param vertx vertx
      */
-    private void initProjectDir(Vertx vertx) {
+     protected void initProjectDir(Vertx vertx) {
         final var fileSystem = vertx.fileSystem();
         final var path = Paths.get(System.getProperty("user.home"), ".ddns");
         final var absolutePath = path.toFile().getAbsolutePath();
@@ -81,22 +81,22 @@ public abstract class RouterVerticle extends AbstractVerticle {
     }
 
     private void handleTemplate(Router router, Vertx vertx) {
-        TemplateEngine engine = ThymeleafTemplateEngine.create(vertx);
-        TemplateHandler handler = TemplateHandler.create(engine);
+        TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
+        TemplateHandler handler = TemplateHandler.create(templateEngine);
         // 设置默认模版
         handler.setIndexTemplate("index.html");
-        // Body处理
-
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
-              .handler(handler);
+              .handler(ctx -> {
+                  ctx.put("common",ConfigProperty.getCommonProperties());
+                  handler.handle(ctx);
+              });
         // 静态资源处理
         router.get().handler(StaticHandler.create());
         // 路径定义错误处理器/设置Content-Type
         router.route()
               .consumes("application/json")
               .handler(BodyHandler.create());
-
 
     }
 

@@ -35,7 +35,8 @@
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <div class="card">
-          <div class="card-header">DNS服务器商</div>
+
+            <div class="card-header">DDNS服务商Account设置</div>
           <div class="card-body">
             <ul class="nav nav-tabs" id="DDNSul">
               <li class="nav-item" onclick="setAliyunType()">
@@ -51,7 +52,7 @@
                 <a class="nav-link" data-toggle="tab" href="#huawei">华为云</a>
               </li>
             </ul>
-            <!-- 选项卡对应内容 -->
+            <!-- DDNS服务商选项卡对应内容 -->
             <div class="tab-content" id="tab-content">
 <!--              阿里云选项卡-->
               <div class="tab-pane active container" id="aliyun">
@@ -61,11 +62,11 @@
                       </small>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon1">AccessKey ID</span>
-                          <input aria-describedby="basic-addon1" aria-label="AccessKey ID" class="form-control" placeholder="AccessKey ID" type="text">
+                          <input id="aliyunAccount" aria-describedby="basic-addon1" aria-label="AccessKey ID" class="form-control" placeholder="AccessKey ID" type="text">
                       </div>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon2">AccessKey Secret</span>
-                          <input aria-describedby="basic-addon2" aria-label="AccessKey Secret" class="form-control" placeholder="AccessKey Secret" type="password">
+                          <input id="aliyunSecret" aria-describedby="basic-addon2" aria-label="AccessKey Secret" class="form-control" placeholder="AccessKey Secret" type="password">
                       </div>
                   </form>
               </div>
@@ -113,33 +114,100 @@
                       </div>
                   </form>
               </div>
-                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto">保存Account</button>
             </div>
           </div>
+<!--            <hr  style="color: #1a1e21; size: 1px" >-->
+            <div class="card-header">IP类型设置</div>
             <div class="card-body">
-                <div class="input-group mb-1" style="margin-top: 5px">
-                    <span class="input-group-text" id="basic-addon8">domain</span>
-                    <input aria-describedby="basic-addon8" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要绑定的域名" type="text">
-                    <div class="input-group-append">
-                        <button class="btn btn-primary submit_btn"  onclick="clearInput()">绑定主域名</button>
+                <ul class="nav nav-tabs" id="IpType">
+                    <li class="nav-item" onclick="setAliyunType()">
+                        <a class="nav-link" data-toggle="tab" href="#ipv4">Ipv4</a>
+                    </li>
+                    <li class="nav-item" onclick="setDnspodType()">
+                        <a class="nav-link" data-toggle="tab" href="#ipv6">Ipv6</a>
+                    </li>
+                </ul>
+                <!-- ip类型选项卡对应内容 -->
+                <div class="tab-content" id="ip-tab">
+                    <!--              ipv4选项卡-->
+                    <div class="tab-pane active container" id="ipv4">
+                        <div style="margin-top: 10px">
+                            <form>
+                                <fieldset class="row mb-1">
+                                    <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                    <div class="col-sm-10">
+                                        <div class="form-check form-check-inline">
+                                            <label for="ipv4Enable"></label><input class="form-check-input" type="checkbox" id="ipv4Enable">
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="row mb-1">
+                                    <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
+                                    <div class="col-sm-10" >
+                                        <div class="form-check">
+                                            <input class="form-check-input" onclick="selectIp4One()" type="radio" name="ipv4Radios" id="ipv4Radios1" value="true" checked>
+                                            <label class="form-check-label" for="ipv4Radios1">
+                                                通过接口获取
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" onclick="selectIp4Tow()" type="radio" name="ipv4Radios" id="ipv4Radios2" value="false">
+                                            <label class="form-check-label" for="ipv4Radios2">
+                                                通过网卡获取
+                                            </label>
+                                        </div>
+                                        <div class="input-group mb-3" id="ipv4ApiInput">
+                                            <input type="text" class="form-control" placeholder="ipv4 接口" aria-label="" aria-describedby="basic-addon10">
+                                            <small
+                                                    class="form-text text-muted"
+                                                    th:text="${'填写的URL需返回公网IPv4地址,如：' + common.ipApiList[0] + '，' + common.ipApiList[1] + '，' + common.ipApiList[2] + '，' + common.ipApiList[3]}">
+                                            </small>
+                                        </div>
+                                        <div id="ipv4_netInterface_select">
+                                            <select class="form-control" name="Ipv4NetInterface"></select>
+                                            <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="row mb">
+                                    <legend class="col-form-label col-sm-2 pt-0">域名列表</legend>
+                                    <div class="col-sm-10" >
+                                        <label for="ipv4_domains"></label>
+                                        <textarea class="form-control" id="ipv4_domains" name="Ipv4Domains" rows="3" aria-describedby="ipv4_domains_help"></textarea>
+                                        <small id="ipv4_domains_help" class="form-text text-muted">一行一个域名</small>
+                                    </div>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="input-group mb-1" style="margin-top: 5px;width: 400px">
+                            <span class="input-group-text" id="basic-addon8">domain</span>
+                            <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
+<!--                            <div class="input-group-append">-->
+<!--                                <button class="btn btn-primary submit_btn"  onclick="clearInput()">绑定主域名</button>-->
+<!--                            </div>-->
+                        </div>
+                        <table class="table table-bordered" style="overflow: hidden">
+                            <caption>DDNS域名指向记录表</caption>
+                            <thead>
+                            <tr>
+                                <th>记录ID</th>
+                                <th>域名</th>
+                                <th>记录</th>
+                                <th>指向IP</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbMain"></tbody>
+                        </table>
+                    </div>
+                    <!--              ipv6选项卡-->
+                    <div class="tab-pane fade container" id="ipv6">
                     </div>
                 </div>
-                <hr  width="100%" color=#987cb9 size="3">
-                <table class="table table-bordered" style="overflow: hidden">
-                    <caption>DDNS域名指向记录表</caption>
-                    <thead>
-                    <tr>
-                        <th>记录ID</th>
-                        <th>域名</th>
-                        <th>记录</th>
-                        <th>指向IP</th>
-                        <th>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tbMain"></tbody>
-                </table>
             </div>
-          <div class="card-footer">
+            <div class="card-footer">
+                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeAccountConfig()">保存配置</button>
+            </div>
 
           </div>
         </div>
@@ -150,6 +218,7 @@
 
 <script>
 
+    selectIp4One()
 
     const axiosInstance = axios.create();
     axiosInstance.defaults.headers.post['Content-Type'] = 'application/json';
@@ -182,19 +251,41 @@
 
     function findRecords(e) {
         let evt = window.event || e;
-        if (evt.keyCode == 13) {
-            //回车事件
+        if (evt.keyCode === 13) {
             let inputDomain = document.getElementById("inputDomain");
-            let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
-            findDDNSRecordsRequest(param)
+            if (inputDomain.value !== "") {
+                //回车事件
+                let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
+                findDDNSRecordsRequest(param)
+            } else {
+                confirm.show("输入域名不能为空")
+            }
         }
     }
     function clearInput(){
         $("#inputDomain").val("");
     }
 
-    function storeAccountConfig() {
+    function selectIp4One() {
+        document.getElementById("ipv4_netInterface_select").hidden = true
+        document.getElementById("ipv4ApiInput").hidden = false
+    }
 
+    function selectIp4Tow() {
+        document.getElementById("ipv4_netInterface_select").hidden = false
+        document.getElementById("ipv4ApiInput").hidden = true
+    }
+
+    function storeAccountConfig() {
+        let data = {
+            "id": document.getElementById("aliyunAccount").value,
+            "secret": document.getElementById("aliyunSecret").value,
+            "dnsServiceType" : selectDDNSType
+        }
+        axiosInstance.post("/api/storeConfig", data)
+                    .then(res => {
+                        confirm.show("保存成功")
+                    })
     }
 
     function bindDomain() {

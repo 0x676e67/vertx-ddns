@@ -1,3 +1,4 @@
+# 公共配置
 common:
   serverPort: 8080
   ipApiList:
@@ -5,6 +6,10 @@ common:
     - https://jsonip.com/
     - https://myip.ipip.net
     - https://ddns.oray.com/checkip
+    - https://api-ipv6.ip.sb/ip
+    - https://v6.myip.la/json
+    - https://speed.neu6.edu.cn/getIP.php
+#阿里云配置
 aliyun:
   accessKeyId: LTAI5tDQhy5qHf9AvJocLX7G
   secret: RzGsKDseCshfB9MS3u7d46o7zLNWik

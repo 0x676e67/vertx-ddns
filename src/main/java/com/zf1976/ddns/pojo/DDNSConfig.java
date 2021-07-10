@@ -2,13 +2,14 @@ package com.zf1976.ddns.pojo;
 
 import com.zf1976.ddns.verticle.DDNSServiceType;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author mac
  * @date 2021/7/8
  */
-public class DDNSConfig {
+public class DDNSConfig implements Serializable {
 
     /**
      * id 可能为空，某些DNS服务商只使用token
@@ -29,7 +30,6 @@ public class DDNSConfig {
      * 主域名
      */
     private List<String> domainList;
-
 
     public String getId() {
         return id;
@@ -76,4 +76,101 @@ public class DDNSConfig {
                 ", domainList=" + domainList +
                 '}';
     }
+
+    public static class Ipv4Config {
+        private Boolean enable;
+        private Boolean getIpMethod;
+        private Boolean getIpUrl;
+        private List<String> domainList;
+
+        public List<String> getDomainList() {
+            return domainList;
+        }
+
+        public Ipv4Config setDomainList(List<String> domainList) {
+            this.domainList = domainList;
+            return this;
+        }
+
+        public Boolean getEnable() {
+            return enable;
+        }
+
+        public Ipv4Config setEnable(Boolean enable) {
+            this.enable = enable;
+            return this;
+        }
+
+        public Boolean getGetIpMethod() {
+            return getIpMethod;
+        }
+
+        public Ipv4Config setGetIpMethod(Boolean getIpMethod) {
+            this.getIpMethod = getIpMethod;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Ipv4Config{" +
+                    "enable=" + enable +
+                    ", getIpMethod=" + getIpMethod +
+                    ", domainList=" + domainList +
+                    '}';
+        }
+    }
+
+    public static class Ipv6Config{
+        private Boolean enable;
+        private Boolean getIpMethod;
+        private String getIpUrl;
+        private List<String> domainList;
+
+        public Boolean getEnable() {
+            return enable;
+        }
+
+        public Ipv6Config setEnable(Boolean enable) {
+            this.enable = enable;
+            return this;
+        }
+
+        public Boolean getGetIpMethod() {
+            return getIpMethod;
+        }
+
+        public Ipv6Config setGetIpMethod(Boolean getIpMethod) {
+            this.getIpMethod = getIpMethod;
+            return this;
+        }
+
+        public String getGetIpUrl() {
+            return getIpUrl;
+        }
+
+        public Ipv6Config setGetIpUrl(String getIpUrl) {
+            this.getIpUrl = getIpUrl;
+            return this;
+        }
+
+        public List<String> getDomainList() {
+            return domainList;
+        }
+
+        public Ipv6Config setDomainList(List<String> domainList) {
+            this.domainList = domainList;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Ipv6Config{" +
+                    "enable=" + enable +
+                    ", getIpMethod=" + getIpMethod +
+                    ", getIpUrl='" + getIpUrl + '\'' +
+                    ", domainList=" + domainList +
+                    '}';
+        }
+    }
+
 }

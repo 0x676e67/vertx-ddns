@@ -11,7 +11,6 @@ import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -95,13 +94,12 @@ public class ApiVerticle extends RouterVerticle {
 
     protected void storeDDNSConfigHandle(RoutingContext routingContext) {
         try {
-            final var dnsAccountDTO = routingContext.getBodyAsJson()
-                                                    .mapTo(DDNSConfig.class);
-            switch (dnsAccountDTO.getDnsServiceType()) {
+            final var ddnsConfig = routingContext.getBodyAsJson().mapTo(DDNSConfig.class);
+            switch (ddnsConfig.getDnsServiceType()) {
                 case ALIYUN:
                 case HUAWEI:
                 case DNSPOD:
-                    Validator.of(dnsAccountDTO)
+                    Validator.of(ddnsConfig)
                              .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId()
                                                                                      .isBlank(),
                                      () -> new RuntimeException("ID cannot be empty"))
@@ -110,12 +108,12 @@ public class ApiVerticle extends RouterVerticle {
                                      () -> new RuntimeException("The Secret cannot be empty"));
                     break;
                 case CLOUDFLARE:
-                    Validator.of(dnsAccountDTO)
+                    Validator.of(ddnsConfig)
                              .withValidated(v -> !StringUtil.isEmpty(v.getSecret()),
                                      () -> new RuntimeException("The Secret cannot be empty"));
                 default:
             }
-            this.storeDDNSConfig(dnsAccountDTO)
+            this.storeDDNSConfig(ddnsConfig)
                 .onSuccess(success -> this.returnJsonWithCache(routingContext))
                 .onFailure(err -> this.handleError(routingContext, err));
         } catch (RuntimeException exception) {
@@ -128,6 +126,7 @@ public class ApiVerticle extends RouterVerticle {
     private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = workDir + "/ddns_config.json";
+        this.initProjectDir(vertx);
         return fileSystem.exists(configFilePath)
                          .compose(v -> {
                              // 配置文件不存在,则创建
@@ -149,12 +148,13 @@ public class ApiVerticle extends RouterVerticle {
         } else {
             try {
                 List<DDNSConfig> configArrayList = new ArrayList<>();
-                final var list = JSONUtil.readValue(buffer.toString(), List.class);
-                if (list != null) {
-                    for (Object obj : list) {
+                final var rawConfigList = JSONUtil.readValue(buffer.toString(), List.class);
+                if (rawConfigList != null) {
+                    for (Object obj : rawConfigList) {
                         final var decodeDnsConfig = JSONUtil.readValue(obj, DDNSConfig.class);
                         configArrayList.add(decodeDnsConfig);
                     }
+                    configArrayList.removeIf(config -> config.getDnsServiceType().equals(ddnsConfig.getDnsServiceType()));
                     configArrayList.add(ddnsConfig);
                     return this.writeConfig(configFilePath, JSONUtil.toJsonString(configArrayList));
                 } else {

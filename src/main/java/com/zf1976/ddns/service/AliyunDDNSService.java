@@ -162,7 +162,7 @@ public class AliyunDDNSService {
     private String[] validateDomainRecord(String domain) {
         final var domainRecord = HttpUtil.extractDomain(domain);
         if (ObjectUtil.isEmpty(domainRecord)) {
-            throw new RuntimeException("Domain name cannot be empty");
+            throw new RuntimeException("Unqualified domain name format");
         }
         return domainRecord;
     }

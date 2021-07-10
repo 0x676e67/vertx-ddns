@@ -18,7 +18,6 @@ public class AliyunDnsProperties {
      * 默认地域id
      */
     private String defaultRegionId;
-
     /**
      * 地域id集合
      */
