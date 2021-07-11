@@ -12,6 +12,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,14 +37,18 @@ public class ApiVerticle extends TemplateVerticle {
         final var router = getRouter();
         final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
         // 存储DNS服务商密钥
-        router.post("/api/storeConfig").handler(this::storeDDNSConfigHandle);
+        router.post("/api/storeConfig")
+              .consumes("application/json")
+              .handler(BodyHandler.create())
+              .handler(this::storeDDNSConfigHandle);
         // 查询DNS服务商域名解析记录
         router.post("/api/ddnsRecord").handler(this::findDDNSRecordsHandler);
         // 删除解析记录
         router.delete("/api/ddnsRecord").handler(this::deleteDDNSRecordHandler);
         // 获取RSA公钥
         router.get("/api/rsa/publicKey").handler(ctx -> this.readRsaKeyPair()
-                                                        .onSuccess(rsaKeyPair -> this.returnJsonWithCache(ctx, rsaKeyPair.getPublicKey())));
+                                                            .onSuccess(rsaKeyPair -> this.returnJsonWithCache(ctx, rsaKeyPair.getPublicKey()))
+                                                            .onFailure(err -> this.handleError(ctx, err)));
         // 异常处理
         router.route("/api/*").failureHandler(this::returnError);
         httpServer.requestHandler(router)
@@ -104,11 +109,9 @@ public class ApiVerticle extends TemplateVerticle {
                 case HUAWEI:
                 case DNSPOD:
                     Validator.of(ddnsConfig)
-                             .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId()
-                                                                                     .isBlank(),
+                             .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId().isBlank(),
                                      () -> new RuntimeException("ID cannot be empty"))
-                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret()
-                                                                                         .isBlank(),
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(),
                                      () -> new RuntimeException("The Secret cannot be empty"));
                     break;
                 case CLOUDFLARE:
@@ -130,20 +133,12 @@ public class ApiVerticle extends TemplateVerticle {
     private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = this.pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
-        return fileSystem.exists(configFilePath)
-                         .compose(v -> {
-                             // 配置文件不存在,则创建
-                             if (!v) {
-                                 return fileSystem.createFile(configFilePath)
-                                                  .compose(create -> fileSystem.readFile(configFilePath));
-                             }
-                             return fileSystem.readFile(configFilePath);
-                         })
-                         .compose(buffer -> this.ddnsConfigWriteHandle(buffer, ddnsConfig, configFilePath));
+        return fileSystem.readFile(configFilePath)
+                         .compose(buffer -> this.ddnsConfigWrite(buffer, ddnsConfig, configFilePath));
     }
 
-    private Future<Void> ddnsConfigWriteHandle(Buffer buffer, DDNSConfig ddnsConfig, String configFilePath) {
-        // 数据为空
+    private Future<Void> ddnsConfigWrite(Buffer buffer, DDNSConfig ddnsConfig, String configFilePath) {
+        // 读取配置为空
         if (ObjectUtil.isEmpty(buffer.getBytes())) {
             List<DDNSConfig> accountList = new ArrayList<>();
             accountList.add(ddnsConfig);

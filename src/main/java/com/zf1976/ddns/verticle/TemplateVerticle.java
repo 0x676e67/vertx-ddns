@@ -19,7 +19,6 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
-import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.TemplateHandler;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
@@ -28,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 /**
  * @author mac
@@ -123,10 +123,11 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                     .compose(v -> Future.succeededFuture(JSONUtil.readValue(v.toString(), RsaUtil.RsaKeyPair.class)));
     }
 
-    protected Future<DDNSConfig> getDDNSConfig(Vertx vertx) {
+    @SuppressWarnings("rawtypes")
+    protected Future<List> getDDNSConfig(Vertx vertx) {
         return vertx.fileSystem()
                     .readFile(pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME))
-                    .compose(v -> Future.succeededFuture(JSONUtil.readValue(v.toString(), DDNSConfig.class)));
+                    .compose(v -> Future.succeededFuture(JSONUtil.readValue(v.toString(), List.class)));
     }
 
     protected String pathToAbsolutePath(String first,String ...more) {
@@ -160,25 +161,21 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(ctx -> {
-                  getDDNSConfig(vertx).compose(ddnsConfig -> this.readRsaKeyPair()
+                  getDDNSConfig(vertx).compose(ddnsList -> this.readRsaKeyPair()
                                                              .onSuccess(keyPair -> {
                                                                  ctx.put("common", ConfigProperty.getCommonProperties());
                                                                  ctx.put("ipv4", IpUtil.getNetworkIpv4List());
                                                                  ctx.put("ipv6", IpUtil.getNetworkIpv6List());
-                                                                 ctx.put("ddnsConfig", JSONUtil.toJsonString(ddnsConfig));
+                                                                 ctx.put("ddnsConfigList", ddnsList);
                                                                  ctx.put("rsaPublicKey", keyPair.getPublicKey());
                                                                  handler.handle(ctx);
-
                                                              })).onFailure(err -> ctx.response()
                                                                                      .setStatusCode(500)
                                                                                      .end(Json.encodePrettily(DataResult.fail(500, "Failed to read configuration file"))));
               });
         // 静态资源处理
         router.get().handler(StaticHandler.create());
-        // 路径定义错误处理器/设置Content-Type
-        router.route()
-              .consumes("application/json")
-              .handler(BodyHandler.create());
+
      }
 
     protected void returnError(RoutingContext routingContext) {

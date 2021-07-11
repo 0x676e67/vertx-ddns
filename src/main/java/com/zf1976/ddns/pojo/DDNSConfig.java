@@ -91,7 +91,7 @@ public class DDNSConfig implements Serializable {
     public static class Ipv4Config {
         private Boolean enable;
         private Boolean selectIpMethod;
-        private String selectIpApi;
+        private String inputIpApi;
         private String networkIp;
         private List<String> domainList;
 
@@ -104,12 +104,12 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
-        public String getSelectIpApi() {
-            return selectIpApi;
+        public String getInputIpApi() {
+            return inputIpApi;
         }
 
-        public Ipv4Config setSelectIpApi(String selectIpApi) {
-            this.selectIpApi = selectIpApi;
+        public Ipv4Config setInputIpApi(String inputIpApi) {
+            this.inputIpApi = inputIpApi;
             return this;
         }
 
@@ -145,7 +145,7 @@ public class DDNSConfig implements Serializable {
             return "Ipv4Config{" +
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
-                    ", selectIpApi='" + selectIpApi + '\'' +
+                    ", inputIpApi='" + inputIpApi + '\'' +
                     ", networkIp='" + networkIp + '\'' +
                     ", domainList=" + domainList +
                     '}';
@@ -155,7 +155,7 @@ public class DDNSConfig implements Serializable {
     public static class Ipv6Config{
         private Boolean enable;
         private Boolean selectIpMethod;
-        private String selectIpApi;
+        private String inputIpApi;
         private String networkIp;
         private List<String> domainList;
 
@@ -168,12 +168,12 @@ public class DDNSConfig implements Serializable {
             return this;
         }
 
-        public String getSelectIpApi() {
-            return selectIpApi;
+        public String getInputIpApi() {
+            return inputIpApi;
         }
 
-        public Ipv6Config setSelectIpApi(String selectIpApi) {
-            this.selectIpApi = selectIpApi;
+        public Ipv6Config setInputIpApi(String inputIpApi) {
+            this.inputIpApi = inputIpApi;
             return this;
         }
 
@@ -209,7 +209,7 @@ public class DDNSConfig implements Serializable {
             return "Ipv6Config{" +
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
-                    ", selectIpApi='" + selectIpApi + '\'' +
+                    ", inputIpApi='" + inputIpApi + '\'' +
                     ", networkIp='" + networkIp + '\'' +
                     ", domainList=" + domainList +
                     '}';

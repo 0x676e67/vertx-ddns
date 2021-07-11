@@ -124,10 +124,10 @@
 <!--            IP类型Body-->
             <div class="card-body">
                 <ul class="nav nav-pills" id="IpType">
-                    <li class="nav-item" onclick="setAliyunType()">
+                    <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#ipv4">Ipv4</a>
                     </li>
-                    <li class="nav-item" onclick="setDnspodType()">
+                    <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#ipv6">Ipv6</a>
                     </li>
                 </ul>
@@ -276,7 +276,7 @@
 <script th:inline="javascript">
 
     const axiosInstance = axios.create();
-    axiosInstance.defaults.headers.post['Content-Type'] = 'application/json';
+    axiosInstance.defaults.headers.post['Content-Type'] = 'application/json; charset=utf-8';
     // 添加请求拦截器
     axiosInstance.interceptors.request.use(function (config) {
         // 在发送请求之前做些什么
@@ -295,57 +295,86 @@
         confirm.show(error.response.data.errMsg)
         return Promise.reject(error);
     });
-
-    selectIpv4ForApi()
-    selectIpv6ForApi()
-    encrypt("asdad")
-
+    // 保存的配置
+    const ddnsConfigList = [[${ddnsConfigList}]]
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
     const cloudflareType = "CLOUDFLARE"
     const huaweiType = "HUAWEI"
-
     // 默认类型
     let selectDDNSType = aliyunType
 
-    function getDDNSConfig() {
-
+    // 初始化调用
+    setDDNSConfig()
+    selectIpv4ForApi()
+    selectIpv6ForApi()
+    console.log(ddnsConfigList)
+    function setDDNSConfig() {
+        // 设置服务商Account
+        let targetConfig
+        if (ddnsConfigList != undefined) {
+            for (let i = 0; i < ddnsConfigList.length; i++) {
+                ddnsConfig = ddnsConfigList[i]
+                if (selectDDNSType == ddnsConfig.dnsServiceType) {
+                    targetConfig = ddnsConfig
+                    document.getElementById("ipv4Enable").checked = ddnsConfig.ipv4Config.enable
+                    document.getElementsByName("ipv4Radios")[0].checked = ddnsConfig.ipv4Config.selectIpMethod
+                    document.getElementById("ipv4ApiInput").value = ddnsConfig.ipv4Config.inputIpApi
+                    document.getElementById("ipv4_domains").value = ddnsConfig.ipv4Config.domainList
+                }
+            }
+            switch (selectDDNSType) {
+                case aliyunType:
+                    document.getElementById("aliyunAccount").value = targetConfig? targetConfig.id : ""
+                    document.getElementById("aliyunSecret").value = targetConfig? targetConfig.secret : ""
+                    break
+                case dnspodType:
+                    document.getElementById("dnspodAccount").value = targetConfig? targetConfig.id:""
+                    document.getElementById("dnspodSecret").value = targetConfig? targetConfig.secret : ""
+                    break
+                case cloudflareType:
+                    document.getElementById("cloudflareSecret").value = targetConfig? targetConfig.secret : ""
+                    break
+                case huaweiType:
+                    document.getElementById("huaweiAccount").value = targetConfig? targetConfig.id:""
+                    document.getElementById("huaweiSecret").value = targetConfig? targetConfig.secret : ""
+                    break
+                default:
+            }
+        }
     }
+
 
     function storeDDNSConfig() {
         let ipv4Address
         let ipv6Address
-        let ipv4Condition = false
-        let ipv6Condition = false
         // 从Api获取Ipv4
         if (document.getElementsByName("ipv4Radios")[0].checked) {
             ipv4Address = document.getElementById("ipv4ApiInput").value
         } else {
-            ipv4Condition = true
-            ipv4Address = document.getElementById("selectIpv4Value").value
+            ipv4Address = document.getElementById("selectIpv4Value")? document.getElementById("selectIpv4Value").value : null
         }
 
-        // 从Api获取Ipv4
+        // 从Api获取Ipv6
         if (document.getElementsByName("ipv6Radios")[0].checked) {
             ipv6Address = document.getElementById("ipv6ApiInput").value
         } else {
-            ipv6Condition = true
-            ipv6Address = document.getElementById("selectIpv6Value").value
+            ipv6Address = document.getElementById("selectIpv6Value")? document.getElementById("selectIpv6Value").value : null
         }
 
         let ipv4Config = {
             "enable": document.getElementById("ipv4Enable").checked,
-            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked,
-            "selectIpApi" : document.getElementById("ipv4ApiInput").value,
-            "networkIp": ipv4Condition ? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
+            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
+            "inputIpApi" : document.getElementById("ipv4ApiInput").value,
+            "networkIp": ipv4Address? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
             "domainList" : document.getElementById("ipv4_domains").value.split('\n')
         }
 
         let ipv6Config = {
             "enable": document.getElementById("ipv6Enable").checked,
-            "selectIpMethod": document.getElementsByName("ipv6Radios")[1].checked,
-            "selectIpApi": document.getElementById("ipv6ApiInput").value,
-            "networkIp": ipv6Condition? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
+            "selectIpMethod": document.getElementsByName("ipv6Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
+            "inputIpApi": document.getElementById("ipv6ApiInput").value,
+            "networkIp": ipv6Address? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
             "domainList": document.getElementById("ipv6_domains").value.split('\n')
         }
 
@@ -377,10 +406,10 @@
         }
         console.log(data)
 
-        // axiosInstance.post("/api/storeConfig", data)
-        //     .then(res => {
-        //         confirm.show("保存成功")
-        //     })
+        axiosInstance.post("/api/storeConfig",data)
+            .then(res => {
+            confirm.show("保存成功")
+        })
     }
 
     function findRecords(e) {
@@ -516,18 +545,22 @@
 
     function setAliyunType() {
         selectDDNSType = aliyunType;
+        setDDNSConfig()
     }
 
     function setDnspodType() {
         selectDDNSType = dnspodType
+        setDDNSConfig()
     }
 
     function setCloudflareType() {
         selectDDNSType = cloudflareType
+        setDDNSConfig()
     }
 
     function setHuaweiType() {
         selectDDNSType = huaweiType
+        setDDNSConfig()
     }
     /**
      * 确认框
