@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import io.vertx.core.buffer.Buffer;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -217,12 +218,12 @@ public class JSONUtil {
         }
     }
 
+    public static <T> T readValue(Buffer buffer, Class<T> tClass) {
+        return readValue(buffer.toString(), tClass);
+    }
+
     public static <T> T readValue(Object json, Class<T> tClass) {
-        try {
-            return JSON_MAPPER.readValue(toJsonString(json), tClass);
-        } catch (JsonProcessingException e) {
-            return null;
-        }
+        return readValue(toJsonString(json), tClass);
     }
 
     public static ObjectMapper getJsonMapper(){

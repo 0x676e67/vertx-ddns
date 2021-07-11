@@ -39,7 +39,11 @@ public class ConfigVerticle extends AbstractVerticle {
         final Object load;
         try {
             load = ConfigProperty.getInstance().getJsonConfig();
-            return Future.succeededFuture(JsonObject.mapFrom(load));
+            final var entries = JsonObject.mapFrom(load);
+            // 获取端口号
+            final var serverPort = config().getString(ApiConstants.SERVER_PORT);
+            entries.put(ApiConstants.SERVER_PORT, serverPort);
+            return Future.succeededFuture(entries);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

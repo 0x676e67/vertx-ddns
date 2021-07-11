@@ -136,8 +136,11 @@ public class RsaUtil {
      */
     public static class RsaKeyPair {
 
-        private final String publicKey;
-        private final String privateKey;
+        private String publicKey;
+        private String privateKey;
+
+        public RsaKeyPair() {
+        }
 
         public RsaKeyPair(String publicKey, String privateKey) {
             this.publicKey = publicKey;
@@ -152,5 +155,12 @@ public class RsaUtil {
             return privateKey;
         }
 
+        @Override
+        public String toString() {
+            return "RsaKeyPair{" +
+                    "publicKey='" + publicKey + '\'' +
+                    ", privateKey='" + privateKey + '\'' +
+                    '}';
+        }
     }
 }

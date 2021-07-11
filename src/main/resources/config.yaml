@@ -1,6 +1,5 @@
 # 公共配置
 common:
-  serverPort: 8080
   ipApiList:
     - https://api-ipv4.ip.sb/ip
     - https://jsonip.com/

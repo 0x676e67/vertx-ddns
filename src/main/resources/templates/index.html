@@ -19,6 +19,8 @@
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.js"></script>
 <!--    Axios-->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!--    RSA-->
+    <script src="/js/jsencrypt.js"></script>
 </head>
 
 <body>
@@ -80,11 +82,11 @@
                       </small>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon3">ID</span>
-                          <input aria-describedby="basic-addon3" aria-label="ID" class="form-control" placeholder="ID" type="text">
+                          <input id="dnspodAccount" aria-describedby="basic-addon3" aria-label="ID" class="form-control" placeholder="ID" type="text">
                       </div>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon4">Token</span>
-                          <input aria-describedby="basic-addon4" aria-label="Token" class="form-control" placeholder="Token" type="password">
+                          <input id="dnspodSecret" aria-describedby="basic-addon4" aria-label="Token" class="form-control" placeholder="Token" type="password">
                       </div>
                   </form>
               </div>
@@ -96,7 +98,7 @@
                       </small>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon5">Token</span>
-                          <input aria-describedby="basic-addon5" aria-label="Token" class="form-control" placeholder="Token" type="password">
+                          <input id="cloudflareSecret" aria-describedby="basic-addon5" aria-label="Token" class="form-control" placeholder="Token" type="password">
                       </div>
                   </form>
               </div>
@@ -108,11 +110,11 @@
                       </small>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon6">Access Key Id</span>
-                          <input aria-describedby="basic-addon6" aria-label="Access Key Id" class="form-control" placeholder="Access Key Id" type="text">
+                          <input id="huaweiAccount" aria-describedby="basic-addon6" aria-label="Access Key Id" class="form-control" placeholder="Access Key Id" type="text">
                       </div>
                       <div class="input-group mb-1" style="margin-top: 5px">
                           <span class="input-group-text" id="basic-addon7">Secret Access Key</span>
-                          <input aria-describedby="basic-addon7" aria-label="Secret Access Key" class="form-control" placeholder="Secret Access Key" type="password">
+                          <input id="huaweiSecret" aria-describedby="basic-addon7" aria-label="Secret Access Key" class="form-control" placeholder="Secret Access Key" type="password">
                       </div>
                   </form>
               </div>
@@ -165,8 +167,8 @@
                                                     th:text="${'填写的URL需返回公网IPv4地址,如：' + common.ipApiList[0] + '，' + common.ipApiList[1] + '，' + common.ipApiList[2] + '，' + common.ipApiList[3]}">
                                             </small>
                                         </div>
-                                        <div class="form-select mb-3" id="ipv4_netInterface_select">
-                                            <select id="selectIpv4Value" class="form-control" name="Ipv4NetInterface"></select>
+                                        <div class="form-select mb-0" id="ipv4_netInterface_select">
+                                            <select id="selectIpv4Value" class="form-control" name="Ipv4NetInterface">请选择网卡</select>
                                             <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
                                         </div>
                                     </div>
@@ -216,8 +218,8 @@
                                                     th:text="${'填写的URL需返回公网IPv6地址,如：' + common.ipApiList[4] + '，' + common.ipApiList[5] + '，' + common.ipApiList[6]}">
                                             </small>
                                         </div>
-                                        <div class="form-select mb-3" id="ipv6_netInterface_select">
-                                            <select id="selectIpv6Value" class="form-control" name="Ipv6NetInterface"></select>
+                                        <div class="form-select mb-0" id="ipv6_netInterface_select">
+                                            <select id="selectIpv6Value" class="form-control" name="Ipv6NetInterface">请选择网卡</select>
                                             <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
                                         </div>
                                     </div>
@@ -274,9 +276,6 @@
 
 <script th:inline="javascript">
 
-    selectIpv4ForApi()
-    selectIpv6ForApi()
-
     const axiosInstance = axios.create();
     axiosInstance.defaults.headers.post['Content-Type'] = 'application/json';
     // 添加请求拦截器
@@ -297,6 +296,10 @@
         confirm.show(error.response.data.errMsg)
         return Promise.reject(error);
     });
+
+    selectIpv4ForApi()
+    selectIpv6ForApi()
+    encrypt("asdad")
 
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
@@ -347,9 +350,28 @@
             "domainList": document.getElementById("ipv6_domains").value.split('\n')
         }
 
+        let id
+        let secret
+        switch (selectDDNSType) {
+            case aliyunType:
+                id = document.getElementById("aliyunAccount").value
+                secret = document.getElementById("aliyunSecret").value
+                break
+            case dnspodType:
+                id = document.getElementById("dnspodAccount").value
+                secret = document.getElementById("dnspodSecret").value
+                break
+            case huaweiType:
+                id = document.getElementById("huaweiAccount").value
+                secret = document.getElementById("huaweiSecret").value
+                break
+            case cloudflareType:
+                secret = document.getElementById("cloudflareSecret").value
+                break
+        }
         let data = {
-            "id": document.getElementById("aliyunAccount").value,
-            "secret": document.getElementById("aliyunSecret").value,
+            "id": id? encrypt(id) : null,
+            "secret": secret? encrypt(secret) : null,
             "dnsServiceType" : selectDDNSType,
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
@@ -378,6 +400,15 @@
     function clearInput(){
         $("#inputDomain").val("")
         $("#tbMain").empty()
+    }
+
+    function encrypt(txt) {
+        const publicKey = [[${rsaPublicKey}]]
+        const encrypt = new JSEncrypt()
+        // 设置公钥
+        encrypt.setPublicKey(publicKey)
+        // 对需要加密的数据进行加密
+        return encrypt.encrypt(txt)
     }
 
     function selectIpv4ForApi() {

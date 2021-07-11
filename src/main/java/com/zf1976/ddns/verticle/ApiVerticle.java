@@ -22,7 +22,7 @@ import java.util.List;
  * @author mac
  * @date 2021/7/6
  */
-public class ApiVerticle extends RouterVerticle {
+public class ApiVerticle extends TemplateVerticle {
 
     private final Logger log = LogManager.getLogger(ApiVerticle.class);
     private final AliyunDDNSService aliyunDDNSService;
@@ -32,6 +32,7 @@ public class ApiVerticle extends RouterVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) {
+        final var serverPort = serverPort();
         final var router = getRouter();
         final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
         // 存储DNS服务商密钥
@@ -40,12 +41,19 @@ public class ApiVerticle extends RouterVerticle {
         router.post("/api/ddnsRecord").handler(this::findDDNSRecordsHandler);
         // 删除解析记录
         router.delete("/api/ddnsRecord").handler(this::deleteDDNSRecordHandler);
+        // 获取RSA公钥
+        router.get("/api/rsa/publicKey").handler(ctx -> {
+            this.readRsaKeyPair()
+                .onSuccess(rsaKeyPair -> {
+                    this.returnJsonWithCache(ctx, rsaKeyPair.getPublicKey());
+                });
+        });
         // 异常处理
         router.route("/api/*").failureHandler(this::returnError);
         httpServer.requestHandler(router)
-                  .listen(configProperty.getServerPort())
+                  .listen(serverPort)
                   .onSuccess(event -> {
-                     log.info("Vertx web server initialized with port(s): " + configProperty.getServerPort() + " (http)");
+                     log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
                      startPromise.complete();
                   })
                   .onFailure(startPromise::fail);
@@ -125,8 +133,7 @@ public class ApiVerticle extends RouterVerticle {
 
     private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
         final var fileSystem = vertx.fileSystem();
-        final String configFilePath = workDir + "/ddns_config.json";
-        this.initProjectDir(vertx);
+        final String configFilePath = this.pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
         return fileSystem.exists(configFilePath)
                          .compose(v -> {
                              // 配置文件不存在,则创建

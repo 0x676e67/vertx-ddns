@@ -1,7 +1,11 @@
 package com.zf1976.ddns;
 
+import com.zf1976.ddns.util.ObjectUtil;
+import com.zf1976.ddns.verticle.ApiConstants;
 import com.zf1976.ddns.verticle.ConfigVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author mac
@@ -10,8 +14,11 @@ import io.vertx.core.Vertx;
 public class Application {
 
     public static void main(String[] args) {
-        // 将日志实现强制设为 Log4j 2
-        Vertx.vertx().deployVerticle(new ConfigVerticle());
+        final var deploymentOptions = new DeploymentOptions();
+        if (!ObjectUtil.isEmpty(args)) {
+            deploymentOptions.setConfig(new JsonObject().put(ApiConstants.SERVER_PORT, args[0]));
+        }
+        Vertx.vertx().deployVerticle(new ConfigVerticle(), deploymentOptions);
     }
 
 }

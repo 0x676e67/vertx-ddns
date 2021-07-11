@@ -12,4 +12,6 @@ public interface ApiConstants {
 
     String RECORD_ID = "recordId";
 
+    String SERVER_PORT = "serverPort";
+
 }
