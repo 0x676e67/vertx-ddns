@@ -270,7 +270,6 @@
           </div>
         </div>
       </div>
-    </div>
 </main>
 
 
@@ -539,17 +538,7 @@
          * @param message
          */
         show: function (message) {
-            const html = '<form class="modal fade" id="confirmModal" tabindex="-1"' +
-                'role="dialog" aria-hidden="true" data-backdrop="static">' +
-                '<div class="modal-dialog modal-sm">' +
-                '<div class="modal-content">' +
-                '<div class="modal-body">' + message + '</div>' +
-                '<div class="modal-footer" align="center">' +
-                '<button type="button" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">我知道了</button>' +
-                '</div>' +
-                '</div>' +
-                '</div>' +
-                '</form>';
+            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">${message}</div><div class="modal-footer" align="center"><button type="button" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">我知道了</button></div></div></div></form>`;
             $(document.body).append(html);
             $('#confirmModal').modal('show').on('hide.bs.modal', function () {
                 $(this).remove();
