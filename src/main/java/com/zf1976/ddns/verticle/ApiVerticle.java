@@ -42,12 +42,8 @@ public class ApiVerticle extends TemplateVerticle {
         // 删除解析记录
         router.delete("/api/ddnsRecord").handler(this::deleteDDNSRecordHandler);
         // 获取RSA公钥
-        router.get("/api/rsa/publicKey").handler(ctx -> {
-            this.readRsaKeyPair()
-                .onSuccess(rsaKeyPair -> {
-                    this.returnJsonWithCache(ctx, rsaKeyPair.getPublicKey());
-                });
-        });
+        router.get("/api/rsa/publicKey").handler(ctx -> this.readRsaKeyPair()
+                                                        .onSuccess(rsaKeyPair -> this.returnJsonWithCache(ctx, rsaKeyPair.getPublicKey())));
         // 异常处理
         router.route("/api/*").failureHandler(this::returnError);
         httpServer.requestHandler(router)
