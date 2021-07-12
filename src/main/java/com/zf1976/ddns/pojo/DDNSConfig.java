@@ -1,6 +1,6 @@
 package com.zf1976.ddns.pojo;
 
-import com.zf1976.ddns.verticle.DDNSServiceType;
+import com.zf1976.ddns.verticle.DNSServiceType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,7 +22,7 @@ public class DDNSConfig implements Serializable {
     /**
      * 服务商类型
      */
-    private DDNSServiceType dnsServiceType;
+    private DNSServiceType dnsServiceType;
     /**
      * ipv4配置
      */
@@ -68,11 +68,11 @@ public class DDNSConfig implements Serializable {
         return this;
     }
 
-    public DDNSServiceType getDnsServiceType() {
+    public DNSServiceType getDnsServiceType() {
         return dnsServiceType;
     }
 
-    public DDNSConfig setDnsServiceType(DDNSServiceType dnsServiceType) {
+    public DDNSConfig setDnsServiceType(DNSServiceType dnsServiceType) {
         this.dnsServiceType = dnsServiceType;
         return this;
     }

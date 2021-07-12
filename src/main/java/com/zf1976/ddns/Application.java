@@ -17,6 +17,8 @@ public class Application {
         final var deploymentOptions = new DeploymentOptions();
         if (!ObjectUtil.isEmpty(args)) {
             deploymentOptions.setConfig(new JsonObject().put(ApiConstants.SERVER_PORT, args[0]));
+        } else {
+            deploymentOptions.setConfig(new JsonObject().put(ApiConstants.SERVER_PORT, 8080));
         }
         Vertx.vertx().deployVerticle(new ConfigVerticle(), deploymentOptions);
     }

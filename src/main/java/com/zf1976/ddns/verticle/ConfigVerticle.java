@@ -29,7 +29,7 @@ public class ConfigVerticle extends AbstractVerticle {
             .onSuccess(event -> {
                 startPromise.complete();
             }).onFailure(err -> {
-                log.error(err.getMessage(), err.getCause());
+                log.error("Class：" + err.getClass() + "=> Message：" + err.getMessage());
                 log.info("ApiVerticle deploy failure");
                 System.exit(0);
             });

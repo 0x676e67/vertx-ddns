@@ -19,7 +19,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
  * @date 2021/7/6
  */
 @SuppressWarnings({"FieldCanBeLocal", "UnusedReturnValue"})
-public class AliyunDDNSService {
+public class AliyunDNSService {
 
     private final Logger log = LoggerFactory.getLogger("[AliyunDDNSApi]");
     private final IAcsClient iAcsClient;
@@ -30,7 +30,7 @@ public class AliyunDDNSService {
     private DeleteDomainRecordRequest deleteDomainRecordRequest = new DeleteDomainRecordRequest();
     private static final String RECORD_TYPE = "A";
 
-    public AliyunDDNSService(AliyunDnsProperties properties) {
+    public AliyunDNSService(AliyunDnsProperties properties) {
         this.properties = properties;
         // 设置鉴权参数，初始化客户端
         final var profile = DefaultProfile.getProfile(
@@ -175,7 +175,7 @@ public class AliyunDDNSService {
         this.updateDomainRecordRequest = updateDomainRecordRequest;
     }
 
-    public AliyunDDNSService setAddDomainRecordRequest(AddDomainRecordRequest addDomainRecordRequest) {
+    public AliyunDNSService setAddDomainRecordRequest(AddDomainRecordRequest addDomainRecordRequest) {
         this.addDomainRecordRequest = addDomainRecordRequest;
         return this;
     }
@@ -184,7 +184,7 @@ public class AliyunDDNSService {
         return deleteDomainRecordRequest;
     }
 
-    public AliyunDDNSService setDeleteDomainRecordRequest(DeleteDomainRecordRequest deleteDomainRecordRequest) {
+    public AliyunDNSService setDeleteDomainRecordRequest(DeleteDomainRecordRequest deleteDomainRecordRequest) {
         this.deleteDomainRecordRequest = deleteDomainRecordRequest;
         return this;
     }

@@ -3,9 +3,7 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
-import com.zf1976.ddns.util.IpUtil;
-import com.zf1976.ddns.util.JSONUtil;
-import com.zf1976.ddns.util.RsaUtil;
+import com.zf1976.ddns.util.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -27,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -82,16 +81,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                   .compose(v -> fileSystem.exists(accountFilePath))
                   .compose(bool -> createFile(fileSystem, bool, accountFilePath))
                   .compose(v ->fileSystem.exists(rsaKeyPath))
-                  .compose(bool -> createFile(fileSystem, bool, rsaKeyPath))
-                  .compose(v -> {
-                      try {
-                          final var rsaKeyPair = RsaUtil.generateKeyPair();
-                          this.rsaKeyPair = rsaKeyPair;
-                          return fileSystem.writeFile(rsaKeyPath, Buffer.buffer(Json.encodePrettily(rsaKeyPair)));
-                      } catch (NoSuchAlgorithmException e) {
-                          return Future.failedFuture(e);
-                      }
-                  })
+                  .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
                   .onSuccess(succeed -> {
                       log.info("Initialize project working directory：" + projectWorkPath);
                       log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
@@ -107,6 +97,52 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                   });
     }
 
+    private void handleTemplate(Router router, Vertx vertx) {
+        TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
+        TemplateHandler handler = TemplateHandler.create(templateEngine);
+        // 设置默认模版
+        handler.setIndexTemplate("index.html");
+        // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
+        router.getWithRegex(".+\\.html")
+              .handler(ctx -> readDDNSConfig(vertx.fileSystem())
+                      .onSuccess(ddnsConfigList -> {
+                          this.readRsaKeyPair()
+                              .onSuccess(rsaKeyPair -> {
+                                  for (DDNSConfig ddnsConfig : ddnsConfigList) {
+                                      ddnsConfig.setId(hideHandler(ddnsConfig.getId()))
+                                                .setSecret(hideHandler(ddnsConfig.getSecret()));
+                                  }
+                                  ctx.put("common", ConfigProperty.getCommonProperties())
+                                     .put("ipv4", IpUtil.getNetworkIpv4List())
+                                     .put("ipv6", IpUtil.getNetworkIpv6List())
+                                     .put("ddnsConfigList", ddnsConfigList)
+                                     .put("rsaPublicKey", rsaKeyPair.getPublicKey());
+                                  handler.handle(ctx);
+                              });
+                      })
+                      .onFailure(err -> this.handleError(ctx, err)));
+        // 静态资源处理
+        router.get().handler(StaticHandler.create());
+
+    }
+
+    private Future<Void> writeRsaKeyFile(FileSystem fileSystem, String rsaKeyPath) {
+        try {
+            final var rsaKeyPair = RsaUtil.generateKeyPair();
+            this.rsaKeyPair = rsaKeyPair;
+            return fileSystem.writeFile(rsaKeyPath, Buffer.buffer(Json.encodePrettily(rsaKeyPair)));
+        } catch (NoSuchAlgorithmException e) {
+            return Future.failedFuture(e);
+        }
+    }
+
+    private Future<Void> createRsaKeyFile(FileSystem fileSystem, boolean bool, String path) {
+        if (!bool) {
+            return fileSystem.createFile(path).compose(v -> writeRsaKeyFile(fileSystem, path));
+        }
+        return Future.succeededFuture();
+    }
+
     private Future<Void> createFile(FileSystem fileSystem, boolean bool, String path) {
         if (!bool) {
             return fileSystem.createFile(path);
@@ -120,14 +156,26 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         }
         return vertx.fileSystem()
                     .readFile(pathToAbsolutePath(workDir, RSA_KEY_FILENAME))
-                    .compose(v -> Future.succeededFuture(JSONUtil.readValue(v.toString(), RsaUtil.RsaKeyPair.class)));
+                    .compose(buffer -> Future.succeededFuture(JSONUtil.readValue(buffer.toString(), RsaUtil.RsaKeyPair.class)));
     }
 
-    @SuppressWarnings("rawtypes")
-    protected Future<List> getDDNSConfig(Vertx vertx) {
-        return vertx.fileSystem()
-                    .readFile(pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME))
-                    .compose(v -> Future.succeededFuture(JSONUtil.readValue(v.toString(), List.class)));
+    protected Future<List<DDNSConfig>> readDDNSConfig(FileSystem fileSystem) {
+        return fileSystem.readFile(pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME))
+                         .compose(v -> {
+                             try {
+                                 var list = JSONUtil.readValue(v.toString(), List.class);
+                                 if (CollectionUtil.isEmpty(list)) {
+                                     return Future.succeededFuture(new ArrayList<>());
+                                 }
+                                 List<DDNSConfig> ddnsConfigList = new ArrayList<>();
+                                 for (Object o : list) {
+                                     ddnsConfigList.add(JSONUtil.readValue(o, DDNSConfig.class));
+                                 }
+                                 return Future.succeededFuture(ddnsConfigList);
+                             } catch (Exception e) {
+                                 return Future.failedFuture(e.getMessage());
+                             }
+                         });
     }
 
     protected String pathToAbsolutePath(String first,String ...more) {
@@ -136,47 +184,61 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                     .getAbsolutePath();
     }
 
-    private Future<DDNSConfig> ddnsConfigDecryptHandler(DDNSConfig ddnsConfig) {
+    protected Future<DDNSConfig> ddnsConfigDecryptHandler(DDNSConfig ddnsConfig) {
         return this.readRsaKeyPair()
-                   .compose(buffer -> {
-                       final var rsaKeyPair = JSONUtil.readValue(buffer.toString(), RsaUtil.RsaKeyPair.class);
-                       if (rsaKeyPair == null) {
-                           return Future.failedFuture("RSA keyless");
-                       }
-                       try {
-                           ddnsConfig.setId(RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), ddnsConfig.getId()));
-                           ddnsConfig.setSecret(RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), ddnsConfig.getSecret()));
-                           return Future.succeededFuture(ddnsConfig);
-                       } catch (Exception e) {
-                           return Future.failedFuture(e.getMessage());
-                       }
-                   });
+                   .compose(keyPair -> this.ddnsConfigDecrypt(keyPair, ddnsConfig));
     }
 
-    private void handleTemplate(Router router, Vertx vertx) {
-        TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
-        TemplateHandler handler = TemplateHandler.create(templateEngine);
-        // 设置默认模版
-        handler.setIndexTemplate("index.html");
-        // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
-        router.getWithRegex(".+\\.html")
-              .handler(ctx -> {
-                  getDDNSConfig(vertx).compose(ddnsList -> this.readRsaKeyPair()
-                                                             .onSuccess(keyPair -> {
-                                                                 ctx.put("common", ConfigProperty.getCommonProperties());
-                                                                 ctx.put("ipv4", IpUtil.getNetworkIpv4List());
-                                                                 ctx.put("ipv6", IpUtil.getNetworkIpv6List());
-                                                                 ctx.put("ddnsConfigList", ddnsList);
-                                                                 ctx.put("rsaPublicKey", keyPair.getPublicKey());
-                                                                 handler.handle(ctx);
-                                                             })).onFailure(err -> ctx.response()
-                                                                                     .setStatusCode(500)
-                                                                                     .end(Json.encodePrettily(DataResult.fail(500, "Failed to read configuration file"))));
-              });
-        // 静态资源处理
-        router.get().handler(StaticHandler.create());
+    protected Future<DDNSConfig> ddnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DDNSConfig ddnsConfig) {
+        if (keyPair == null) {
+            return Future.failedFuture("RSA keyless");
+        }
+        try {
+            // cloudflare 只有token作为访问密钥
+            if (!ddnsConfig.getDnsServiceType().equals(DNSServiceType.CLOUDFLARE)) {
+                ddnsConfig.setId(RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getId()));
+            }
+            ddnsConfig.setSecret(RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getSecret()));
+            return Future.succeededFuture(ddnsConfig);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e.getCause());
+            return readDDNSConfig(vertx.fileSystem())
+                    .compose(ddnsConfigList -> {
+                        for (DDNSConfig config : ddnsConfigList) {
+                            if (ddnsConfig.getDnsServiceType().equals(config.getDnsServiceType())) {
+                                // cloudflare 只有token作为访问密钥
+                                if (!ddnsConfig.getDnsServiceType().equals(DNSServiceType.CLOUDFLARE)) {
+                                    if (isHide(config.getId(), ddnsConfig.getId()) && isHide(config.getSecret(), ddnsConfig.getSecret())) {
+                                        return Future.succeededFuture(config);
+                                    }
+                                } else {
+                                    if (isHide(config.getSecret(), ddnsConfig.getSecret())) {
+                                        return Future.succeededFuture(config);
+                                    }
+                                }
+                            }
+                        }
+                        return Future.failedFuture(e.getMessage());
+                    });
+        }
+    }
 
-     }
+    protected boolean isHide(String rawStr, String str) {
+        return ObjectUtil.nullSafeEquals(hideHandler(rawStr), str);
+    }
+
+    protected String hideHandler(String rawStr) {
+        if (StringUtil.isEmpty(rawStr)) {
+            return "";
+        }
+        int beginHideIndex = 3;
+        if (rawStr.length() > beginHideIndex) {
+            final var noHide = rawStr.substring(0, beginHideIndex);
+            final var beginHideStr = rawStr.substring(beginHideIndex);
+            return noHide + "*".repeat(beginHideStr.length());
+        }
+        return "";
+    }
 
     protected void returnError(RoutingContext routingContext) {
         int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
@@ -205,6 +267,14 @@ public abstract class TemplateVerticle extends AbstractVerticle {
 
     protected void returnJsonWithCache(RoutingContext routingContext) {
         this.returnJsonWithCache(routingContext, null);
+    }
+
+    protected void handleError(RoutingContext routingContext, String message) {
+         this.handleError(routingContext, new RuntimeException(message));
+    }
+
+    protected void handleBad(RoutingContext routingContext, String message) {
+         this.handleBad(routingContext, new RuntimeException(message));
     }
 
     protected void handleError(RoutingContext routingContext, Throwable throwable) {

@@ -4,7 +4,7 @@ package com.zf1976.ddns.verticle;
  * @author mac
  * @date 2021/7/8
  */
-public enum DDNSServiceType {
+public enum DNSServiceType {
 
     /**
      * 阿里云
@@ -23,8 +23,8 @@ public enum DDNSServiceType {
      */
     HUAWEI;
 
-    public static DDNSServiceType checkType(String value) {
-        for (DDNSServiceType type : values()) {
+    public static DNSServiceType checkType(String value) {
+        for (DNSServiceType type : values()) {
             if (type.toString().equals(value)) {
                 return type;
             }

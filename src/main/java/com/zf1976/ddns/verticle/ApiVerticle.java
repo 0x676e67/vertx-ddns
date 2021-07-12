@@ -3,11 +3,8 @@ package com.zf1976.ddns.verticle;
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
-import com.zf1976.ddns.service.AliyunDDNSService;
-import com.zf1976.ddns.util.JSONUtil;
-import com.zf1976.ddns.util.ObjectUtil;
-import com.zf1976.ddns.util.StringUtil;
-import com.zf1976.ddns.util.Validator;
+import com.zf1976.ddns.service.AliyunDNSService;
+import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -26,9 +23,9 @@ import java.util.List;
 public class ApiVerticle extends TemplateVerticle {
 
     private final Logger log = LogManager.getLogger(ApiVerticle.class);
-    private final AliyunDDNSService aliyunDDNSService;
+    private final AliyunDNSService aliyunDNSService;
     public ApiVerticle() {
-        this.aliyunDDNSService = new AliyunDDNSService(ConfigProperty.getAliyunDnsProperties());
+        this.aliyunDNSService = new AliyunDNSService(ConfigProperty.getAliyunDnsProperties());
     }
 
     @Override
@@ -63,7 +60,7 @@ public class ApiVerticle extends TemplateVerticle {
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
         final var request = routingContext.request();
         final var param = request.getParam(ApiConstants.DDNS_SERVICE_TYPE);
-        final var type = DDNSServiceType.checkType(param);
+        final var type = DNSServiceType.checkType(param);
         try {
             if (ObjectUtil.isEmpty(type)) {
                 throw new RuntimeException("The DDNS service provider does not exist");
@@ -73,9 +70,9 @@ public class ApiVerticle extends TemplateVerticle {
                 case ALIYUN:
                     DescribeDomainRecordsResponse describeDomainRecordsResponse;
                     if (domain != null) {
-                        describeDomainRecordsResponse = this.aliyunDDNSService.findDescribeDomainRecords(domain);
+                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords(domain);
                     } else {
-                        describeDomainRecordsResponse = this.aliyunDDNSService.findDescribeDomainRecords();
+                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords();
                     }
                     super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
                     break;
@@ -94,7 +91,7 @@ public class ApiVerticle extends TemplateVerticle {
     protected void deleteDDNSRecordHandler(RoutingContext routingContext) {
         try {
             final var recordId = routingContext.request().getParam(ApiConstants.RECORD_ID);
-            this.aliyunDDNSService.deleteDomainRecordResponse(recordId);
+            this.aliyunDNSService.deleteDomainRecordResponse(recordId);
             this.returnJsonWithCache(routingContext);
         } catch (Exception e) {
             this.handleBad(routingContext, e);
@@ -120,7 +117,8 @@ public class ApiVerticle extends TemplateVerticle {
                                      () -> new RuntimeException("The Secret cannot be empty"));
                 default:
             }
-            this.storeDDNSConfig(ddnsConfig)
+            this.ddnsConfigDecryptHandler(ddnsConfig)
+                .compose(this::storeDDNSConfig)
                 .onSuccess(success -> this.returnJsonWithCache(routingContext))
                 .onFailure(err -> this.handleError(routingContext, err));
         } catch (RuntimeException exception) {
@@ -133,32 +131,21 @@ public class ApiVerticle extends TemplateVerticle {
     private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = this.pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
-        return fileSystem.readFile(configFilePath)
-                         .compose(buffer -> this.ddnsConfigWrite(buffer, ddnsConfig, configFilePath));
+        return this.readDDNSConfig(fileSystem)
+                   .compose(ddnsConfigList -> this.ddnsConfigWrite(ddnsConfigList, ddnsConfig, configFilePath));
     }
 
-    private Future<Void> ddnsConfigWrite(Buffer buffer, DDNSConfig ddnsConfig, String configFilePath) {
+    private Future<Void> ddnsConfigWrite(List<DDNSConfig> ddnsConfigs, DDNSConfig ddnsConfig, String configFilePath) {
         // 读取配置为空
-        if (ObjectUtil.isEmpty(buffer.getBytes())) {
+        if (CollectionUtil.isEmpty(ddnsConfigs)) {
             List<DDNSConfig> accountList = new ArrayList<>();
             accountList.add(ddnsConfig);
             return this.writeConfig(configFilePath, JSONUtil.toJsonString(accountList));
         } else {
             try {
-                List<DDNSConfig> configArrayList = new ArrayList<>();
-                final var rawConfigList = JSONUtil.readValue(buffer.toString(), List.class);
-                if (rawConfigList != null) {
-                    for (Object obj : rawConfigList) {
-                        final var decodeDnsConfig = JSONUtil.readValue(obj, DDNSConfig.class);
-                        configArrayList.add(decodeDnsConfig);
-                    }
-                    configArrayList.removeIf(config -> config.getDnsServiceType().equals(ddnsConfig.getDnsServiceType()));
-                    configArrayList.add(ddnsConfig);
-                    return this.writeConfig(configFilePath, JSONUtil.toJsonString(configArrayList));
-                } else {
-                    // 手动修改配置文件后 可能会读取错误
-                    return Future.failedFuture(new RuntimeException("File read error configuration"));
-                }
+                ddnsConfigs.removeIf(config -> ddnsConfig.getDnsServiceType().equals(config.getDnsServiceType()));
+                ddnsConfigs.add(ddnsConfig);
+                return this.writeConfig(configFilePath, JSONUtil.toJsonString(ddnsConfigs));
             } catch (Exception e) {
                 return Future.failedFuture(new RuntimeException("Server Error"));
             }
