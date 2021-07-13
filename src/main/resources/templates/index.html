@@ -37,7 +37,7 @@
 <main role="main" style="margin-top: 20px; overflow: hidden">
     <div class="row">
       <div class="col-md-6 offset-md-3">
-        <div class="card">
+          <div class="card">
             <!--                <hr  style="color: #1a1e21; size: 1px" >-->
             <div class="card-header">DDNS服务商设置</div>
 <!--            DDNS服务商Body-->
@@ -268,8 +268,12 @@
                 <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeDDNSConfig()">保存配置</button>
             </div>
           </div>
-        </div>
       </div>
+        <div class="col-md-3">
+            <p class="font-weight-light text-break" style="margin-top: 115px;font-size: 13px;" id="logs"></p>
+        </div>
+    </div>
+
 </main>
 
 
@@ -306,6 +310,8 @@
 
     // 初始化调用
     setAliyunType()
+    getLogs()
+    setInterval(getLogs, 1000)
     function setDDNSConfig() {
         // 设置服务商Account
         let targetConfig
@@ -428,6 +434,7 @@
         axiosInstance.post("/api/storeConfig",data)
             .then(res => {
             confirm.show("保存成功")
+                location.reload();
         })
     }
 
@@ -657,6 +664,14 @@
             $('#confirmModal').modal('hide');
         }
     };
+    function getLogs() {
+        // axiosInstance.get("/api/logs")
+        // .then(res => {
+        //     $("#logs").html(res.data.data)
+        // })
+        $("#logs").html(new Date())
+    }
+
 </script>
 </body>
 </html>
