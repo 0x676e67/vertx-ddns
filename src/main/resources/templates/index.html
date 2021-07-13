@@ -305,9 +305,7 @@
     let selectDDNSType = aliyunType
 
     // 初始化调用
-    setDDNSConfig()
-    selectIpv4ForApi()
-    selectIpv6ForApi()
+    setAliyunType()
     function setDDNSConfig() {
         // 设置服务商Account
         let targetConfig
@@ -317,28 +315,49 @@
                 if (selectDDNSType == ddnsConfig.dnsServiceType) {
                     targetConfig = ddnsConfig
                     document.getElementById("ipv4Enable").checked = ddnsConfig.ipv4Config.enable
-                    document.getElementsByName("ipv4Radios")[0].checked = ddnsConfig.ipv4Config.selectIpMethod
+                    if (ddnsConfig.ipv4Config.selectIpMethod) {
+                        document.getElementById("ipv4Radios1").checked = true
+                        document.getElementById("ipv4Radios2").checked = false
+                        document.getElementById("ipv4Radios1").onclick()
+
+                    } else {
+                        document.getElementById("ipv4Radios1").checked = false
+                        document.getElementById("ipv4Radios2").checked = true
+                        document.getElementById("ipv4Radios2").onclick()
+                    }
+                    if (ddnsConfig.ipv6Config.selectIpMethod) {
+                        document.getElementById("ipv6Radios1").checked = true
+                        document.getElementById("ipv6Radios2").checked = false
+                        document.getElementById("ipv6Radios1").onclick()
+
+                    } else {
+                        document.getElementById("ipv6Radios1").checked = false
+                        document.getElementById("ipv6Radios2").checked = true
+                        document.getElementById("ipv6Radios2").onclick()
+                    }
                     document.getElementById("ipv4ApiInput").value = ddnsConfig.ipv4Config.inputIpApi
                     document.getElementById("ipv4_domains").value = ddnsConfig.ipv4Config.domainList
+                    document.getElementById("ipv6ApiInput").value = ddnsConfig.ipv4Config.inputIpApi
+                    document.getElementById("ipv6_domains").value = ddnsConfig.ipv4Config.domainList
                 }
-            }
-            switch (selectDDNSType) {
-                case aliyunType:
-                    document.getElementById("aliyunAccount").value = targetConfig? targetConfig.id : ""
-                    document.getElementById("aliyunSecret").value = targetConfig? targetConfig.secret : ""
-                    break
-                case dnspodType:
-                    document.getElementById("dnspodAccount").value = targetConfig? targetConfig.id:""
-                    document.getElementById("dnspodSecret").value = targetConfig? targetConfig.secret : ""
-                    break
-                case cloudflareType:
-                    document.getElementById("cloudflareSecret").value = targetConfig? targetConfig.secret : ""
-                    break
-                case huaweiType:
-                    document.getElementById("huaweiAccount").value = targetConfig? targetConfig.id:""
-                    document.getElementById("huaweiSecret").value = targetConfig? targetConfig.secret : ""
-                    break
-                default:
+                switch (selectDDNSType) {
+                    case aliyunType:
+                        document.getElementById("aliyunAccount").value = targetConfig ? targetConfig.id : ""
+                        document.getElementById("aliyunSecret").value = targetConfig ? targetConfig.secret : ""
+                        break
+                    case dnspodType:
+                        document.getElementById("dnspodAccount").value = targetConfig ? targetConfig.id : ""
+                        document.getElementById("dnspodSecret").value = targetConfig ? targetConfig.secret : ""
+                        break
+                    case cloudflareType:
+                        document.getElementById("cloudflareSecret").value = targetConfig ? targetConfig.secret : ""
+                        break
+                    case huaweiType:
+                        document.getElementById("huaweiAccount").value = targetConfig ? targetConfig.id : ""
+                        document.getElementById("huaweiSecret").value = targetConfig ? targetConfig.secret : ""
+                        break
+                    default:
+                }
             }
         }
     }
@@ -452,7 +471,17 @@
         if (networkIpv4List.length !== 0) {
             document.getElementById("selectIpv4Value").options.length = 0
             for (let i = 0; i < networkIpv4List.length; i++) {
-                $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+                let selected
+                for (let j = 0; j < ddnsConfigList.length; j++) {
+                    if (ddnsConfigList[j].dnsServiceType == selectDDNSType) {
+                        selected = ddnsConfigList[j].ipv4Config.networkIp
+                    }
+                }
+                if (selected == networkIpv4List[i].substring(networkIpv4List[i].indexOf('(') + 1, networkIpv4List[i].lastIndexOf(')'))) {
+                    $("#selectIpv4Value").append("<option selected value=" + networkIpv4List[i] +  ">" + networkIpv4List[i] + "</option>")
+                } else {
+                    $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+                }
             }
         } else {
             $("#ipv4_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
@@ -464,7 +493,7 @@
         document.getElementById("ipv6ApiInputDiv").hidden = false
     }
 
-    function selectIpv6ForNetwork() {
+    function selectIpv6ForNetwork(value ) {
         document.getElementById("ipv6_netInterface_select").hidden = false
         document.getElementById("ipv6ApiInputDiv").hidden = true
         var selectIpv6List = document.getElementById("selectIpv6Value");
@@ -472,7 +501,17 @@
         if (networkIpv6List.length !== 0) {
             document.getElementById("selectIpv6Value").options.length = 0
             for (let i = 0; i < networkIpv6List.length; i++) {
-                $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+                let selected
+                for (let j = 0; j < ddnsConfigList.length; j++) {
+                    if (ddnsConfigList[j].dnsServiceType == selectDDNSType) {
+                        selected = ddnsConfigList[j].ipv6Config.networkIp
+                    }
+                }
+                if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
+                    $("#selectIpv4Value").append("<option selected value=" + networkIpv6List[i] +  ">" + networkIpv6List[i] + "</option>")
+                } else {
+                    $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+                }
             }
         } else {
             $("#ipv6_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
@@ -545,22 +584,46 @@
 
     function setAliyunType() {
         selectDDNSType = aliyunType;
+        document.getElementById("aliyunAccount").value = ""
+        document.getElementById("aliyunSecret").value = ""
+        clearForm()
         setDDNSConfig()
     }
 
     function setDnspodType() {
         selectDDNSType = dnspodType
+        document.getElementById("dnspodAccount").value = ""
+        document.getElementById("dnspodSecret").value = ""
+        clearForm()
         setDDNSConfig()
     }
 
     function setCloudflareType() {
         selectDDNSType = cloudflareType
+        document.getElementById("cloudflareSecret").value = ""
+        clearForm()
         setDDNSConfig()
     }
 
     function setHuaweiType() {
         selectDDNSType = huaweiType
+        document.getElementById("huaweiAccount").value = ""
+        document.getElementById("huaweiSecret").value = ""
+        clearForm()
         setDDNSConfig()
+    }
+
+    function clearForm() {
+        document.getElementById("ipv4Enable").value = false
+        document.getElementById("ipv6Enable").value = false
+        document.getElementById("ipv6Radios1").checked = true
+        document.getElementById("ipv6Radios2").checked = false
+        document.getElementById("ipv4Radios1").checked = true
+        document.getElementById("ipv4Radios2").checked = false
+        document.getElementById("ipv4ApiInput").value = ""
+        document.getElementById("ipv4_domains").value = ""
+        document.getElementById("ipv6ApiInput").value = ""
+        document.getElementById("ipv6_domains").value = ""
     }
 
     function isHide(str, ddnsType) {
