@@ -102,6 +102,8 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         TemplateHandler handler = TemplateHandler.create(templateEngine);
         // 设置默认模版
         handler.setIndexTemplate("index.html");
+        // 域名端口
+        router.get("/").handler(ctx -> ctx.redirect("/login.html"));
         // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
         router.getWithRegex(".+\\.html")
               .handler(ctx -> readDDNSConfig(vertx.fileSystem())
@@ -201,7 +203,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
             ddnsConfig.setSecret(RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getSecret()));
             return Future.succeededFuture(ddnsConfig);
         } catch (Exception e) {
-            log.error(e.getMessage(), e.getCause());
             return readDDNSConfig(vertx.fileSystem())
                     .compose(ddnsConfigList -> {
                         for (DDNSConfig config : ddnsConfigList) {
@@ -209,11 +210,13 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                                 // cloudflare 只有token作为访问密钥
                                 if (!ddnsConfig.getDnsServiceType().equals(DNSServiceType.CLOUDFLARE)) {
                                     if (isHide(config.getId(), ddnsConfig.getId()) && isHide(config.getSecret(), ddnsConfig.getSecret())) {
-                                        return Future.succeededFuture(config);
+                                        ddnsConfig.setId(config.getId())
+                                                  .setSecret(config.getSecret());
+                                        return Future.succeededFuture(ddnsConfig);
                                     }
                                 } else {
                                     if (isHide(config.getSecret(), ddnsConfig.getSecret())) {
-                                        return Future.succeededFuture(config);
+                                        return Future.succeededFuture(ddnsConfig.setSecret(config.getSecret()));
                                     }
                                 }
                             }

@@ -308,7 +308,6 @@
     setDDNSConfig()
     selectIpv4ForApi()
     selectIpv6ForApi()
-    console.log(ddnsConfigList)
     function setDDNSConfig() {
         // 设置服务商Account
         let targetConfig
@@ -382,8 +381,9 @@
         let secret
         switch (selectDDNSType) {
             case aliyunType:
-                id = document.getElementById("aliyunAccount").value
-                secret = document.getElementById("aliyunSecret").value
+                id = document.getElementById("aliyunAccount").value;
+                secret = document.getElementById("aliyunSecret").value;
+
                 break
             case dnspodType:
                 id = document.getElementById("dnspodAccount").value
@@ -398,8 +398,8 @@
                 break
         }
         let data = {
-            "id": id? encrypt(id) : null,
-            "secret": secret? encrypt(secret) : null,
+            "id": id ? (isHide(id, selectDDNSType)? id : encrypt(id) ):null ,
+            "secret": secret ? (isHide(secret, selectDDNSType)? secret : encrypt(secret) ):null,
             "dnsServiceType" : selectDDNSType,
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
@@ -562,6 +562,16 @@
         selectDDNSType = huaweiType
         setDDNSConfig()
     }
+
+    function isHide(str, ddnsType) {
+        for (let i = 0; i < ddnsConfigList.length; i++) {
+            if (ddnsConfigList[i].dnsServiceType == ddnsType) {
+                return true
+            }
+        }
+        return false
+    }
+
     /**
      * 确认框
      */
