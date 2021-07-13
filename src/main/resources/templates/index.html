@@ -423,18 +423,16 @@
                 break
         }
         let data = {
-            "id": id ? (isHide(id, selectDDNSType)? id : encrypt(id) ):null ,
-            "secret": secret ? (isHide(secret, selectDDNSType)? secret : encrypt(secret) ):null,
+            "id": id ? (idIsHide(id, selectDDNSType)? id : encrypt(id)): encrypt("") ,
+            "secret": secret ? (secretIsHide(secret, selectDDNSType)? secret : encrypt(secret)) : encrypt(""),
             "dnsServiceType" : selectDDNSType,
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
         }
         console.log(data)
-
         axiosInstance.post("/api/storeConfig",data)
             .then(res => {
             confirm.show("保存成功")
-                location.reload();
         })
     }
 
@@ -451,6 +449,7 @@
             }
         }
     }
+
     function clearInput(){
         $("#inputDomain").val("")
         $("#tbMain").empty()
@@ -635,8 +634,30 @@
 
     function isHide(str, ddnsType) {
         for (let i = 0; i < ddnsConfigList.length; i++) {
-            if (ddnsConfigList[i].dnsServiceType == ddnsType) {
+            var config = ddnsConfigList[i];
+            if (config.dnsServiceType == ddnsType) {
+                console.log(config)
                 return true
+            }
+        }
+        return false
+    }
+
+    function idIsHide(id, ddnsType) {
+        for (let i = 0; i < ddnsConfigList.length; i++) {
+            var config = ddnsConfigList[i];
+            if (config.dnsServiceType == ddnsType) {
+                return config.id == id;
+            }
+        }
+        return false
+    }
+
+    function secretIsHide(secret, ddnsType) {
+        for (let i = 0; i < ddnsConfigList.length; i++) {
+            var config = ddnsConfigList[i];
+            if (config.dnsServiceType == ddnsType) {
+                return config.secret == secret;
             }
         }
         return false
@@ -651,11 +672,17 @@
          * @param message
          */
         show: function (message) {
-            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">${message}</div><div class="modal-footer" align="center"><button type="button" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">我知道了</button></div></div></div></form>`;
+            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">${message}</div><div class="modal-footer" align="center"><button type="submit" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">我知道了</button></div></div></div></form>`;
             $(document.body).append(html);
             $('#confirmModal').modal('show').on('hide.bs.modal', function () {
                 $(this).remove();
-            })
+            }).submit(function (e) {
+                e.preventDefault();
+                if (typeof callback === 'function') {
+                    $(this).remove();
+                    callback();
+                }
+            });
         },
         /**
          * 移除确认框
@@ -664,6 +691,7 @@
             $('#confirmModal').modal('hide');
         }
     };
+
     function getLogs() {
         // axiosInstance.get("/api/logs")
         // .then(res => {

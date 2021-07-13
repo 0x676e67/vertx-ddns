@@ -235,12 +235,13 @@ public abstract class TemplateVerticle extends AbstractVerticle {
             return "";
         }
         int beginHideIndex = 3;
-        if (rawStr.length() > beginHideIndex) {
+        final var rawStrLength = rawStr.length();
+        if ( rawStrLength > beginHideIndex) {
             final var noHide = rawStr.substring(0, beginHideIndex);
             final var beginHideStr = rawStr.substring(beginHideIndex);
             return noHide + "*".repeat(beginHideStr.length());
         }
-        return "";
+        return "*".repeat(rawStrLength);
     }
 
     protected void returnError(RoutingContext routingContext) {
