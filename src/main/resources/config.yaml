@@ -10,8 +10,6 @@ common:
     - https://speed.neu6.edu.cn/getIP.php
 #阿里云配置
 aliyun:
-  accessKeyId: LTAI5tDQhy5qHf9AvJocLX7G
-  secret: RzGsKDseCshfB9MS3u7d46o7zLNWik
   defaultRegionId: cn-shenzhen  #默认地域id
   regionIdList: #阿里云所有地域id集合
     - cn-hangzhou #华东1（杭州）

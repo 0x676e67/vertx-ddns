@@ -3,6 +3,7 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
+import com.zf1976.ddns.service.AliyunDNSService;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -42,6 +43,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected static final String ACCOUNT_FILENAME = "account.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
+    protected AliyunDNSService aliyunDNSService;
 
     protected synchronized Router getRouter() {
         return router;
@@ -57,7 +59,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
             synchronized (TemplateVerticle.class) {
                 if (router == null) {
                     router = Router.router(vertx);
-                    this.initProjectConfig(vertx);
                 }
             }
         }
@@ -69,33 +70,30 @@ public abstract class TemplateVerticle extends AbstractVerticle {
      *
      * @param vertx vertx
      */
-     protected void initProjectConfig(Vertx vertx) {
+     protected Future<Void> initProjectConfig(Vertx vertx) {
         final var fileSystem = vertx.fileSystem();
         final var projectWorkPath = this.pathToAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
         final var ddnsConfigFilePath = this.pathToAbsolutePath(projectWorkPath, DDNS_CONFIG_FILENAME);
         final var accountFilePath = this.pathToAbsolutePath(projectWorkPath, ACCOUNT_FILENAME);
         final var rsaKeyPath = this.pathToAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
-        fileSystem.mkdirs(projectWorkPath)
-                  .compose(v -> fileSystem.exists(ddnsConfigFilePath))
-                  .compose(bool -> createFile(fileSystem, bool, ddnsConfigFilePath))
-                  .compose(v -> fileSystem.exists(accountFilePath))
-                  .compose(bool -> createFile(fileSystem, bool, accountFilePath))
-                  .compose(v ->fileSystem.exists(rsaKeyPath))
-                  .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
-                  .onSuccess(succeed -> {
-                      log.info("Initialize project working directory：" + projectWorkPath);
-                      log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
-                      log.info("Initialize account configuration file：" + accountFilePath);
-                      log.info("Initialize rsa key configuration file：" + rsaKeyPath);
-                      log.info("RSA key has been initialized");
-                      TemplateVerticle.workDir = projectWorkPath;
-                      this.handleTemplate(router, vertx);
-                  })
-                  .onFailure(err -> {
-                      log.error(err.getMessage(), err.getCause());
-                      System.exit(0);
-                  });
-    }
+         return fileSystem.mkdirs(projectWorkPath)
+                          .compose(v -> fileSystem.exists(ddnsConfigFilePath))
+                          .compose(bool -> createFile(fileSystem, bool, ddnsConfigFilePath))
+                          .compose(v -> fileSystem.exists(accountFilePath))
+                          .compose(bool -> createFile(fileSystem, bool, accountFilePath))
+                          .compose(v -> fileSystem.exists(rsaKeyPath))
+                          .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
+                          .compose(v -> {
+                              log.info("Initialize project working directory：" + projectWorkPath);
+                              log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
+                              log.info("Initialize account configuration file：" + accountFilePath);
+                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
+                              log.info("RSA key has been initialized");
+                              TemplateVerticle.workDir = projectWorkPath;
+                              this.handleTemplate(router, vertx);
+                              return this.loadDDNSServiceConfig();
+                          });
+     }
 
     private void handleTemplate(Router router, Vertx vertx) {
         TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
@@ -127,6 +125,32 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         router.get().handler(StaticHandler.create());
 
     }
+
+    protected Future<Void> loadDDNSServiceConfig() {
+        return this.readDDNSConfig(vertx.fileSystem())
+                   .compose(ddnsConfigList -> {
+                       try {
+                           for (DDNSConfig ddnsConfig : ddnsConfigList) {
+                               this.loadConfig(ddnsConfig);
+                           }
+                           return Future.succeededFuture();
+                       } catch (Exception e) {
+                           return Future.failedFuture(e);
+                       }
+                   });
+    }
+
+    protected void loadConfig(DDNSConfig ddnsConfig) {
+        switch (ddnsConfig.getDnsServiceType()) {
+            case ALIYUN:
+                this.aliyunDNSService = new AliyunDNSService(ddnsConfig.getId(), ddnsConfig.getSecret(), "cn-shenzhen");
+            case DNSPOD:
+            case HUAWEI:
+            case CLOUDFLARE:
+            default:
+        }
+    }
+
 
     private Future<Void> writeRsaKeyFile(FileSystem fileSystem, String rsaKeyPath) {
         try {

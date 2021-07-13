@@ -1,9 +1,7 @@
 package com.zf1976.ddns.verticle;
 
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
-import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
-import com.zf1976.ddns.service.AliyunDNSService;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -23,10 +21,6 @@ import java.util.List;
 public class ApiVerticle extends TemplateVerticle {
 
     private final Logger log = LogManager.getLogger(ApiVerticle.class);
-    private final AliyunDNSService aliyunDNSService;
-    public ApiVerticle() {
-        this.aliyunDNSService = new AliyunDNSService(ConfigProperty.getAliyunDnsProperties());
-    }
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -48,14 +42,16 @@ public class ApiVerticle extends TemplateVerticle {
                                                             .onFailure(err -> this.handleError(ctx, err)));
         // 异常处理
         router.route("/api/*").failureHandler(this::returnError);
-        httpServer.requestHandler(router)
-                  .listen(serverPort)
-                  .onSuccess(event -> {
-                     log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
-                     startPromise.complete();
-                  })
-                  .onFailure(startPromise::fail);
+        this.initProjectConfig(vertx)
+            .compose(v -> httpServer.requestHandler(router).listen(serverPort))
+            .onSuccess(event -> {
+                log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
+                startPromise.complete();
+            })
+            .onFailure(startPromise::fail);
+
     }
+
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
         final var request = routingContext.request();
@@ -77,6 +73,7 @@ public class ApiVerticle extends TemplateVerticle {
                     super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
                     break;
                 case CLOUDFLARE:
+
                 case HUAWEI:
                 case DNSPOD:
                 default:
@@ -132,10 +129,11 @@ public class ApiVerticle extends TemplateVerticle {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = this.pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
         return this.readDDNSConfig(fileSystem)
-                   .compose(ddnsConfigList -> this.ddnsConfigWrite(ddnsConfigList, ddnsConfig, configFilePath));
+                   .compose(ddnsConfigList -> this.writeDDNSConfig(ddnsConfigList, ddnsConfig, configFilePath))
+                   .compose(v -> this.reloadDDNSServiceConfig(ddnsConfig));
     }
 
-    private Future<Void> ddnsConfigWrite(List<DDNSConfig> ddnsConfigs, DDNSConfig ddnsConfig, String configFilePath) {
+    private Future<Void> writeDDNSConfig(List<DDNSConfig> ddnsConfigs, DDNSConfig ddnsConfig, String configFilePath) {
         // 读取配置为空
         if (CollectionUtil.isEmpty(ddnsConfigs)) {
             List<DDNSConfig> accountList = new ArrayList<>();
@@ -149,6 +147,15 @@ public class ApiVerticle extends TemplateVerticle {
             } catch (Exception e) {
                 return Future.failedFuture(new RuntimeException("Server Error"));
             }
+        }
+    }
+
+    protected Future<Void> reloadDDNSServiceConfig(DDNSConfig ddnsConfig) {
+        try {
+            this.loadConfig(ddnsConfig);
+            return Future.succeededFuture();
+        } catch (Exception e) {
+            return Future.failedFuture(e);
         }
     }
 

@@ -7,7 +7,6 @@ import com.aliyuncs.IAcsClient;
 import com.aliyuncs.alidns.model.v20150109.*;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
-import com.zf1976.ddns.property.AliyunDnsProperties;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
 import io.vertx.core.impl.logging.Logger;
@@ -23,20 +22,18 @@ public class AliyunDNSService {
 
     private final Logger log = LoggerFactory.getLogger("[AliyunDDNSApi]");
     private final IAcsClient iAcsClient;
-    private final AliyunDnsProperties properties;
     private DescribeDomainRecordsRequest describeDomainRecordsRequest = new DescribeDomainRecordsRequest();
     private UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
     private AddDomainRecordRequest addDomainRecordRequest = new AddDomainRecordRequest();
     private DeleteDomainRecordRequest deleteDomainRecordRequest = new DeleteDomainRecordRequest();
     private static final String RECORD_TYPE = "A";
 
-    public AliyunDNSService(AliyunDnsProperties properties) {
-        this.properties = properties;
+    public AliyunDNSService(String id, String secret, String regionId) {
         // 设置鉴权参数，初始化客户端
         final var profile = DefaultProfile.getProfile(
-                this.properties.getDefaultRegionId(),
-                this.properties.getAccessKeyId(),
-                this.properties.getSecret()
+                regionId,
+                id,
+                secret
         );
         this.iAcsClient = new DefaultAcsClient(profile);
         this.initRequestRecordType();
