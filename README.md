@@ -27,4 +27,4 @@
 - 网页中配置，简单又方便，可设置 `登录用户名和密码` / `禁止从公网访问`
 - 网页中方便快速查看最近50条日志，不需要跑手动查看运行日志中查看
 
-<img src=https://img.shields.io/docker/pulls/jeessy/ddns-go />
+<img src= />
