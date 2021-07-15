@@ -1,5 +1,6 @@
 import com.zf1976.ddns.annotation.YamlPrefix;
 import com.zf1976.ddns.property.AliyunDnsProperties;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
@@ -10,6 +11,12 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class ConfigTest {
 
+    public static void main(String[] args) {
+        final var vertx = Vertx.vertx();
+        vertx.setPeriodic(1000, id -> {
+            System.out.println(id);
+        });
+    }
 
     @Test
     public void yamlTest() {

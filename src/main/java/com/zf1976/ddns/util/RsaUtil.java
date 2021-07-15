@@ -1,8 +1,6 @@
 package com.zf1976.ddns.util;
 
 
-import org.apache.commons.codec.binary.Base64;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -12,6 +10,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * @author mac
@@ -20,6 +19,8 @@ import java.util.Arrays;
 public class RsaUtil {
 
     public static final String CIPHER = "RSA";
+    public static final Base64.Decoder BASE_64_DECODER = Base64.getDecoder();
+    public static final Base64.Encoder BASE_64_ENCODER = Base64.getEncoder();
 
     /**
      * 公钥解密
@@ -30,12 +31,12 @@ public class RsaUtil {
      * @throws Exception /
      */
     public static String decryptByPublicKey(String key, String content) throws Exception {
-        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Base64.decodeBase64(key));
+        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(BASE_64_DECODER.decode(key));
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, publicKey);
-        byte[] result = cipher.doFinal(Base64.decodeBase64(content));
+        byte[] result = cipher.doFinal(BASE_64_DECODER.decode(content));
         return new String(result);
     }
 
@@ -48,7 +49,7 @@ public class RsaUtil {
      * @throws Exception /
      */
     public static String encryptByPrivateKey(String key, String content) throws Exception {
-        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(key));
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(BASE_64_DECODER.decode(key));
         KeyFactory keyFactory = KeyFactory.getInstance(CIPHER);
         PrivateKey privateKey = keyFactory.generatePrivate(pkcs8EncodedKeySpec);
         Cipher cipher = Cipher.getInstance(CIPHER);
@@ -65,12 +66,12 @@ public class RsaUtil {
      * @throws Exception /
      */
     public static String decryptByPrivateKey(String key, String content) throws Exception {
-        PKCS8EncodedKeySpec pkcs8EncodedKeySpec5 = new PKCS8EncodedKeySpec(Base64.decodeBase64(key));
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec5 = new PKCS8EncodedKeySpec(BASE_64_DECODER.decode(key));
         KeyFactory keyFactory = KeyFactory.getInstance(CIPHER);
         PrivateKey privateKey = keyFactory.generatePrivate(pkcs8EncodedKeySpec5);
         Cipher cipher = Cipher.getInstance(CIPHER);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] result = cipher.doFinal(Base64.decodeBase64(content));
+        byte[] result = cipher.doFinal(BASE_64_DECODER.decode(content));
         return new String(result);
     }
 
@@ -82,7 +83,7 @@ public class RsaUtil {
      * @return /
      */
     public static String encryptByPublicKey(String key, String content) throws Exception {
-        X509EncodedKeySpec x509EncodedKeySpec2 = new X509EncodedKeySpec(Base64.decodeBase64(key));
+        X509EncodedKeySpec x509EncodedKeySpec2 = new X509EncodedKeySpec(BASE_64_DECODER.decode(key));
         KeyFactory keyFactory = KeyFactory.getInstance(CIPHER);
         PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec2);
         Cipher cipher = Cipher.getInstance(CIPHER);
@@ -110,7 +111,7 @@ public class RsaUtil {
             resultBytes = Arrays.copyOf(resultBytes, resultBytes.length + cache.length);
             System.arraycopy(cache, 0, resultBytes, resultBytes.length - cache.length, cache.length);
         }
-        return Base64.encodeBase64String(resultBytes);
+        return BASE_64_ENCODER.encodeToString(resultBytes);
     }
 
     /**
@@ -125,8 +126,8 @@ public class RsaUtil {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         RSAPublicKey rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
         RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
-        String publicKeyString = Base64.encodeBase64String(rsaPublicKey.getEncoded());
-        String privateKeyString = Base64.encodeBase64String(rsaPrivateKey.getEncoded());
+        String publicKeyString = BASE_64_ENCODER.encodeToString(rsaPublicKey.getEncoded());
+        String privateKeyString = BASE_64_ENCODER.encodeToString(rsaPrivateKey.getEncoded());
         return new RsaKeyPair(publicKeyString, privateKeyString);
     }
 

@@ -178,7 +178,7 @@
                                     <div class="col-sm-10" >
                                         <label for="ipv4_domains"></label>
                                         <textarea class="form-control" id="ipv4_domains" placeholder="IPv4域名列表" name="Ipv4Domains" rows="3" aria-describedby="ipv4_domains_help"></textarea>
-                                        <small id="ipv4_domains_help" class="form-text text-muted">一行一个域名</small>
+                                        <small id="ipv4_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.innas.cn:1.1.1.1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
                                     </div>
                                 </fieldset>
                             </form>
@@ -229,7 +229,7 @@
                                     <div class="col-sm-10" >
                                         <label for="ipv6_domains"></label>
                                         <textarea class="form-control" id="ipv6_domains" placeholder="IPv6域名列表" name="Ipv6Domains" rows="3" aria-describedby="ipv6_domains_help"></textarea>
-                                        <small id="ipv6_domains_help" class="form-text text-muted">一行一个域名</small>
+                                        <small id="ipv6_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.innas.cn:ff03:0:0:0:0:0:0:c1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
                                     </div>
                                 </fieldset>
                             </form>
@@ -547,22 +547,22 @@
 
         //创建第零列记录ID
         let recordIdCell = document.createElement('td')
-        recordIdCell.innerHTML = h.recordId
+        recordIdCell.innerHTML = h.RecordId
         row.appendChild(recordIdCell)
 
         //创建第一列域名
         const domainNameCell = document.createElement('td')
-        domainNameCell.innerHTML = h.domainName
+        domainNameCell.innerHTML = h.DomainName
         row.appendChild(domainNameCell)
 
         //创建第二列记录
         let rrCell = document.createElement('td')
-        rrCell.innerHTML = h.rr
+        rrCell.innerHTML = h.RR
         row.appendChild(rrCell)
 
         //创建第三列指向IP
         let ipCell = document.createElement('td')
-        ipCell.innerHTML = h.value
+        ipCell.innerHTML = h.Value
         row.appendChild(ipCell)
 
         //到这里，json中的数据已经添加到表格中，下面为每行末尾添加删除按钮
@@ -579,7 +579,7 @@
             let recordId = tr.childNodes[0].innerHTML
             axiosInstance.delete("/api/ddnsRecord?recordId=" + recordId)
                         .then(res => {
-
+                            confirm.show("删除成功")
                         })
         }
         //把删除按钮加入td，别忘了

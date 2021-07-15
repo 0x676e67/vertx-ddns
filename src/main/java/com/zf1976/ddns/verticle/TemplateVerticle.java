@@ -3,7 +3,6 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
-import com.zf1976.ddns.service.AliyunDNSService;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -43,7 +42,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected static final String ACCOUNT_FILENAME = "account.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
-    protected AliyunDNSService aliyunDNSService;
 
     protected synchronized Router getRouter() {
         return router;
@@ -70,7 +68,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
      *
      * @param vertx vertx
      */
-     protected Future<Void> initProjectConfig(Vertx vertx) {
+     protected Future<Void> initConfig(Vertx vertx) {
         final var fileSystem = vertx.fileSystem();
         final var projectWorkPath = this.pathToAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
         final var ddnsConfigFilePath = this.pathToAbsolutePath(projectWorkPath, DDNS_CONFIG_FILENAME);
@@ -143,7 +141,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected void loadConfig(DDNSConfig ddnsConfig) {
         switch (ddnsConfig.getDnsServiceType()) {
             case ALIYUN:
-                this.aliyunDNSService = new AliyunDNSService(ddnsConfig.getId(), ddnsConfig.getSecret(), "cn-shenzhen");
             case DNSPOD:
             case HUAWEI:
             case CLOUDFLARE:

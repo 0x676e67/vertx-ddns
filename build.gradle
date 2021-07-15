@@ -16,8 +16,6 @@ ext{
 }
 
 dependencies {
-    implementation 'com.aliyun:aliyun-java-sdk-core:4.4.3'
-    implementation 'com.aliyun:aliyun-java-sdk-alidns:2.0.10'
     implementation "io.vertx:vertx-core:${vertxVersion}"
     implementation "io.vertx:vertx-web:${vertxVersion}"
     implementation "io.vertx:vertx-web-templ-thymeleaf:${vertxVersion}"

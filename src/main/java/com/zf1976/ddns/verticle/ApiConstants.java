@@ -14,4 +14,6 @@ public interface ApiConstants {
 
     String SERVER_PORT = "serverPort";
 
+    String PERIODIC = "periodicId";
+
 }

@@ -1,6 +1,5 @@
 package com.zf1976.ddns.verticle;
 
-import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
@@ -42,15 +41,34 @@ public class ApiVerticle extends TemplateVerticle {
                                                             .onFailure(err -> this.handleError(ctx, err)));
         // 异常处理
         router.route("/api/*").failureHandler(this::returnError);
-        this.initProjectConfig(vertx)
+        this.initConfig(vertx)
             .compose(v -> httpServer.requestHandler(router).listen(serverPort))
             .onSuccess(event -> {
                 log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
-                startPromise.complete();
+                try {
+                    super.start(startPromise);
+                } catch (Exception e) {
+                    startPromise.fail(e);
+                }
             })
             .onFailure(startPromise::fail);
 
     }
+
+    @Override
+    public void start() throws Exception {
+        vertx.setPeriodic(1000, id -> {
+            final var context = vertx.getOrCreateContext();
+            final var periodicId = context.get(ApiConstants.PERIODIC);
+            if (periodicId == null) {
+                context.put(ApiConstants.PERIODIC, id);
+            } else {
+                System.out.println(periodicId instanceof Long);
+                System.out.println(periodicId);
+            }
+        });
+    }
+
 
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
@@ -64,13 +82,13 @@ public class ApiVerticle extends TemplateVerticle {
             final var domain = request.getParam(ApiConstants.DOMAIN);
             switch (type) {
                 case ALIYUN:
-                    DescribeDomainRecordsResponse describeDomainRecordsResponse;
-                    if (domain != null) {
-                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords(domain);
-                    } else {
-                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords();
-                    }
-                    super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
+//                    DescribeDomainRecordsResponse describeDomainRecordsResponse;
+//                    if (domain != null) {
+//                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords(domain);
+//                    } else {
+//                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords();
+//                    }
+//                    super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
                     break;
                 case CLOUDFLARE:
 
@@ -88,7 +106,7 @@ public class ApiVerticle extends TemplateVerticle {
     protected void deleteDDNSRecordHandler(RoutingContext routingContext) {
         try {
             final var recordId = routingContext.request().getParam(ApiConstants.RECORD_ID);
-            this.aliyunDNSService.deleteDomainRecordResponse(recordId);
+//            this.aliyunDNSService.deleteDomainRecordResponse(recordId);
             this.returnJsonWithCache(routingContext);
         } catch (Exception e) {
             this.handleBad(routingContext, e);
