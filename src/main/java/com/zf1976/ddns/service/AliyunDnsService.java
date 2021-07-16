@@ -31,7 +31,7 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/14
  */
-@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
+@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode", "SpellCheckingInspection"})
 public class AliyunDnsService {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsService]");
