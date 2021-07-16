@@ -62,13 +62,13 @@ public class RpcSignatureComposer implements AliyunSignatureComposer {
         queries.put("Signature", signature);
         final var urlQueryParam = queries.keySet().toArray(new String[]{});
         Arrays.sort(urlQueryParam);
-        StringBuilder canonicalizedQueryString = new StringBuilder();
+        StringBuilder canonicalizeQueryString = new StringBuilder();
         for (String key : urlQueryParam) {
-            canonicalizedQueryString.append("&")
+            canonicalizeQueryString.append("&")
                                     .append(key)
                                     .append("=")
                                     .append(queries.get(key));
         }
-        return uriPattern + "?" + canonicalizedQueryString.substring(1);
+        return uriPattern + "?" + canonicalizeQueryString.substring(1);
     }
 }
