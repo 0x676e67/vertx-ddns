@@ -115,15 +115,12 @@ public class ApiVerticle extends TemplateVerticle {
                 case HUAWEI:
                 case DNSPOD:
                     Validator.of(ddnsConfig)
-                             .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId().isBlank(),
-                                     () -> new RuntimeException("ID cannot be empty"))
-                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(),
-                                     () -> new RuntimeException("The Secret cannot be empty"));
+                             .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId().isBlank(), "ID cannot be empty")
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(), "The Secret cannot be empty");
                     break;
                 case CLOUDFLARE:
                     Validator.of(ddnsConfig)
-                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()),
-                                     () -> new RuntimeException("The Secret cannot be empty"));
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(), "The Secret cannot be empty");
                 default:
             }
             this.ddnsConfigDecryptHandler(ddnsConfig)
