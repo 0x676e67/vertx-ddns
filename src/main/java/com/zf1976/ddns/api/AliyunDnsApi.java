@@ -27,7 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
+/** 阿里云DNS
+ *
  * @author mac
  * @date 2021/7/14
  */
@@ -43,6 +44,7 @@ public class AliyunDnsApi {
             .connectTimeout(Duration.ofSeconds(2))
             .version(HttpClient.Version.HTTP_1_1)
             .build();
+
     public AliyunDnsApi(String accessKeyId, String accessKeySecret) {
         this(new BasicCredentials(accessKeyId, accessKeySecret));
     }
