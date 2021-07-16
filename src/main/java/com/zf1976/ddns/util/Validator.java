@@ -95,6 +95,10 @@ public class Validator<T> {
         return this;
     }
 
+    public  Validator<T> withValidated(Predicate<T> predicate, String message){
+        return this.withValidated(predicate, () -> new RuntimeException(message));
+    }
+
     /**
      * 添加一个逻辑或校验策略
      *

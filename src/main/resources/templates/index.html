@@ -124,10 +124,10 @@
 <!--            IP类型Body-->
             <div class="card-body">
                 <ul class="nav nav-pills" id="IpType">
-                    <li class="nav-item">
+                    <li class="nav-item" onclick="setIpv4RecordType()">
                         <a class="nav-link active" data-toggle="tab" href="#ipv4">Ipv4</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" onclick="setIpv6RecordType()">
                         <a class="nav-link" data-toggle="tab" href="#ipv6">Ipv6</a>
                     </li>
                 </ul>
@@ -237,11 +237,11 @@
                     </div>
                 </div>
             </div>
-            <div class="card-header">域名信息查询</div>
+<!--            <div class="card-header">域名信息查询</div>-->
 <!--            域名查询Body-->
             <div class="card-body">
 
-                <div class="input-group mb-1" style="margin-top: 5px;width: 400px">
+                <div class="input-group mb-1" style="margin-top: 5px;width: auto">
                     <span class="input-group-text" id="basic-addon8">domain</span>
                     <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
                     <div class="input-group-append">
@@ -305,15 +305,27 @@
     const dnspodType = "DNSPOD"
     const cloudflareType = "CLOUDFLARE"
     const huaweiType = "HUAWEI"
+    const ipv4RecordType = "A"
+    const ipv6RecordType = "AAAA"
     // 默认类型
     let selectDDNSType = aliyunType
+    let selectIpRecordType = ipv4RecordType
 
     // 初始化调用
     setAliyunType()
     selectIpv4ForApi()
     selectIpv6ForApi()
+    setIpv4RecordType()
     getLogs()
     setInterval(getLogs, 1000)
+
+    function setIpv4RecordType() {
+        selectIpRecordType = ipv4RecordType
+    }
+    function setIpv6RecordType() {
+        selectIpRecordType = ipv6RecordType
+    }
+
     function setDDNSConfig() {
         // 设置服务商Account
         let targetConfig
@@ -369,7 +381,6 @@
             }
         }
     }
-
 
     function storeDDNSConfig() {
         let ipv4Address
@@ -444,7 +455,7 @@
             let inputDomain = document.getElementById("inputDomain");
             if (inputDomain.value !== "") {
                 //回车事件
-                let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value
+                let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value + "&ipRecordType= " + selectIpRecordType
                 findDDNSRecordsRequest(param)
             } else {
                 confirm.show("输入域名不能为空")

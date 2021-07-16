@@ -57,38 +57,32 @@ public class ApiVerticle extends TemplateVerticle {
 
     @Override
     public void start() throws Exception {
-        vertx.setPeriodic(1000, id -> {
-            final var context = vertx.getOrCreateContext();
-            final var periodicId = context.get(ApiConstants.PERIODIC);
-            if (periodicId == null) {
-                context.put(ApiConstants.PERIODIC, id);
-            } else {
-                System.out.println(periodicId instanceof Long);
-                System.out.println(periodicId);
-            }
-        });
+//        vertx.setPeriodic(1000, id -> {
+//            final var context = vertx.getOrCreateContext();
+//            final var periodicId = context.get(ApiConstants.PERIODIC);
+//            if (periodicId == null) {
+//                context.put(ApiConstants.PERIODIC, id);
+//            } else {
+//                System.out.println(periodicId instanceof Long);
+//                System.out.println(periodicId);
+//            }
+//        });
     }
 
 
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
         final var request = routingContext.request();
-        final var param = request.getParam(ApiConstants.DDNS_SERVICE_TYPE);
-        final var type = DNSServiceType.checkType(param);
+        final var ipRecordType = request.getParam(ApiConstants.IP_RECORD_TYPE);
+        final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
         try {
-            if (ObjectUtil.isEmpty(type)) {
+            if (ObjectUtil.isEmpty(dnsServiceType)) {
                 throw new RuntimeException("The DDNS service provider does not exist");
             }
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            switch (type) {
+            switch (dnsServiceType) {
                 case ALIYUN:
-//                    DescribeDomainRecordsResponse describeDomainRecordsResponse;
-//                    if (domain != null) {
-//                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords(domain);
-//                    } else {
-//                        describeDomainRecordsResponse = this.aliyunDNSService.findDescribeDomainRecords();
-//                    }
-//                    super.returnJsonWithCache(routingContext, describeDomainRecordsResponse.getDomainRecords());
+
                     break;
                 case CLOUDFLARE:
 

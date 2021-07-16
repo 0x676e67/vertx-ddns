@@ -32,7 +32,6 @@ public class AliyunDataResult {
     public int getTotalCount(){
         return this.TotalCount;
     }
-
     public String getRecordId() {
         return recordId;
     }
@@ -41,7 +40,6 @@ public class AliyunDataResult {
         this.recordId = recordId;
         return this;
     }
-
     public void setPageNumber(int PageNumber){
         this.PageNumber = PageNumber;
     }
@@ -178,4 +176,15 @@ public class AliyunDataResult {
         }
     }
 
+    @Override
+    public String toString() {
+        return "AliyunDataResult{" +
+                "requestId='" + requestId + '\'' +
+                ", recordId='" + recordId + '\'' +
+                ", TotalCount=" + TotalCount +
+                ", PageNumber=" + PageNumber +
+                ", PageSize=" + PageSize +
+                ", DomainRecords=" + DomainRecords +
+                '}';
+    }
 }

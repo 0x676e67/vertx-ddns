@@ -122,7 +122,7 @@ public final class HttpUtil {
      */
     public static String[] extractDomain(String domain) {
         if (StringUtil.isEmpty(domain) || !isDomain(domain)) {
-            return new String[0];
+            throw new RuntimeException("The domain name does not meet the specification");
         }
         final var split = domain.split("\\.");
         final var length = split.length;

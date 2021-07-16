@@ -12,8 +12,13 @@ public interface ApiConstants {
 
     String RECORD_ID = "recordId";
 
+    String IP_RECORD_TYPE = "ipRecordType";
+
     String SERVER_PORT = "serverPort";
 
     String PERIODIC = "periodicId";
 
+    String IPV4_TYPE_KEY_WORD = "A";
+
+    String IPV6_TYPE_KEY_WORD = "AAAA";
 }
