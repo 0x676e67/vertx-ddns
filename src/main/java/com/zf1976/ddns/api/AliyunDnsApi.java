@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.zf1976.ddns.pojo.AliyunDataResult;
-import com.zf1976.ddns.singer.aliyun.MethodType;
-import com.zf1976.ddns.singer.aliyun.auth.AlibabaCloudCredentials;
-import com.zf1976.ddns.singer.aliyun.auth.BasicCredentials;
-import com.zf1976.ddns.singer.aliyun.sign.RpcSignatureComposer;
+import com.zf1976.ddns.api.singer.aliyun.MethodType;
+import com.zf1976.ddns.api.singer.aliyun.auth.AlibabaCloudCredentials;
+import com.zf1976.ddns.api.singer.aliyun.auth.BasicCredentials;
+import com.zf1976.ddns.api.singer.aliyun.sign.RpcSignatureComposer;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
@@ -116,7 +116,7 @@ public class AliyunDnsApi {
             final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
             return this.objectMapper.readValue(body, AliyunDataResult.class);
         } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage(), e.getCause());;
+            log.error(e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage());
         }
     }

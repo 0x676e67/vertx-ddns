@@ -1,6 +1,6 @@
-package com.zf1976.ddns.singer.aliyun.sign;
+package com.zf1976.ddns.api.singer.aliyun.sign;
 
-import com.zf1976.ddns.singer.aliyun.MethodType;
+import com.zf1976.ddns.api.singer.aliyun.MethodType;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
-package com.zf1976.ddns.singer.aliyun.sign;
+package com.zf1976.ddns.api.singer.aliyun.sign;
 
-import com.zf1976.ddns.singer.aliyun.auth.AlibabaCloudCredentials;
+import com.zf1976.ddns.api.singer.aliyun.auth.AlibabaCloudCredentials;
 
 @SuppressWarnings("StaticInitializerReferencesSubClass")
 public abstract class Signer {

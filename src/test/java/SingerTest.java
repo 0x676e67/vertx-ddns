@@ -1,5 +1,5 @@
-import com.zf1976.ddns.singer.aliyun.MethodType;
-import com.zf1976.ddns.singer.aliyun.sign.RpcSignatureComposer;
+import com.zf1976.ddns.api.singer.aliyun.MethodType;
+import com.zf1976.ddns.api.singer.aliyun.sign.RpcSignatureComposer;
 import com.zf1976.ddns.util.ParameterHelper;
 import org.junit.jupiter.api.Test;
 

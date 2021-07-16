@@ -1,4 +1,4 @@
-package com.zf1976.ddns.singer;
+package com.zf1976.ddns.api.singer;
 /*
  * 各DDNS服务商签名工具包
  * @author mac

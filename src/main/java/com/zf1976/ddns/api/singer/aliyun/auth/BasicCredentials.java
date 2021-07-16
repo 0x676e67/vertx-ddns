@@ -1,4 +1,4 @@
-package com.zf1976.ddns.singer.aliyun.auth;
+package com.zf1976.ddns.api.singer.aliyun.auth;
 
 public class BasicCredentials implements AlibabaCloudCredentials {
 
