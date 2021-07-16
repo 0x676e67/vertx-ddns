@@ -77,7 +77,7 @@ public class ApiVerticle extends TemplateVerticle {
         final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
         try {
             if (ObjectUtil.isEmpty(dnsServiceType)) {
-                throw new RuntimeException("The DDNS service provider does not exist");
+                throw new RuntimeException("The DDNS api provider does not exist");
             }
             final var domain = request.getParam(ApiConstants.DOMAIN);
             switch (dnsServiceType) {

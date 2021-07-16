@@ -1,4 +1,4 @@
-package com.zf1976.ddns.service;
+package com.zf1976.ddns.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
@@ -31,10 +31,10 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/14
  */
-@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode", "SpellCheckingInspection"})
-public class AliyunDnsService {
+@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
+public class AliyunDnsApi {
 
-    private final Logger log = LogManager.getLogger("[AliyunDnsService]");
+    private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
     private final String aliyunApi = "https://alidns.aliyuncs.com";
     private final AlibabaCloudCredentials credentials;
     private final ObjectMapper objectMapper;
@@ -43,11 +43,11 @@ public class AliyunDnsService {
             .connectTimeout(Duration.ofSeconds(2))
             .version(HttpClient.Version.HTTP_1_1)
             .build();
-    public AliyunDnsService(String accessKeyId, String accessKeySecret) {
+    public AliyunDnsApi(String accessKeyId, String accessKeySecret) {
         this(new BasicCredentials(accessKeyId, accessKeySecret));
     }
 
-    public AliyunDnsService(AlibabaCloudCredentials credentials) {
+    public AliyunDnsApi(AlibabaCloudCredentials credentials) {
         Assert.notNull(credentials,"AlibabaCloudCredentials cannot been null!");
         this.credentials = credentials;
         this.rpcSignatureComposer = (RpcSignatureComposer) RpcSignatureComposer.getComposer();
