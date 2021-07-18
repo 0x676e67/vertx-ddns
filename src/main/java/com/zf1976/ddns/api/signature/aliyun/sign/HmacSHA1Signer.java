@@ -1,6 +1,6 @@
-package com.zf1976.ddns.api.singer.aliyun.sign;
+package com.zf1976.ddns.api.signature.aliyun.sign;
 
-import com.zf1976.ddns.api.singer.aliyun.auth.AlibabaCloudCredentials;
+import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.DataTypeConverterUtil;
 
 import javax.crypto.Mac;
@@ -27,7 +27,7 @@ public class HmacSHA1Signer extends Signer {
         }
     }
 
-    public String signString(String stringToSign, AlibabaCloudCredentials credentials) {
+    public String signString(String stringToSign, DnsApiCredentials credentials) {
         return this.signString(stringToSign, credentials.getAccessKeySecret());
     }
 

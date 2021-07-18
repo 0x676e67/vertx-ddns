@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.zf1976.ddns.api.auth.BasicCredentials;
+import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.signature.aliyun.MethodType;
+import com.zf1976.ddns.api.signature.aliyun.sign.RpcSignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
-import com.zf1976.ddns.api.singer.aliyun.MethodType;
-import com.zf1976.ddns.api.singer.aliyun.auth.AlibabaCloudCredentials;
-import com.zf1976.ddns.api.singer.aliyun.auth.BasicCredentials;
-import com.zf1976.ddns.api.singer.aliyun.sign.RpcSignatureComposer;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
@@ -19,10 +19,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,23 +31,19 @@ import java.util.Map;
  * @date 2021/7/14
  */
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsApi {
+public class AliyunDnsApi extends AbstractDnsApi{
 
     private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
-    private final String aliyunApi = "https://alidns.aliyuncs.com";
-    private final AlibabaCloudCredentials credentials;
+    private final String api = "https://alidns.aliyuncs.com";
+    private final DnsApiCredentials credentials;
     private final ObjectMapper objectMapper;
     private final RpcSignatureComposer rpcSignatureComposer;
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(2))
-            .version(HttpClient.Version.HTTP_1_1)
-            .build();
 
     public AliyunDnsApi(String accessKeyId, String accessKeySecret) {
         this(new BasicCredentials(accessKeyId, accessKeySecret));
     }
 
-    public AliyunDnsApi(AlibabaCloudCredentials credentials) {
+    public AliyunDnsApi(DnsApiCredentials credentials) {
         Assert.notNull(credentials,"AlibabaCloudCredentials cannot been null!");
         this.credentials = credentials;
         this.rpcSignatureComposer = (RpcSignatureComposer) RpcSignatureComposer.getComposer();
@@ -104,7 +98,7 @@ public class AliyunDnsApi {
     }
 
     private HttpRequest requestBuild(MethodType methodType, Map<String, String> queryParam) {
-        final var url = this.rpcSignatureComposer.toUrl(this.credentials.getAccessKeySecret(), this.aliyunApi, methodType, queryParam);
+        final var url = this.rpcSignatureComposer.toUrl(this.credentials.getAccessKeySecret(), this.api, methodType, queryParam);
         return HttpRequest.newBuilder()
                           .GET()
                           .uri(URI.create(url))

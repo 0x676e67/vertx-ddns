@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.singer.aliyun;
+package com.zf1976.ddns.api.signature.aliyun;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

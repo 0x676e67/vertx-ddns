@@ -1,6 +1,6 @@
-package com.zf1976.ddns.api.singer.aliyun.sign;
+package com.zf1976.ddns.api.signature.aliyun.sign;
 
-import com.zf1976.ddns.api.singer.aliyun.auth.AlibabaCloudCredentials;
+import com.zf1976.ddns.api.auth.DnsApiCredentials;
 
 @SuppressWarnings("StaticInitializerReferencesSubClass")
 public abstract class Signer {
@@ -11,7 +11,7 @@ public abstract class Signer {
         return hmacSHA1Signer;
     }
 
-    public abstract String signString(String stringToSign, AlibabaCloudCredentials credentials);
+    public abstract String signString(String stringToSign, DnsApiCredentials credentials);
 
     public abstract String signString(String stringToSign, String accessKeySecret);
 
