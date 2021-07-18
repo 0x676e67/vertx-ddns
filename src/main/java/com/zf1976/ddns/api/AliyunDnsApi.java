@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.signature.aliyun.MethodType;
+import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.signature.aliyun.sign.RpcSignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
 import com.zf1976.ddns.util.Assert;
@@ -56,21 +57,21 @@ public class AliyunDnsApi extends AbstractDnsApi{
     }
 
 
-    public AliyunDataResult findDnsRecords(String domain, String type) {
+    public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("DescribeDomainRecords");
         final var extractDomain = HttpUtil.extractDomain(domain);
         queryParam.put("PageSize", "500");
-        queryParam.put("TypeKeyWord", type);
+        queryParam.put("TypeKeyWord", dnsRecordType.name());
         queryParam.put("DomainName", extractDomain[0]);
         queryParam.put("RRKeyWord", extractDomain[1]);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
 
-    public AliyunDataResult addDnsRecord(String domain, String ip, String type) {
+    public AliyunDataResult addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("AddDomainRecord");
         final var extractDomain = HttpUtil.extractDomain(domain);
-        queryParam.put("Type", type);
+        queryParam.put("Type", dnsRecordType.name());
         queryParam.put("Value", ip);
         queryParam.put("DomainName", extractDomain[0]);
         queryParam.put("RR", "".equals(extractDomain[1])? "@" : extractDomain[1]);
@@ -78,11 +79,11 @@ public class AliyunDnsApi extends AbstractDnsApi{
         return this.sendRequest(httpRequest);
     }
 
-    public AliyunDataResult updateDnsRecord(String recordId, String domain, String ip, String type) {
+    public AliyunDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("UpdateDomainRecord");
         final var extractDomain = HttpUtil.extractDomain(domain);
         queryParam.put("RecordId", recordId);
-        queryParam.put("Type", type);
+        queryParam.put("Type", dnsRecordType.name());
         queryParam.put("Value", ip);
         queryParam.put("DomainName", extractDomain[0]);
         queryParam.put("RR", extractDomain[1]);

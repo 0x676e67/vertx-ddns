@@ -14,6 +14,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
@@ -179,20 +180,21 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         }
         return vertx.fileSystem()
                     .readFile(pathToAbsolutePath(workDir, RSA_KEY_FILENAME))
-                    .compose(buffer -> Future.succeededFuture(JSONUtil.readValue(buffer.toString(), RsaUtil.RsaKeyPair.class)));
+                    .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, RsaUtil.RsaKeyPair.class)));
     }
 
     protected Future<List<DDNSConfig>> readDDNSConfig(FileSystem fileSystem) {
         return fileSystem.readFile(pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME))
-                         .compose(v -> {
+                         .compose(buffer -> {
                              try {
-                                 var list = JSONUtil.readValue(v.toString(), List.class);
+                                 var list = Json.decodeValue(buffer, List.class);
                                  if (CollectionUtil.isEmpty(list)) {
                                      return Future.succeededFuture(new ArrayList<>());
                                  }
                                  List<DDNSConfig> ddnsConfigList = new ArrayList<>();
                                  for (Object o : list) {
-                                     ddnsConfigList.add(JSONUtil.readValue(o, DDNSConfig.class));
+                                     ddnsConfigList.add(JsonObject.mapFrom(o)
+                                                                  .mapTo(DDNSConfig.class));
                                  }
                                  return Future.succeededFuture(ddnsConfigList);
                              } catch (Exception e) {

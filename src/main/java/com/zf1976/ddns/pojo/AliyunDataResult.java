@@ -1,11 +1,16 @@
 package com.zf1976.ddns.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
 /**
  * @author mac
  * @date 2021/7/15
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AliyunDataResult {
 
     private String requestId;
@@ -59,6 +64,7 @@ public class AliyunDataResult {
         return this.DomainRecords;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DomainRecords {
         private List<Record> Record ;
 
@@ -77,6 +83,7 @@ public class AliyunDataResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Record {
         private String DomainName;
 

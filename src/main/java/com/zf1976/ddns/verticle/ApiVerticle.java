@@ -1,10 +1,14 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.pojo.DDNSConfig;
-import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.util.CollectionUtil;
+import com.zf1976.ddns.util.ObjectUtil;
+import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.logging.log4j.LogManager;
@@ -147,12 +151,12 @@ public class ApiVerticle extends TemplateVerticle {
         if (CollectionUtil.isEmpty(ddnsConfigs)) {
             List<DDNSConfig> accountList = new ArrayList<>();
             accountList.add(ddnsConfig);
-            return this.writeConfig(configFilePath, JSONUtil.toJsonString(accountList));
+            return this.writeConfig(configFilePath, Json.encodePrettily(accountList));
         } else {
             try {
                 ddnsConfigs.removeIf(config -> ddnsConfig.getDnsServiceType().equals(config.getDnsServiceType()));
                 ddnsConfigs.add(ddnsConfig);
-                return this.writeConfig(configFilePath, JSONUtil.toJsonString(ddnsConfigs));
+                return this.writeConfig(configFilePath, Json.encodePrettily(ddnsConfigs));
             } catch (Exception e) {
                 return Future.failedFuture(new RuntimeException("Server Error"));
             }

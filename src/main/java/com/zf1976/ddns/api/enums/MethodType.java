@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signature.aliyun;
+package com.zf1976.ddns.api.enums;
 
 public enum MethodType {
     GET(false),

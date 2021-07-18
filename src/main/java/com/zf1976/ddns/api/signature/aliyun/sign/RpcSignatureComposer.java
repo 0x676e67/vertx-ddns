@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signature.aliyun.sign;
 
+import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.signature.aliyun.AliyunURLEncoder;
-import com.zf1976.ddns.api.signature.aliyun.MethodType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;

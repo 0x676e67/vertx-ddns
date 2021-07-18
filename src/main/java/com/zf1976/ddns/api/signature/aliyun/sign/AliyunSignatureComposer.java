@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signature.aliyun.sign;
 
-import com.zf1976.ddns.api.signature.aliyun.MethodType;
+import com.zf1976.ddns.api.enums.MethodType;
 
 import java.util.Map;
 
