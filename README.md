@@ -1,3 +1,11 @@
+<p align="center">
+	<a target="_blank" href="https://github.com/zf1976/ddns-vertx/blob/master/LICENSE">
+		<img src="https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg" ></img>
+	</a>
+	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
+		<img src="https://img.shields.io/badge/JDK-11+-green.svg" ></img>
+	</a>
+</p>
 # ddns-vertx
 
 自动获得你的公网 IPv4 或 IPv6 地址或使用您的自定义IP地址，并解析到对应的域名服务。
