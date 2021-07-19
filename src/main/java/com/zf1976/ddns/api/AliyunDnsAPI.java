@@ -58,7 +58,13 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-
+    /**
+     * 查询记录
+     *
+     * @param domain        域名/区分主域名、多级域名
+     * @param dnsRecordType 记录类型
+     * @return {@link AliyunDataResult}
+     */
     public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("DescribeDomainRecords");
         final var extractDomain = HttpUtil.extractDomain(domain);
@@ -70,17 +76,33 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         return this.sendRequest(httpRequest);
     }
 
+    /**
+     * 新增记录
+     *
+     * @param domain        域名/区分主域名、多级域名
+     * @param ip            ip值
+     * @param dnsRecordType 记录类型
+     * @return {@link AliyunDataResult}
+     */
     public AliyunDataResult addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("AddDomainRecord");
         final var extractDomain = HttpUtil.extractDomain(domain);
         queryParam.put("Type", dnsRecordType.name());
         queryParam.put("Value", ip);
         queryParam.put("DomainName", extractDomain[0]);
-        queryParam.put("RR", "".equals(extractDomain[1])? "@" : extractDomain[1]);
+        queryParam.put("RR", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
 
+    /**
+     * 更新记录
+     *
+     * @param recordId      记录id
+     * @param domain        域名/区分主域名、多级域名
+     * @param ip            ip值
+     * @param dnsRecordType 记录类型
+     */
     public AliyunDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("UpdateDomainRecord");
         final var extractDomain = HttpUtil.extractDomain(domain);
@@ -93,7 +115,13 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         return this.sendRequest(httpRequest);
     }
 
-    public AliyunDataResult removeDnsRecord(String recordId) {
+    /**
+     * 删除记录
+     *
+     * @param recordId 记录id
+     * @return {@link AliyunDataResult}
+     */
+    public AliyunDataResult deleteDnsRecord(String recordId) {
         final var queryParam = this.getQueryParam("DeleteDomainRecord");
         queryParam.put("RecordId", recordId);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);

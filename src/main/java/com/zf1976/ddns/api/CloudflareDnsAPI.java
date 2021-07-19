@@ -5,6 +5,7 @@ import com.zf1976.ddns.api.auth.TokenCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
+import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.StringUtil;
@@ -52,7 +53,8 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
             if (!cloudflareDataResult.getSuccess()) {
                 throw new RuntimeException(Json.encodePrettily(cloudflareDataResult.getErrors()));
             }
-            @SuppressWarnings("unchecked") final var zoneId = ((List<LinkedHashMap<String, String>>) cloudflareDataResult.getResult()).get(0).get("id");
+            @SuppressWarnings("unchecked") final var zoneId = ((List<LinkedHashMap<String, String>>) cloudflareDataResult.getResult()).get(0)
+                                                                                                                                      .get("id");
             Assert.notNull(zoneId, "cloudflare zone id cannot been null!");
             this.zoneId = zoneId;
         } catch (IOException | InterruptedException e) {
@@ -60,14 +62,28 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         }
     }
 
-    public CloudflareDataResult<List<CloudflareDataResult.Result>> findDnsRecords(DNSRecordType dnsRecordType) {
+    /**
+     * 查询所有记录
+     *
+     * @param dnsRecordType 记录类型
+     * @return {@link CloudflareDataResult<List<Result>>}
+     */
+    public CloudflareDataResult<List<Result>> findDnsRecords(DNSRecordType dnsRecordType) {
         final var queryParam = getQueryParam(dnsRecordType);
         final var url = this.toUrl(queryParam);
         final var request = this.requestBuild(url, MethodType.GET);
         return this.sendRequest(request);
     }
 
-    public CloudflareDataResult<CloudflareDataResult.Result> addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    /**
+     * 新增记录
+     *
+     * @param domain        域名/区分主域名与多级域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link CloudflareDataResult<Result>}
+     */
+    public CloudflareDataResult<Result> addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         this.checkIp(ip);
         final var queryParam = this.getQueryParam(dnsRecordType);
         queryParam.put("name", domain);
@@ -78,7 +94,19 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         return this.sendRequest(httpRequest);
     }
 
-    public CloudflareDataResult<CloudflareDataResult.Result> updateDnsRecord(String identifier, String domain, String ip, DNSRecordType dnsRecordType) {
+    /**
+     * 更新记录值
+     *
+     * @param identifier    记录标识符
+     * @param domain        域名
+     * @param ip            ip值
+     * @param dnsRecordType 记录类型
+     * @return {@link CloudflareDataResult<Result>}
+     */
+    public CloudflareDataResult<Result> updateDnsRecord(String identifier,
+                                                        String domain,
+                                                        String ip,
+                                                        DNSRecordType dnsRecordType) {
         this.checkIp(ip);
         this.checkDomain(domain);
         final var queryParam = this.getQueryParam(dnsRecordType);
@@ -90,7 +118,13 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         return this.sendRequest(httpRequest);
     }
 
-    public CloudflareDataResult<CloudflareDataResult.Result> deleteDnsRecord(String identifier) {
+    /**
+     * 删除记录
+     *
+     * @param identifier 记录标识符
+     * @return {@link CloudflareDataResult< Result>}
+     */
+    public CloudflareDataResult<Result> deleteDnsRecord(String identifier) {
         final var url = this.toUrl(identifier);
         final var httpRequest = this.requestBuild(url, MethodType.DELETE);
         return this.sendRequest(httpRequest);
@@ -104,17 +138,17 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
             final var cloudflareDataResult = Json.decodeValue(body, CloudflareDataResult.class);
             if (cloudflareDataResult.getResult() instanceof ArrayList) {
                 ArrayList<?> result = (ArrayList<?>) cloudflareDataResult.getResult();
-                List<CloudflareDataResult.Result> targetList = new ArrayList<>();
+                List<Result> targetList = new ArrayList<>();
                 for (Object o : result) {
                     final var target = JsonObject.mapFrom(o)
-                                                 .mapTo(CloudflareDataResult.Result.class);
+                                                 .mapTo(Result.class);
                     targetList.add(target);
                 }
                 return cloudflareDataResult.setResult(targetList);
-            } else if (cloudflareDataResult.getResult() instanceof CloudflareDataResult.Result) {
+            } else if (cloudflareDataResult.getResult() instanceof Result) {
                 final var result = cloudflareDataResult.getResult();
                 return cloudflareDataResult.setResult(JsonObject.mapFrom(result)
-                                                                .mapTo(CloudflareDataResult.Result.class));
+                                                                .mapTo(Result.class));
             }
             return cloudflareDataResult;
         } catch (IOException | InterruptedException e) {
