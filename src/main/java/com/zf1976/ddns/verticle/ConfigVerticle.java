@@ -29,7 +29,8 @@ public class ConfigVerticle extends AbstractVerticle {
             .onSuccess(event -> {
                 startPromise.complete();
             }).onFailure(err -> {
-                log.error("Class：" + err.getClass() + "=> Message：" + err.getMessage());
+                err.printStackTrace();
+                log.error("Class：" + err.getClass() + " => Message：" + err.getMessage());
                 System.exit(0);
             });
     }
