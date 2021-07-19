@@ -7,6 +7,7 @@ package com.zf1976.ddns.util;
 public class DataTypeConverterUtil {
 
     private static final char[] encodeMap = initEncodeMap();
+    private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
 
     private static char[] initEncodeMap() {
         char[] map = new char[64];
@@ -19,6 +20,16 @@ public class DataTypeConverterUtil {
 
         return map;
     }
+
+    public static String printHexBinary(byte[] data) {
+        StringBuilder r = new StringBuilder(data.length * 2);
+        for (byte b : data) {
+            r.append(hexCode[b >> 4 & 15]);
+            r.append(hexCode[b & 15]);
+        }
+        return r.toString();
+    }
+
 
     public static String _printBase64Binary(byte[] input) {
         return _printBase64Binary(input, 0, input.length);

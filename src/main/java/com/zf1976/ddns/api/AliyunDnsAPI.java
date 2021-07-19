@@ -10,7 +10,7 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signature.aliyun.sign.RpcSignatureComposer;
+import com.zf1976.ddns.api.signature.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
@@ -26,28 +26,30 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 阿里云DNS
+/**
+ * 阿里云DNS
  *
  * @author mac
  * @date 2021/7/14
  */
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsApi extends AbstractDnsApi{
+public class AliyunDnsAPI extends AbstractDnsAPI {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
     private final String api = "https://alidns.aliyuncs.com";
     private final DnsApiCredentials credentials;
     private final ObjectMapper objectMapper;
-    private final RpcSignatureComposer rpcSignatureComposer;
+    private final AliyunSignatureComposer rpcSignatureComposer;
 
-    public AliyunDnsApi(String accessKeyId, String accessKeySecret) {
+    public AliyunDnsAPI(String accessKeyId, String accessKeySecret) {
         this(new BasicCredentials(accessKeyId, accessKeySecret));
     }
 
-    public AliyunDnsApi(DnsApiCredentials credentials) {
-        Assert.notNull(credentials,"AlibabaCloudCredentials cannot been null!");
+    public AliyunDnsAPI(DnsApiCredentials credentials) {
+        super(credentials);
+        Assert.notNull(credentials, "AlibabaCloudCredentials cannot been null!");
         this.credentials = credentials;
-        this.rpcSignatureComposer = (RpcSignatureComposer) RpcSignatureComposer.getComposer();
+        this.rpcSignatureComposer = (AliyunSignatureComposer) AliyunSignatureComposer.getComposer();
         this.objectMapper = new ObjectMapper();
         this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
         this.objectMapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
@@ -98,7 +100,7 @@ public class AliyunDnsApi extends AbstractDnsApi{
         return this.sendRequest(httpRequest);
     }
 
-    private HttpRequest requestBuild(MethodType methodType, Map<String, String> queryParam) {
+    private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
         final var url = this.rpcSignatureComposer.toUrl(this.credentials.getAccessKeySecret(), this.api, methodType, queryParam);
         return HttpRequest.newBuilder()
                           .GET()
@@ -108,7 +110,8 @@ public class AliyunDnsApi extends AbstractDnsApi{
 
     private AliyunDataResult sendRequest(HttpRequest request) {
         try {
-            final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                            .body();
             return this.objectMapper.readValue(body, AliyunDataResult.class);
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e.getCause());
@@ -116,16 +119,16 @@ public class AliyunDnsApi extends AbstractDnsApi{
         }
     }
 
-    private Map<String, String> getQueryParam(String action) {
-        final var queryParam = new HashMap<String, String>();
+    private Map<String, Object> getQueryParam(String action) {
+        final var queryParam = new HashMap<String, Object>();
         queryParam.put("Format", "JSON");
         queryParam.put("AccessKeyId", this.credentials.getAccessKeyId());
         queryParam.put("Action", action);
-        queryParam.put("SignatureMethod","HMAC-SHA1");
+        queryParam.put("SignatureMethod", "HMAC-SHA1");
         queryParam.put("SignatureNonce", ParameterHelper.getUniqueNonce());
-        queryParam.put("SignatureVersion","1.0");
+        queryParam.put("SignatureVersion", "1.0");
         queryParam.put("Version", "2015-01-09");
-        queryParam.put("Timestamp",ParameterHelper.getISO8601Time(new Date()));
+        queryParam.put("Timestamp", ParameterHelper.getISO8601Time(new Date()));
         return queryParam;
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.SimpleType;
+import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.HttpUtil;
 
 import java.net.http.HttpClient;
@@ -16,13 +17,19 @@ import java.util.concurrent.Executors;
  * @author mac
  * @date 2021/7/18
  */
-public class AbstractDnsApi {
+public class AbstractDnsAPI {
+
+    protected final DnsApiCredentials dnsApiCredentials;
+
+    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
+        this.dnsApiCredentials = dnsApiCredentials;
+    }
 
     protected HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(1))
-            .version(HttpClient.Version.HTTP_1_1)
-            .executor(Executors.newSingleThreadExecutor())
-            .build();
+                                                .connectTimeout(Duration.ofSeconds(1))
+                                                .version(HttpClient.Version.HTTP_1_1)
+                                                .executor(Executors.newSingleThreadExecutor())
+                                                .build();
 
     public void checkIp(String ip) {
         if (!HttpUtil.isIp(ip)) {
@@ -57,4 +64,5 @@ public class AbstractDnsApi {
     public static JavaType getMapType(Class<?> keyType, Class<?> valueType) {
         return MapType.construct(HashMap.class, SimpleType.constructUnsafe(keyType), SimpleType.constructUnsafe(valueType));
     }
+
 }

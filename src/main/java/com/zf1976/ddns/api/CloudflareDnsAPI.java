@@ -26,26 +26,27 @@ import java.util.*;
  * Create by Ant on 2021/7/17 1:24 上午
  */
 @SuppressWarnings({"FieldCanBeLocal"})
-public class CloudflareDnsApi extends AbstractDnsApi{
+public class CloudflareDnsAPI extends AbstractDnsAPI {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
     private final String api = "https://api.cloudflare.com/client/v4/zones";
     private final String zoneId;
-    private final DnsApiCredentials dnsApiCredentials;
 
-    public CloudflareDnsApi(String token) {
+    public CloudflareDnsAPI(String token) {
         this(new TokenCredentials(token));
     }
 
 
-    public CloudflareDnsApi(DnsApiCredentials dnsApiCredentials) {
+    public CloudflareDnsAPI(DnsApiCredentials dnsApiCredentials) {
+        super(dnsApiCredentials);
         final var request = HttpRequest.newBuilder()
                                        .GET()
                                        .uri(URI.create(api))
-                                       .header("Authorization","Bearer " + dnsApiCredentials.getAccessKeySecret())
+                                       .header("Authorization", "Bearer " + dnsApiCredentials.getAccessKeySecret())
                                        .build();
         try {
-            final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                             .body();
             final var cloudflareDataResult = Json.decodeValue(body, CloudflareDataResult.class);
             Assert.notNull(cloudflareDataResult, "result cannot been null");
             if (!cloudflareDataResult.getSuccess()) {
@@ -54,7 +55,6 @@ public class CloudflareDnsApi extends AbstractDnsApi{
             @SuppressWarnings("unchecked") final var zoneId = ((List<LinkedHashMap<String, String>>) cloudflareDataResult.getResult()).get(0).get("id");
             Assert.notNull(zoneId, "cloudflare zone id cannot been null!");
             this.zoneId = zoneId;
-            this.dnsApiCredentials = dnsApiCredentials;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e.getCause());
         }
@@ -151,7 +151,7 @@ public class CloudflareDnsApi extends AbstractDnsApi{
     }
 
     private String getBearerToken() {
-        final var token = this.dnsApiCredentials.getAccessKeySecret();
+        final var token = super.dnsApiCredentials.getAccessKeySecret();
         return "Bearer " + token;
     }
 
