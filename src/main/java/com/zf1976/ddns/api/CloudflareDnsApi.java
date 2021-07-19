@@ -62,9 +62,9 @@ public class CloudflareDnsApi extends AbstractDnsApi{
 
     public CloudflareDataResult<List<CloudflareDataResult.Result>> findDnsRecords(DNSRecordType dnsRecordType) {
         final var queryParam = getQueryParam(dnsRecordType);
-        final var url = this.toUrl(queryParam, null);
-        final var request = this.requestBuild(url, null, MethodType.GET);
-        return  this.sendRequest(request);
+        final var url = this.toUrl(queryParam);
+        final var request = this.requestBuild(url, MethodType.GET);
+        return this.sendRequest(request);
     }
 
     public CloudflareDataResult<CloudflareDataResult.Result> addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
@@ -90,30 +90,44 @@ public class CloudflareDnsApi extends AbstractDnsApi{
         return this.sendRequest(httpRequest);
     }
 
+    public CloudflareDataResult<CloudflareDataResult.Result> deleteDnsRecord(String identifier) {
+        final var url = this.toUrl(identifier);
+        final var httpRequest = this.requestBuild(url, MethodType.DELETE);
+        return this.sendRequest(httpRequest);
+    }
+
     @SuppressWarnings("unchecked")
-    private <T> CloudflareDataResult<T>  sendRequest(HttpRequest request) {
+    private <T> CloudflareDataResult<T> sendRequest(HttpRequest request) {
         try {
-            final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                       .body();
             final var cloudflareDataResult = Json.decodeValue(body, CloudflareDataResult.class);
             if (cloudflareDataResult.getResult() instanceof ArrayList) {
                 ArrayList<?> result = (ArrayList<?>) cloudflareDataResult.getResult();
                 List<CloudflareDataResult.Result> targetList = new ArrayList<>();
                 for (Object o : result) {
-                    final var target = JsonObject.mapFrom(o).mapTo(CloudflareDataResult.Result.class);
+                    final var target = JsonObject.mapFrom(o)
+                                                 .mapTo(CloudflareDataResult.Result.class);
                     targetList.add(target);
                 }
                 return cloudflareDataResult.setResult(targetList);
-            } else {
+            } else if (cloudflareDataResult.getResult() instanceof CloudflareDataResult.Result) {
                 final var result = cloudflareDataResult.getResult();
-                return cloudflareDataResult.setResult(JsonObject.mapFrom(result).mapTo(CloudflareDataResult.Result.class));
+                return cloudflareDataResult.setResult(JsonObject.mapFrom(result)
+                                                                .mapTo(CloudflareDataResult.Result.class));
             }
+            return cloudflareDataResult;
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e.getCause());
         }
         return null;
     }
 
-    private HttpRequest requestBuild(String url,Object data, MethodType methodType) {
+    private HttpRequest requestBuild(String url, MethodType methodType) {
+        return this.requestBuild(url, null, methodType);
+    }
+
+    private HttpRequest requestBuild(String url, Object data, MethodType methodType) {
         final var builder = HttpRequest.newBuilder();
         builder.uri(URI.create(url))
                .header("Authorization", this.getBearerToken())
@@ -141,11 +155,20 @@ public class CloudflareDnsApi extends AbstractDnsApi{
         return "Bearer " + token;
     }
 
+    private String toUrl(String identifier) {
+        return this.toUrl(null, identifier);
+    }
+
+    private String toUrl(Map<String, String> queryParam) {
+        return this.toUrl(queryParam, null);
+    }
+
     @SuppressWarnings("SameParameterValue")
     private String toUrl(Map<String, String> queryParam, String identifier) {
         if (!CollectionUtil.isEmpty(queryParam)) {
             final var query = new StringBuilder();
-            final var array = queryParam.keySet().toArray(new String[]{});
+            final var array = queryParam.keySet()
+                                        .toArray(new String[]{});
             for (String key : array) {
                 query.append("&")
                      .append(key)
