@@ -10,7 +10,6 @@ import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import io.vertx.core.json.Json;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -24,10 +23,10 @@ import java.util.Random;
  * @author ant
  * Create by Ant on 2021/7/17 1:23 上午
  */
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "DuplicatedCode"})
 public class DnspodDnsAPI extends AbstractDnsAPI {
 
-    private final String api = "https://dnspod.tencentcloudapi.com";
+    private final String api = "https://dnspod.tencentcloudapi.com/";
     private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();
 
     public DnspodDnsAPI(String id, String secret) {
@@ -38,16 +37,33 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         super(dnsApiCredentials);
     }
 
+    /**
+     * 查询主域名的解析记录，以记录类型区别ipv4 ipv6
+     *
+     * @param domain        域名/区分主域名跟多级域名
+     * @param dnsRecordType 记录类型
+     * @return {@link DnspodDataResult}
+     */
     public DnspodDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
         this.checkDomain(domain);
         final var queryParam = this.getQueryParam("DescribeRecordList");
+        final var extractDomain = HttpUtil.extractDomain(domain);
         queryParam.put("RecordType", dnsRecordType.name());
-        queryParam.put("Domain", domain);
+        queryParam.put("Domain", extractDomain[0]);
+        queryParam.put("Subdomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
         final var url = composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
 
+    /**
+     * 新增记录
+     *
+     * @param domain        域名/区分主域名跟多级域名
+     * @param ip            ip值
+     * @param dnsRecordType 记录类型
+     * @return {@link DnspodDataResult}
+     */
     public DnspodDataResult addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         this.checkIp(ip);
         this.checkDomain(domain);
@@ -58,6 +74,48 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
+        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
+        return this.sendRequest(httpRequest);
+    }
+
+    /**
+     * 更新记录
+     *
+     * @param recordId      记录ID
+     * @param domain        域名/区分主域名跟多级域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link DnspodDataResult}
+     */
+    public DnspodDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
+        this.checkIp(ip);
+        this.checkDomain(domain);
+        final var queryParam = this.getQueryParam("ModifyRecord");
+        final var extractDomain = HttpUtil.extractDomain(domain);
+        queryParam.put("Domain", extractDomain[0]);
+        queryParam.put("SubDomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
+        queryParam.put("RecordType", dnsRecordType.name());
+        queryParam.put("RecordLine", "默认");
+        queryParam.put("Value", ip);
+        queryParam.put("RecordId", recordId);
+        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
+        return this.sendRequest(httpRequest);
+    }
+
+    /**
+     * 根据主域名、记录ID删除记录
+     *
+     * @param recordId   记录id
+     * @param mainDomain 主域名
+     * @return {@link DnspodDataResult}
+     */
+    public DnspodDataResult deleteDnsRecord(String recordId, String mainDomain) {
+        this.checkDomain(mainDomain);
+        final var queryParam = this.getQueryParam("DeleteRecord");
+        queryParam.put("Domain", mainDomain);
+        queryParam.put("RecordId", recordId);
         final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
@@ -75,14 +133,14 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
             final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                             .body();
             return Json.decodeValue(body, DnspodDataResult.class);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
     private Map<String, Object> getQueryParam(String action) {
         Map<String, Object> params = new HashMap<>();
-        params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE));
+        params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE) + System.currentTimeMillis());
         params.put("Timestamp", String.valueOf(System.currentTimeMillis() / 1000));
         params.put("SecretId", this.dnsApiCredentials.getAccessKeyId());
         params.put("Action", action);

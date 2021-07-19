@@ -5,8 +5,6 @@ import com.zf1976.ddns.api.signature.Signer;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
 
 /**
  * @author mac
@@ -31,20 +29,6 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
             }
         }
         return composer;
-    }
-
-    public static void main(String[] args) {
-        TreeMap<String, Object> params = new TreeMap<>(); // TreeMap可以自动排序
-        params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE)); // 公共参数
-        // 实际调用时应当使用系统当前时间，例如：   params.put("Timestamp", System.currentTimeMillis() / 1000);
-        params.put("Timestamp", String.valueOf(System.currentTimeMillis() / 1000)); // 公共参数
-        params.put("SecretId", "AKID4wYtxkHXWDeohJeiUzHI2VhcGdjZ8QRD"); // 公共参数
-        params.put("Action", "DescribeInstances");
-        params.put("Version", "2017-03-12");
-        params.put("SignatureMethod", "HmacSHA256");
-        final var composer = getComposer();
-        final var url = composer.toUrl("WljQqzrRloZ3HEuJQHr9AvOaU8VaOuA9", "https://cvm.tencentcloudapi.com", MethodType.GET, params);
-        System.out.println(url);
     }
 
     @Override

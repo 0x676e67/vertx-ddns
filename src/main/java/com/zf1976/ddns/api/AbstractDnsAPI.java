@@ -26,7 +26,7 @@ public class AbstractDnsAPI {
     }
 
     protected HttpClient httpClient = HttpClient.newBuilder()
-                                                .connectTimeout(Duration.ofSeconds(1))
+                                                .connectTimeout(Duration.ofSeconds(2))
                                                 .version(HttpClient.Version.HTTP_1_1)
                                                 .executor(Executors.newSingleThreadExecutor())
                                                 .build();

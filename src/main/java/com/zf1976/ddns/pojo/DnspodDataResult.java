@@ -1,5 +1,6 @@
 package com.zf1976.ddns.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
  * @author mac
  * @date 2021/7/19
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DnspodDataResult {
 
     @JsonProperty("Response")
@@ -28,6 +30,7 @@ public class DnspodDataResult {
                 '}';
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RecordCountInfo {
 
         @JsonProperty("SubdomainCount")
@@ -71,6 +74,7 @@ public class DnspodDataResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RecordList {
 
         @JsonProperty("RecordId")
@@ -224,14 +228,37 @@ public class DnspodDataResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Response {
 
         @JsonProperty("RequestId")
         private String requestId;
+        @JsonProperty("RecordId")
+        private String recordId;
         @JsonProperty("RecordCountInfo")
         private RecordCountInfo recordCountInfo;
         @JsonProperty("RecordList")
         private List<RecordList> recordList;
+        @JsonProperty("Error")
+        private Object error;
+
+        public Object getError() {
+            return error;
+        }
+
+        public Response setError(Object error) {
+            this.error = error;
+            return this;
+        }
+
+        public String getRecordId() {
+            return recordId;
+        }
+
+        public Response setRecordId(String recordId) {
+            this.recordId = recordId;
+            return this;
+        }
 
         public String getRequestId() {
             return requestId;
@@ -261,8 +288,10 @@ public class DnspodDataResult {
         public String toString() {
             return "Response{" +
                     "requestId='" + requestId + '\'' +
+                    ", recordId='" + recordId + '\'' +
                     ", recordCountInfo=" + recordCountInfo +
                     ", recordList=" + recordList +
+                    ", error=" + error +
                     '}';
         }
     }
