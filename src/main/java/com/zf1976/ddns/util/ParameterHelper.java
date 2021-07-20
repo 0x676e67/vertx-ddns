@@ -3,18 +3,20 @@ package com.zf1976.ddns.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.SimpleTimeZone;
-import java.util.UUID;
+import java.util.*;
 
 public class ParameterHelper {
 
-    private final static String TIME_ZONE = "GMT";
+    private final static String TIME_ZONE = "GMT+8";
     private final static String FORMAT_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private final static String FORMAT_RFC2616 = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
     public ParameterHelper() {
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(getISO8601Time(new Date()));
     }
 
     public static String getUniqueNonce() {
@@ -22,7 +24,9 @@ public class ParameterHelper {
         UUID uuid = UUID.randomUUID();
         uniqueNonce.append(uuid);
         uniqueNonce.append(System.currentTimeMillis());
-        uniqueNonce.append(Thread.currentThread().getId());
+        uniqueNonce.append(Thread.currentThread()
+                                 .getId());
+        uniqueNonce.append(new Random().nextDouble());
         return uniqueNonce.toString();
     }
 

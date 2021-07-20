@@ -21,4 +21,8 @@ public interface RpcAPISignatureComposer {
         }
         return urlPattern + "?" + canonicalizeQueryString.substring(1);
     }
+
+    String signatureMethod();
+
+    String getSignerVersion();
 }

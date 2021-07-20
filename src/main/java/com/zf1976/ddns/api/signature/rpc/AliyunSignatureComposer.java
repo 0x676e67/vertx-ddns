@@ -5,6 +5,8 @@ import com.zf1976.ddns.api.signature.Signer;
 import com.zf1976.ddns.util.AliyunURLEncoder;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -45,7 +47,7 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
                                                                                             .toString()));
             }
 
-            return method.toString() +
+            return method.name() +
                     SEPARATOR +
                     AliyunURLEncoder.percentEncode("/") +
                     SEPARATOR +
@@ -61,7 +63,17 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         // stringToSign
         final var stringToSign = this.composeStringToSign(methodType, queries);
         // 签名
-        final var signature = this.signer.signString(stringToSign, accessKeySecret + "&");
-        return getUrl(urlPattern, queries, signature);
+        final var signature = this.signer.signString(stringToSign, accessKeySecret);
+        return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public String signatureMethod() {
+        return this.signer.getSignerName();
+    }
+
+    @Override
+    public String getSignerVersion() {
+        return this.signer.getSignerVersion();
     }
 }

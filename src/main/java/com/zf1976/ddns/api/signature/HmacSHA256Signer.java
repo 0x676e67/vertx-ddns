@@ -8,7 +8,7 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
  */
 public class HmacSHA256Signer extends Signer {
 
-    private static final String ALGORITHM_NAME = "HmacSHA256";
+    public static final String ALGORITHM_NAME = "HmacSHA256";
 
     @Override
     public String signString(String stringToSign, DnsApiCredentials credentials) {

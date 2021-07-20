@@ -4,7 +4,7 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 
 public class HmacSHA1Signer extends Signer {
 
-    private static final String ALGORITHM_NAME = "HmacSHA1";
+    public static final String ALGORITHM_NAME = "HmacSHA1";
 
     public HmacSHA1Signer() {
     }

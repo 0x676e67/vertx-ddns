@@ -17,6 +17,8 @@ public class AliyunDataResult {
 
     private String recordId;
 
+    private Object message;
+
     private int TotalCount;
 
     private int PageNumber;
@@ -25,30 +27,44 @@ public class AliyunDataResult {
 
     private DomainRecords DomainRecords;
 
-    public void setRequestId(String RequestId){
+    public void setRequestId(String RequestId) {
         this.requestId = RequestId;
     }
     public String getRequestId(){
         return this.requestId;
     }
-    public void setTotalCount(int TotalCount){
+
+    public void setTotalCount(int TotalCount) {
         this.TotalCount = TotalCount;
     }
-    public int getTotalCount(){
+
+    public int getTotalCount() {
         return this.TotalCount;
     }
+
     public String getRecordId() {
         return recordId;
+    }
+
+    public Object getMessage() {
+        return message;
+    }
+
+    public AliyunDataResult setMessage(Object message) {
+        this.message = message;
+        return this;
     }
 
     public AliyunDataResult setRecordId(String recordId) {
         this.recordId = recordId;
         return this;
     }
-    public void setPageNumber(int PageNumber){
+
+    public void setPageNumber(int PageNumber) {
         this.PageNumber = PageNumber;
     }
-    public int getPageNumber(){
+
+    public int getPageNumber() {
         return this.PageNumber;
     }
     public void setPageSize(int PageSize){
@@ -188,6 +204,7 @@ public class AliyunDataResult {
         return "AliyunDataResult{" +
                 "requestId='" + requestId + '\'' +
                 ", recordId='" + recordId + '\'' +
+                ", message=" + message +
                 ", TotalCount=" + TotalCount +
                 ", PageNumber=" + PageNumber +
                 ", PageSize=" + PageSize +

@@ -29,7 +29,7 @@ import java.util.*;
 @SuppressWarnings({"FieldCanBeLocal"})
 public class CloudflareDnsAPI extends AbstractDnsAPI {
 
-    private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
+    private final Logger log = LogManager.getLogger("[CloudflareDnsAPI]");
     private final String api = "https://api.cloudflare.com/client/v4/zones";
     private final String zoneId;
 
@@ -218,7 +218,7 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         return this.api + "/" + this.zoneId + "/dns_records";
     }
 
-    public Map<String, String> getQueryParam(DNSRecordType dnsRecordType) {
+    private Map<String, String> getQueryParam(DNSRecordType dnsRecordType) {
         Map<String, String> queryParam = new HashMap<>();
         queryParam.put("match", "all");
         queryParam.put("type", dnsRecordType.name());

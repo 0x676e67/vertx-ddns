@@ -11,10 +11,11 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.signature.rpc.AliyunSignatureComposer;
+import com.zf1976.ddns.api.signature.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
-import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
+import com.zf1976.ddns.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,11 +36,10 @@ import java.util.Map;
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
 public class AliyunDnsAPI extends AbstractDnsAPI {
 
-    private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
+    private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
     private final String api = "https://alidns.aliyuncs.com";
-    private final DnsApiCredentials credentials;
     private final ObjectMapper objectMapper;
-    private final AliyunSignatureComposer rpcSignatureComposer;
+    private final RpcAPISignatureComposer rpcSignatureComposer = AliyunSignatureComposer.getComposer();
 
     public AliyunDnsAPI(String accessKeyId, String accessKeySecret) {
         this(new BasicCredentials(accessKeyId, accessKeySecret));
@@ -47,9 +47,6 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
 
     public AliyunDnsAPI(DnsApiCredentials credentials) {
         super(credentials);
-        Assert.notNull(credentials, "AlibabaCloudCredentials cannot been null!");
-        this.credentials = credentials;
-        this.rpcSignatureComposer = (AliyunSignatureComposer) AliyunSignatureComposer.getComposer();
         this.objectMapper = new ObjectMapper();
         this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
         this.objectMapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
@@ -71,7 +68,9 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         queryParam.put("PageSize", "500");
         queryParam.put("TypeKeyWord", dnsRecordType.name());
         queryParam.put("DomainName", extractDomain[0]);
-        queryParam.put("RRKeyWord", extractDomain[1]);
+        if (!StringUtil.isEmpty(extractDomain[1])) {
+            queryParam.put("RRKeyWord", extractDomain[1]);
+        }
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -129,7 +128,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     }
 
     private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
-        final var url = this.rpcSignatureComposer.toUrl(this.credentials.getAccessKeySecret(), this.api, methodType, queryParam);
+        final var url = this.rpcSignatureComposer.toUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
         return HttpRequest.newBuilder()
                           .GET()
                           .uri(URI.create(url))
@@ -150,12 +149,13 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     private Map<String, Object> getQueryParam(String action) {
         final var queryParam = new HashMap<String, Object>();
         queryParam.put("Format", "JSON");
-        queryParam.put("AccessKeyId", this.credentials.getAccessKeyId());
+        queryParam.put("AccessKeyId", this.dnsApiCredentials.getAccessKeyId());
         queryParam.put("Action", action);
-        queryParam.put("SignatureMethod", "HMAC-SHA1");
+        queryParam.put("SignatureMethod", rpcSignatureComposer.signatureMethod());
         queryParam.put("SignatureNonce", ParameterHelper.getUniqueNonce());
-        queryParam.put("SignatureVersion", "1.0");
+        queryParam.put("SignatureVersion", rpcSignatureComposer.getSignerVersion());
         queryParam.put("Version", "2015-01-09");
+        queryParam.put("UserClientIp", HttpUtil.getCurrentHostIp());
         queryParam.put("Timestamp", ParameterHelper.getISO8601Time(new Date()));
         return queryParam;
     }

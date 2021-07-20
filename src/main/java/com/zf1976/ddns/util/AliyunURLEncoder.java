@@ -15,7 +15,10 @@ public class AliyunURLEncoder {
     }
 
     public static String percentEncode(String value) throws UnsupportedEncodingException {
-        return value != null ? URLEncoder.encode(value, URL_ENCODING).replace("+", "%20")
-                                         .replace("*", "%2A").replace("%7E", "~") : null;
+        // 这里官方文档签名%20会请求间歇性失败，需改成%2B
+        return value != null ? URLEncoder.encode(value, URL_ENCODING)
+                                         .replace("+", "%2B")
+                                         .replace("*", "%2A")
+                                         .replace("%7E", "~") : null;
     }
 }
