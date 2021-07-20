@@ -9,14 +9,13 @@ import com.zf1976.ddns.api.signature.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import io.vertx.core.json.Json;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * 腾讯云DNS
@@ -27,9 +26,8 @@ import java.util.Map;
 @SuppressWarnings({"FieldCanBeLocal", "DuplicatedCode"})
 public class DnspodDnsAPI extends AbstractDnsAPI {
 
-    private final Logger log = LogManager.getLogger("[DnspodDnsAPI]");
-    private final String api = "https://dnspod.tencentcloudapi.com";
-    private final RpcAPISignatureComposer rpcAPISignatureComposer = DnspodSignatureComposer.getComposer();
+    private final String api = "https://dnspod.tencentcloudapi.com/";
+    private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();
 
     public DnspodDnsAPI(String id, String secret) {
         this(new BasicCredentials(id, secret));
@@ -53,7 +51,8 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("Domain", extractDomain[0]);
         queryParam.put("Subdomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
-        final var httpRequest = this.requestBuild(queryParam);
+        final var url = composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
 
@@ -75,7 +74,8 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
-        final var httpRequest = this.requestBuild(queryParam);
+        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
 
@@ -99,7 +99,8 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
         queryParam.put("RecordId", recordId);
-        final var httpRequest = this.requestBuild(queryParam);
+        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
 
@@ -115,14 +116,13 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         final var queryParam = this.getQueryParam("DeleteRecord");
         queryParam.put("Domain", mainDomain);
         queryParam.put("RecordId", recordId);
-        final var httpRequest = this.requestBuild(queryParam);
+        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
 
-    private HttpRequest requestBuild(Map<String, Object> queryParam) {
-        final var url = this.rpcAPISignatureComposer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+    private HttpRequest requestBuild(String url) {
         return HttpRequest.newBuilder()
-                          .header("Content-type", "application/x-www-form-urlencoded")
                           .uri(URI.create(url))
                           .GET()
                           .build();
@@ -134,19 +134,18 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
                                             .body();
             return Json.decodeValue(body, DnspodDataResult.class);
         } catch (Exception e) {
-            log.error(e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage());
         }
     }
 
     private Map<String, Object> getQueryParam(String action) {
         Map<String, Object> params = new HashMap<>();
-        params.put("Nonce", System.currentTimeMillis());
-        params.put("Timestamp", System.currentTimeMillis() / 1000);
+        params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE) + System.currentTimeMillis());
+        params.put("Timestamp", String.valueOf(System.currentTimeMillis() / 1000));
         params.put("SecretId", this.dnsApiCredentials.getAccessKeyId());
         params.put("Action", action);
         params.put("Version", "2021-03-23");
-        params.put("SignatureMethod", this.rpcAPISignatureComposer.signatureMethod());
+        params.put("SignatureMethod", "HmacSHA256");
         return params;
     }
 }
