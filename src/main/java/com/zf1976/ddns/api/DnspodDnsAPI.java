@@ -141,7 +141,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
     private Map<String, Object> getQueryParam(String action) {
         Map<String, Object> params = new HashMap<>();
         params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE) + System.currentTimeMillis());
-        params.put("Timestamp", String.valueOf(System.currentTimeMillis() / 1000));
+        params.put("Timestamp", System.currentTimeMillis() / 1000);
         params.put("SecretId", this.dnsApiCredentials.getAccessKeyId());
         params.put("Action", action);
         params.put("Version", "2021-03-23");
