@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 
 import java.net.http.HttpClient;
@@ -21,15 +22,15 @@ public class AbstractDnsAPI {
 
     protected final DnsApiCredentials dnsApiCredentials;
 
-    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
-        this.dnsApiCredentials = dnsApiCredentials;
-    }
-
     protected HttpClient httpClient = HttpClient.newBuilder()
-                                                .connectTimeout(Duration.ofSeconds(2))
-                                                .version(HttpClient.Version.HTTP_1_1)
+                                                .connectTimeout(Duration.ofSeconds(5))
                                                 .executor(Executors.newSingleThreadExecutor())
                                                 .build();
+
+    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
+        Assert.notNull(dnsApiCredentials, "AlibabaCloudCredentials cannot been null!");
+        this.dnsApiCredentials = dnsApiCredentials;
+    }
 
     public void checkIp(String ip) {
         if (!HttpUtil.isIp(ip)) {
