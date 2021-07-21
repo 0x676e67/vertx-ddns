@@ -15,21 +15,21 @@ import org.apache.logging.log4j.Logger;
  */
 public class ConfigVerticle extends AbstractVerticle {
 
-    private final Logger log = LogManager.getLogger("[MainVerticle]");
+    private final Logger log = LogManager.getLogger("[ConfigVerticle]");
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         this.init()
             .compose(json -> {
                 if (json != null) {
-                    return Future.<Void>succeededFuture()
-                                 .compose(v -> vertx.deployVerticle(new ApiVerticle(), new DeploymentOptions().setConfig(json)));
+                    return Future.<Void>succeededFuture().compose(v -> vertx.deployVerticle(new ApiVerticle(), new DeploymentOptions().setConfig(json)));
                 }
                 return Future.failedFuture("json config is empty");
             })
             .onSuccess(event -> {
                 startPromise.complete();
             }).onFailure(err -> {
-                log.error("Class：" + err.getClass() + "=> Message：" + err.getMessage());
+                err.printStackTrace();
+                log.error("Class：" + err.getClass() + " => Message：" + err.getMessage());
                 System.exit(0);
             });
     }

@@ -90,7 +90,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                               log.info("RSA key has been initialized");
                               TemplateVerticle.workDir = projectWorkPath;
                               this.handleTemplate(router, vertx);
-                              return this.loadDDNSServiceConfig();
+                              return this.loadDDNSServiceConfig(vertx.fileSystem());
                           });
      }
 
@@ -122,14 +122,13 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                       .onFailure(err -> this.handleError(ctx, err)));
         // 静态资源处理
         router.get().handler(StaticHandler.create());
-
     }
 
-    protected Future<Void> loadDDNSServiceConfig() {
-        return this.readDDNSConfig(vertx.fileSystem())
-                   .compose(ddnsConfigList -> {
+    protected Future<Void> loadDDNSServiceConfig(FileSystem fileSystem) {
+        return this.readDDNSConfig(fileSystem)
+                    .compose(configList -> {
                        try {
-                           for (DDNSConfig ddnsConfig : ddnsConfigList) {
+                           for (DDNSConfig ddnsConfig : configList) {
                                this.loadConfig(ddnsConfig);
                            }
                            return Future.succeededFuture();
@@ -184,20 +183,25 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     }
 
     protected Future<List<DDNSConfig>> readDDNSConfig(FileSystem fileSystem) {
-        return fileSystem.readFile(pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME))
+        String path = pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
+        return fileSystem.readFile(path)
                          .compose(buffer -> {
                              try {
+                                 List<DDNSConfig> configArrayList = new ArrayList<>();
+                                 // config is empty
+                                 if (StringUtil.isEmpty(buffer.toString())) {
+                                     return Future.succeededFuture(configArrayList);
+                                 }
                                  var list = Json.decodeValue(buffer, List.class);
                                  if (CollectionUtil.isEmpty(list)) {
-                                     return Future.succeededFuture(new ArrayList<>());
+                                     return Future.succeededFuture(configArrayList);
                                  }
-                                 List<DDNSConfig> ddnsConfigList = new ArrayList<>();
                                  for (Object o : list) {
-                                     ddnsConfigList.add(JsonObject.mapFrom(o)
-                                                                  .mapTo(DDNSConfig.class));
+                                     configArrayList.add(JsonObject.mapFrom(o).mapTo(DDNSConfig.class));
                                  }
-                                 return Future.succeededFuture(ddnsConfigList);
+                                 return Future.succeededFuture(configArrayList);
                              } catch (Exception e) {
+                                 log.error(e.getMessage(), e.getCause());
                                  return Future.failedFuture(e.getMessage());
                              }
                          });
