@@ -156,7 +156,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         queryParam.put("SignatureVersion", rpcSignatureComposer.getSignerVersion());
         queryParam.put("Version", "2015-01-09");
         queryParam.put("UserClientIp", HttpUtil.getCurrentHostIp());
-        queryParam.put("Timestamp", ParameterHelper.getISO8601Time(new Date()));
+        queryParam.put("Timestamp", ParameterHelper.getISO8601Time1(new Date()));
         return queryParam;
     }
 
