@@ -128,7 +128,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     }
 
     private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
-        final var url = this.rpcSignatureComposer.toUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
+        final var url = this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
         return HttpRequest.newBuilder()
                           .GET()
                           .uri(URI.create(url))

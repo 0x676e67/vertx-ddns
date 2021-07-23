@@ -1,9 +1,11 @@
 package com.zf1976.ddns.api.signature.rpc;
 
+import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.signature.Signer;
 
 import java.net.URLEncoder;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
@@ -49,11 +51,24 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
     }
 
     @Override
-    public String toUrl(String accessKeySecret, String urlPattern, MethodType methodType, Map<String, Object> queries) {
+    public String composeStringToSign(HttpRequest request, Map<String, Object> queries) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String toSignatureUrl(String accessKeySecret,
+                                 String urlPattern,
+                                 MethodType methodType,
+                                 Map<String, Object> queries) {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
         // 这里需要给签名做URL编码，否则会连续请求会间歇性认证失败
         return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void signRequest(BasicCredentials basicCredentials, HttpRequest request, Map<String, Object> queries) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

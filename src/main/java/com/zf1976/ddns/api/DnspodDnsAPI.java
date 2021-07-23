@@ -51,7 +51,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("Domain", extractDomain[0]);
         queryParam.put("Subdomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
-        final var url = composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -74,7 +74,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -99,7 +99,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
         queryParam.put("RecordId", recordId);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -116,7 +116,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         final var queryParam = this.getQueryParam("DeleteRecord");
         queryParam.put("Domain", mainDomain);
         queryParam.put("RecordId", recordId);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }

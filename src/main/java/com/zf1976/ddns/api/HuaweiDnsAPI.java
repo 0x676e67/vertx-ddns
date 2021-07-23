@@ -12,6 +12,7 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 public class HuaweiDnsAPI extends AbstractDnsAPI {
 
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
+    private String zoneId = null;
 
     public HuaweiDnsAPI(String id, String secret) {
         this(new BasicCredentials(id, secret));

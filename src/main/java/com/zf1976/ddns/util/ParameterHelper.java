@@ -16,10 +16,6 @@ public class ParameterHelper {
     }
 
 
-    public static void main(String[] args) {
-        System.out.println(getISO8601Time2(new Date()));
-    }
-
     public static String getUniqueNonce() {
         StringBuilder uniqueNonce = new StringBuilder();
         UUID uuid = UUID.randomUUID();

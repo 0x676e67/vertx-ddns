@@ -171,10 +171,10 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
                 builder.GET();
                 break;
             case PUT:
-                builder.PUT(HttpRequest.BodyPublishers.ofString(Json.encodePrettily(data)));
+                builder.PUT(HttpRequest.BodyPublishers.ofString(Json.encode(data)));
                 break;
             case POST:
-                builder.POST(HttpRequest.BodyPublishers.ofString(Json.encodePrettily(data)));
+                builder.POST(HttpRequest.BodyPublishers.ofString(Json.encode(data)));
                 break;
             case DELETE:
                 builder.DELETE();
