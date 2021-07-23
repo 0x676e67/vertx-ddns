@@ -1,13 +1,11 @@
 package com.zf1976.ddns.api.signature.rpc;
 
-import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.signature.Signer;
 import com.zf1976.ddns.util.ApiURLEncoder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
@@ -60,10 +58,6 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
 
     }
 
-    @Override
-    public String composeStringToSign(HttpRequest request, Map<String, Object> queries) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public String toSignatureUrl(String accessKeySecret,
@@ -77,10 +71,6 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
     }
 
-    @Override
-    public void signRequest(BasicCredentials basicCredentials, HttpRequest request, Map<String, Object> queries) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public String signatureMethod() {

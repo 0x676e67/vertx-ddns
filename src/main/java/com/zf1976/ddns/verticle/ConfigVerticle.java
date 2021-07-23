@@ -30,7 +30,7 @@ public class ConfigVerticle extends AbstractVerticle {
             }).onFailure(err -> {
                 err.printStackTrace();
                 log.error("Class：" + err.getClass() + " => Message：" + err.getMessage());
-                System.exit(0);
+            vertx.close();
             });
     }
 

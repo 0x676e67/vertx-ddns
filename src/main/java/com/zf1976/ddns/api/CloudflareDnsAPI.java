@@ -26,7 +26,7 @@ import java.util.*;
  * @author ant
  * Create by Ant on 2021/7/17 1:24 上午
  */
-@SuppressWarnings({"FieldCanBeLocal"})
+@SuppressWarnings({"FieldCanBeLocal", "DuplicatedCode"})
 public class CloudflareDnsAPI extends AbstractDnsAPI {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsAPI]");

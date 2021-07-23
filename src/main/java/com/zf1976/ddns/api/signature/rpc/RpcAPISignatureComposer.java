@@ -1,23 +1,18 @@
 package com.zf1976.ddns.api.signature.rpc;
 
-import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
 
-import java.net.http.HttpRequest;
 import java.util.Map;
 
 public interface RpcAPISignatureComposer {
 
     String composeStringToSign(MethodType method, Map<String, Object> queries);
 
-    String composeStringToSign(HttpRequest request, Map<String, Object> queries);
-
     String toSignatureUrl(String accessKeySecret,
                           String urlPattern,
                           MethodType methodType,
                           Map<String, Object> queries);
 
-    void signRequest(BasicCredentials basicCredentials, HttpRequest request, Map<String, Object> queries);
 
     default String getUrl(String urlPattern, Map<String, Object> queries, String signature) {
         queries.put("Signature", signature);

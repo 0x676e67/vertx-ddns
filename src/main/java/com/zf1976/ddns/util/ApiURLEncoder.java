@@ -17,7 +17,7 @@ public class ApiURLEncoder {
         ENCODED_CHARACTERS_PATTERN = Pattern.compile(Pattern.quote("+") + "|" + Pattern.quote("*") + "|" + Pattern.quote("%7E") + "|" + Pattern.quote("%2F"));
     }
 
-    public static String urlEncode(String value, boolean path) {
+    public static String huaweiPercentEncode(String value, boolean path) {
         if (value == null) {
             return "";
         } else {
@@ -59,7 +59,4 @@ public class ApiURLEncoder {
                                             .replace("%7E", "~") : null;
     }
 
-    public static String huaweiPercentEncode(String value) throws UnsupportedEncodingException {
-        return value != null ? encode(value).replace("", "%20") : null;
-    }
 }
