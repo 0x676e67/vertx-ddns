@@ -13,6 +13,6 @@ public enum HttpMethodName {
     PATCH,
     OPTIONS;
 
-    private HttpMethodName() {
+    HttpMethodName() {
     }
 }

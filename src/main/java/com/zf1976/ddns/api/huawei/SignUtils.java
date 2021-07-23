@@ -21,7 +21,6 @@ public class SignUtils {
         HttpRequestBase signedRequest = Client.sign(request);
         Header[] headers = signedRequest.getAllHeaders();
         Map<String, String> headerMap = new HashMap<>();
-        int var6 = headers.length;
 
         for (Header header : headers) {
             headerMap.put(header.getName(), header.getValue());

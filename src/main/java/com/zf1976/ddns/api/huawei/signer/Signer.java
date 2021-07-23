@@ -22,15 +22,9 @@ import java.util.regex.Pattern;
  * @date 2021/7/24
  */
 public class Signer {
-    public static final String LINE_SEPARATOR = "\n";
-    public static final String SDK_SIGNING_ALGORITHM = "SDK-HMAC-SHA256";
-    public static final String X_SDK_DATE = "X-Sdk-Date";
-    public static final String X_SDK_CONTENT_SHA256 = "x-sdk-content-sha256";
-    public static final String AUTHORIZATION = "Authorization";
     public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
     public static final String HOST = "Host";
     private static final Pattern AUTHORIZATION_PATTERN = Pattern.compile("SDK-HMAC-SHA256\\s+Access=([^,]+),\\s?SignedHeaders=([^,]+),\\s?Signature=(\\w+)");
-    private static final String LINUX_NEW_LINE = "\n";
 
     static {
         TIME_FORMATTER.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -81,18 +75,13 @@ public class Signer {
 
     protected String getCanonicalizedQueryString(Map<String, List<String>> parameters) {
         SortedMap<String, List<String>> sorted = new TreeMap<>();
-        Iterator var3 = parameters.entrySet()
-                                  .iterator();
 
-        while (var3.hasNext()) {
-            Map.Entry<String, List<String>> entry = (Map.Entry) var3.next();
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             String encodedParamName = ApiURLEncoder.huaweiPercentEncode(entry.getKey(), false);
-            List<String> paramValues = (List) entry.getValue();
+            List<String> paramValues = entry.getValue();
             List<String> encodedValues = new ArrayList<>(paramValues.size());
-            Iterator var8 = paramValues.iterator();
 
-            while (var8.hasNext()) {
-                String value = (String) var8.next();
+            for (String value : paramValues) {
                 encodedValues.add(ApiURLEncoder.huaweiPercentEncode(value, false));
             }
 
@@ -101,17 +90,14 @@ public class Signer {
         }
 
         StringBuilder result = new StringBuilder();
-        Iterator var11 = sorted.entrySet()
-                               .iterator();
 
-        while (var11.hasNext()) {
-            Map.Entry<String, List<String>> entry = (Map.Entry) var11.next();
+        for (Map.Entry<String, List<String>> stringListEntry : sorted.entrySet()) {
 
             String value;
-            for (Iterator var13 = ((List) entry.getValue()).iterator(); var13.hasNext(); result.append((String) entry.getKey())
-                                                                                               .append("=")
-                                                                                               .append(value)) {
-                value = (String) var13.next();
+            for (var var13 = (stringListEntry.getValue()).iterator(); var13.hasNext(); result.append(stringListEntry.getKey())
+                                                                                             .append("=")
+                                                                                             .append(value)) {
+                value = var13.next();
                 if (result.length() > 0) {
                     result.append("&");
                 }
@@ -122,33 +108,28 @@ public class Signer {
     }
 
     protected String createCanonicalRequest(Request request, String[] signedHeaders, String contentSha256) {
-        StringBuilder canonicalRequestBuilder = new StringBuilder(request.getMethod()
-                                                                         .toString());
-        canonicalRequestBuilder.append("\n")
-                               .append(this.getCanonicalizedResourcePath(request.getPath()))
-                               .append("\n")
-                               .append(this.getCanonicalizedQueryString(request.getQueryStringParams()))
-                               .append("\n")
-                               .append(this.getCanonicalizedHeaderString(request, signedHeaders))
-                               .append("\n")
-                               .append(this.getSignedHeadersString(signedHeaders))
-                               .append("\n")
-                               .append(contentSha256);
-        String canonicalRequest = canonicalRequestBuilder.toString();
-        return canonicalRequest;
+        return request.getMethod()
+                      .toString() + "\n" +
+                this.getCanonicalizedResourcePath(request.getPath()) +
+                "\n" +
+                this.getCanonicalizedQueryString(request.getQueryStringParams()) +
+                "\n" +
+                this.getCanonicalizedHeaderString(request, signedHeaders) +
+                "\n" +
+                this.getSignedHeadersString(signedHeaders) +
+                "\n" +
+                contentSha256;
     }
 
     protected String createStringToSign(String canonicalRequest, String singerDate) {
-        StringBuilder stringToSignBuilder = new StringBuilder("SDK-HMAC-SHA256");
-        stringToSignBuilder.append("\n")
-                           .append(singerDate)
-                           .append("\n")
-                           .append(BinaryUtils.toHex(this.hash(canonicalRequest)));
-        String stringToSign = stringToSignBuilder.toString();
-        return stringToSign;
+        return "SDK-HMAC-SHA256" +
+                "\n" +
+                singerDate +
+                "\n" +
+                BinaryUtils.toHex(this.hash(canonicalRequest));
     }
 
-    private final byte[] deriveSigningKey(String secret) {
+    private byte[] deriveSigningKey(String secret) {
         return secret.getBytes(StandardCharsets.UTF_8);
     }
 
@@ -170,21 +151,19 @@ public class Signer {
         String credential = "Access=" + accessKey;
         String signerHeaders = "SignedHeaders=" + this.getSignedHeadersString(signedHeaders);
         String signatureHeader = "Signature=" + BinaryUtils.toHex(signature);
-        StringBuilder authHeaderBuilder = new StringBuilder();
-        authHeaderBuilder.append("SDK-HMAC-SHA256")
-                         .append(" ")
-                         .append(credential)
-                         .append(", ")
-                         .append(signerHeaders)
-                         .append(", ")
-                         .append(signatureHeader);
-        return authHeaderBuilder.toString();
+        return "SDK-HMAC-SHA256" +
+                " " +
+                credential +
+                ", " +
+                signerHeaders +
+                ", " +
+                signatureHeader;
     }
 
     protected String[] getSignedHeaders(Request request) {
-        String[] signedHeaders = (String[]) request.getHeaders()
-                                                   .keySet()
-                                                   .toArray(new String[0]);
+        String[] signedHeaders = request.getHeaders()
+                                        .keySet()
+                                        .toArray(new String[0]);
         Arrays.sort(signedHeaders, String.CASE_INSENSITIVE_ORDER);
         return signedHeaders;
     }
@@ -192,13 +171,10 @@ public class Signer {
     protected String getCanonicalizedHeaderString(Request request, String[] signedHeaders) {
         Map<String, String> requestHeaders = request.getHeaders();
         StringBuilder buffer = new StringBuilder();
-        String[] var5 = signedHeaders;
-        int var6 = signedHeaders.length;
 
-        for (int var7 = 0; var7 < var6; ++var7) {
-            String header = var5[var7];
+        for (String header : signedHeaders) {
             String key = header.toLowerCase();
-            String value = (String) requestHeaders.get(header);
+            String value = requestHeaders.get(header);
             buffer.append(key)
                   .append(":");
             if (value != null) {
@@ -213,11 +189,8 @@ public class Signer {
 
     protected String getSignedHeadersString(String[] signedHeaders) {
         StringBuilder buffer = new StringBuilder();
-        String[] var3 = signedHeaders;
-        int var4 = signedHeaders.length;
 
-        for (int var5 = 0; var5 < var4; ++var5) {
-            String header = var3[var5];
+        for (String header : signedHeaders) {
             if (buffer.length() > 0) {
                 buffer.append(";");
             }
@@ -230,12 +203,9 @@ public class Signer {
 
     protected void addHostHeader(Request request) {
         boolean haveHostHeader = false;
-        Iterator var3 = request.getHeaders()
-                               .keySet()
-                               .iterator();
 
-        while (var3.hasNext()) {
-            String key = (String) var3.next();
+        for (String key : request.getHeaders()
+                                 .keySet()) {
             if ("Host".equalsIgnoreCase(key)) {
                 haveHostHeader = true;
                 break;
@@ -253,8 +223,8 @@ public class Signer {
             return null;
         } else {
             Map<String, String> headers = request.getHeaders();
-            Iterator var4 = headers.keySet()
-                                   .iterator();
+            var var4 = headers.keySet()
+                              .iterator();
 
             String key;
             do {
@@ -262,10 +232,10 @@ public class Signer {
                     return null;
                 }
 
-                key = (String) var4.next();
+                key = var4.next();
             } while (!header.equalsIgnoreCase(key));
 
-            return (String) headers.get(key);
+            return headers.get(key);
         }
     }
 

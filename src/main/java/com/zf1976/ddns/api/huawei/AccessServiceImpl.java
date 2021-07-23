@@ -8,7 +8,6 @@ import org.apache.http.entity.StringEntity;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -16,14 +15,14 @@ import java.util.Map;
  * @date 2021/7/24
  */
 public class AccessServiceImpl extends AccessService {
-    private static final String UTF8 = "UTF-8";
 
     public AccessServiceImpl(String ak, String sk) {
         super(ak, sk);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static HttpRequestBase createRequest(String url, Header header, String content, HttpMethodName httpMethod) {
-        Object httpRequest;
+        HttpRequestBase httpRequest;
         StringEntity entity;
         if (httpMethod == HttpMethodName.POST) {
             HttpPost postMethod = new HttpPost(url);
@@ -61,8 +60,8 @@ public class AccessServiceImpl extends AccessService {
             httpRequest = new HttpHead(url);
         }
 
-        ((HttpRequestBase) httpRequest).addHeader(header);
-        return (HttpRequestBase) httpRequest;
+        httpRequest.addHeader(header);
+        return httpRequest;
     }
 
     public HttpRequestBase access(String url,
@@ -74,27 +73,21 @@ public class AccessServiceImpl extends AccessService {
         request.setAppSecret(this.sk);
         request.setMethod(httpMethod.name());
         request.setUrl(url);
-        Iterator var6 = headers.keySet()
-                               .iterator();
 
-        while (var6.hasNext()) {
-            String k = (String) var6.next();
-            request.addHeader(k, (String) headers.get(k));
+        for (String k : headers.keySet()) {
+            request.addHeader(k, headers.get(k));
         }
 
         request.setBody(content);
         Signer signer = new Signer();
         signer.sign(request);
-        HttpRequestBase httpRequestBase = createRequest(url, (Header) null, content, httpMethod);
+        HttpRequestBase httpRequestBase = createRequest(url, null, content, httpMethod);
         Map<String, String> requestHeaders = request.getHeaders();
-        Iterator var9 = requestHeaders.keySet()
-                                      .iterator();
 
-        while (var9.hasNext()) {
-            String key = (String) var9.next();
-            if (!key.equalsIgnoreCase("Content-Length".toString())) {
-                String value = (String) requestHeaders.get(key);
-                httpRequestBase.addHeader(key, new String(value.getBytes("UTF-8"), "ISO-8859-1"));
+        for (String key : requestHeaders.keySet()) {
+            if (!key.equalsIgnoreCase("Content-Length")) {
+                String value = requestHeaders.get(key);
+                httpRequestBase.addHeader(key, new String(value.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
             }
         }
 
@@ -116,7 +109,7 @@ public class AccessServiceImpl extends AccessService {
                 result.write(buffer, 0, length);
             }
 
-            body = result.toString("UTF-8");
+            body = result.toString(StandardCharsets.UTF_8);
         }
 
         return this.access(url, headers, body, httpMethod);

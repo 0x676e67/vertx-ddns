@@ -7,6 +7,6 @@ package com.zf1976.ddns.api.huawei.signer;
 public enum SigningAlgorithm {
     HmacSHA256;
 
-    private SigningAlgorithm() {
+    SigningAlgorithm() {
     }
 }
