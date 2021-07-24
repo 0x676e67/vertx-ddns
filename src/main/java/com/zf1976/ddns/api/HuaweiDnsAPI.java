@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 华为DNS
@@ -29,7 +31,7 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
     private final CloseableHttpClient closeableHttpClient = HttpClients.custom()
                                                                        .build();
-    private String zoneId;
+    private final Map<String, String> zoneMap;
 
     public HuaweiDnsAPI(String id, String secret) {
         this(new BasicCredentials(id, secret));
@@ -37,6 +39,7 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
 
     public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials) {
         super(dnsApiCredentials);
+        this.zoneMap = new HashMap<>();
         final var huaweiRequest = new HuaweiRequest(dnsApiCredentials);
         huaweiRequest.setUrl(api)
                      .setMethod(MethodType.GET);
@@ -50,13 +53,15 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
                     final var contentBytes = this.getContentBytes(httpResponse);
                     final var huaweiDataResult = this.mapperResult(contentBytes, HuaweiDataResult.class);
                     final var zones = huaweiDataResult.getZones();
-                    if (CollectionUtil.isEmpty(zones) || zones.get(0)
-                                                              .getId() == null) {
+                    if (CollectionUtil.isEmpty(zones)) {
                         throw new RuntimeException("Failed to get zone id");
                     } else {
-                        // 默认支持一个主域名区域
-                        this.zoneId = zones.get(0)
-                                           .getId();
+                        // 按域名划分区域
+                        for (HuaweiDataResult.Zones zone : zones) {
+                            var domain = zone.getName();
+                            domain = domain.substring(0, domain.length() - 1);
+                            this.zoneMap.put(domain, zone.getId());
+                        }
                     }
                 }
             }
@@ -73,9 +78,9 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         }
     }
 
-    public HuaweiDataResult findDnsRecord(DNSRecordType recordType) {
+    public HuaweiDataResult findDnsRecord(String domain, DNSRecordType recordType) {
         final var huaweiRequest = this.getRequest()
-                                      .setUrl(api + "/" + zoneId + "/recordsets")
+                                      .setUrl(api + "/" + this.zoneMap.get(domain) + "/recordsets")
                                       .addQueryStringParam("type", recordType.name())
                                       .setMethod(MethodType.GET);
         CloseableHttpResponse httpResponse = null;
@@ -93,7 +98,6 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
                     httpResponse.close();
                 } catch (IOException e) {
                     log.error(e.getMessage(), e.getCause());
-                    ;
                 }
             }
         }
