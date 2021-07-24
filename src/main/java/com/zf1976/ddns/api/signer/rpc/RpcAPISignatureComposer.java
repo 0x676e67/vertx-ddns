@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signature.rpc;
+package com.zf1976.ddns.api.signer.rpc;
 
 import com.zf1976.ddns.api.enums.MethodType;
 

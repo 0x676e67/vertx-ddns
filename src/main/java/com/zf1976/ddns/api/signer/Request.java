@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signature;
+package com.zf1976.ddns.api.signer;
 
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.util.ApiURLEncoder;
