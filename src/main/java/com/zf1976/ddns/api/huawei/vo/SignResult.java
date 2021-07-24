@@ -49,4 +49,15 @@ public class SignResult {
     public void setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
     }
+
+
+    @Override
+    public String toString() {
+        return "SignResult{" +
+                "headers=" + headers +
+                ", url=" + url +
+                ", parameters=" + parameters +
+                ", inputStream=" + inputStream +
+                '}';
+    }
 }
