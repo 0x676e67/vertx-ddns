@@ -57,7 +57,7 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
         // 这里需要给签名做URL编码，否则会连续请求会间歇性认证失败
-        return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        return canonicalizedRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
     }
 
     @Override

@@ -68,7 +68,7 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         // 签名
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
-        return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        return canonicalizedRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
     }
 
 

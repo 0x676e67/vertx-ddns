@@ -1,6 +1,7 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.util.ObjectUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -16,6 +17,12 @@ import org.apache.logging.log4j.Logger;
 public class ConfigVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger("[ConfigVerticle]");
+    private final String[] args;
+
+    public ConfigVerticle(String[] args) {
+        this.args = args;
+    }
+
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         this.init()
@@ -23,7 +30,8 @@ public class ConfigVerticle extends AbstractVerticle {
                                    .compose(v -> vertx.deployVerticle(new ApiVerticle(), new DeploymentOptions().setConfig(json))))
             .onSuccess(event -> {
                 startPromise.complete();
-            }).onFailure(err -> {
+            })
+            .onFailure(err -> {
                 err.printStackTrace();
                 log.error("Class：" + err.getClass() + " => Message：" + err.getMessage());
             vertx.close();
@@ -36,9 +44,12 @@ public class ConfigVerticle extends AbstractVerticle {
             load = ConfigProperty.getInstance()
                                  .getJsonConfig();
             final var jsonObject = JsonObject.mapFrom(load);
-            // 获取端口号
-            final var serverPort = config().getString(ApiConstants.SERVER_PORT);
-            jsonObject.put(ApiConstants.SERVER_PORT, serverPort);
+            // 设置服务端口配置
+            if (ObjectUtil.isEmpty(this.args)) {
+                jsonObject.put(ApiConstants.SERVER_PORT, 8080);
+            } else {
+                jsonObject.put(ApiConstants.SERVER_PORT, args[0]);
+            }
             return Future.succeededFuture(jsonObject);
         } catch (Exception e) {
             log.error(e.getMessage());
