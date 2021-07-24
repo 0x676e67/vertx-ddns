@@ -19,12 +19,8 @@ public class ConfigVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         this.init()
-            .compose(json -> {
-                if (json != null) {
-                    return Future.<Void>succeededFuture().compose(v -> vertx.deployVerticle(new ApiVerticle(), new DeploymentOptions().setConfig(json)));
-                }
-                return Future.failedFuture("json config is empty");
-            })
+            .compose(json -> Future.<Void>succeededFuture()
+                                   .compose(v -> vertx.deployVerticle(new ApiVerticle(), new DeploymentOptions().setConfig(json))))
             .onSuccess(event -> {
                 startPromise.complete();
             }).onFailure(err -> {
@@ -37,12 +33,13 @@ public class ConfigVerticle extends AbstractVerticle {
     private Future<JsonObject> init() {
         final Object load;
         try {
-            load = ConfigProperty.getInstance().getJsonConfig();
-            final var entries = JsonObject.mapFrom(load);
+            load = ConfigProperty.getInstance()
+                                 .getJsonConfig();
+            final var jsonObject = JsonObject.mapFrom(load);
             // 获取端口号
             final var serverPort = config().getString(ApiConstants.SERVER_PORT);
-            entries.put(ApiConstants.SERVER_PORT, serverPort);
-            return Future.succeededFuture(entries);
+            jsonObject.put(ApiConstants.SERVER_PORT, serverPort);
+            return Future.succeededFuture(jsonObject);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

@@ -1,11 +1,7 @@
 package com.zf1976.ddns.util;
 
 import com.zf1976.ddns.annotation.YamlPrefix;
-import com.zf1976.ddns.config.ConfigProperty;
-import com.zf1976.ddns.property.AliyunDnsProperties;
-import com.zf1976.ddns.property.CommonProperties;
 import io.vertx.core.json.JsonObject;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * @author mac

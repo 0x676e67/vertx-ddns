@@ -23,6 +23,7 @@ ext{
     jacksonVersion = "2.10.3"
     vertxVersion = "4.1.1"
     junitVersion = "5.7.0"
+    log4jVersion = "2.14.1"
 }
 
 dependencies {
@@ -31,9 +32,8 @@ dependencies {
     implementation "io.vertx:vertx-web-templ-thymeleaf:${vertxVersion}"
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.6'
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation 'org.yaml:snakeyaml:1.17'
-    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
-    implementation 'org.apache.logging.log4j:log4j-api:2.14.1'
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
