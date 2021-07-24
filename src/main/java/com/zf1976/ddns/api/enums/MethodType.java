@@ -6,6 +6,7 @@ public enum MethodType {
     POST(true),
     DELETE(false),
     HEAD(false),
+    PATCH(true),
     OPTIONS(false);
 
     private final boolean hasContent;

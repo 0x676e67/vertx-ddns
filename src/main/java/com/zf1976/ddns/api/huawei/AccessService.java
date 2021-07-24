@@ -1,5 +1,6 @@
 package com.zf1976.ddns.api.huawei;
 
+import com.zf1976.ddns.api.enums.MethodType;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.InputStream;
@@ -22,25 +23,25 @@ public abstract class AccessService {
                                            Map<String, String> var2,
                                            InputStream var3,
                                            Long var4,
-                                           HttpMethodName var5) throws Exception;
+                                           MethodType var5) throws Exception;
 
     public abstract HttpRequestBase access(String var1,
                                            Map<String, String> var2,
                                            String var3,
-                                           HttpMethodName var4) throws Exception;
+                                           MethodType var4) throws Exception;
 
-    public HttpRequestBase access(String url, Map<String, String> header, HttpMethodName httpMethod) throws Exception {
+    public HttpRequestBase access(String url, Map<String, String> header, MethodType httpMethod) throws Exception {
         return this.access(url, header, null, 0L, httpMethod);
     }
 
     public HttpRequestBase access(String url,
                                   InputStream content,
                                   Long contentLength,
-                                  HttpMethodName httpMethod) throws Exception {
+                                  MethodType httpMethod) throws Exception {
         return this.access(url, null, content, contentLength, httpMethod);
     }
 
-    public HttpRequestBase access(String url, HttpMethodName httpMethod) throws Exception {
+    public HttpRequestBase access(String url, MethodType httpMethod) throws Exception {
         return this.access(url, null, null, 0L, httpMethod);
     }
 

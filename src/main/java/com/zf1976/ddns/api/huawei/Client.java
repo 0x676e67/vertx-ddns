@@ -1,5 +1,6 @@
 package com.zf1976.ddns.api.huawei;
 
+import com.zf1976.ddns.api.enums.MethodType;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.util.Map;
@@ -18,25 +19,15 @@ public class Client {
         String url = request.getUrl();
         String body = request.getBody();
         Map<String, String> headers = request.getHeaders();
-        switch (request.getMethod()) {
-            case GET:
-                return get(appKey, appSecret, url, headers);
-            case POST:
-                return post(appKey, appSecret, url, headers, body);
-            case PUT:
-                return put(appKey, appSecret, url, headers, body);
-            case PATCH:
-                return patch(appKey, appSecret, url, headers, body);
-            case DELETE:
-                return delete(appKey, appSecret, url, headers);
-            case HEAD:
-                return head(appKey, appSecret, url, headers);
-            case OPTIONS:
-                return options(appKey, appSecret, url, headers);
-            default:
-                throw new IllegalArgumentException(String.format("unsupported method:%s", request.getMethod()
-                                                                                                 .name()));
-        }
+        return switch (request.getMethod()) {
+            case GET -> get(appKey, appSecret, url, headers);
+            case POST -> post(appKey, appSecret, url, headers, body);
+            case PUT -> put(appKey, appSecret, url, headers, body);
+            case PATCH -> patch(appKey, appSecret, url, headers, body);
+            case DELETE -> delete(appKey, appSecret, url, headers);
+            case HEAD -> head(appKey, appSecret, url, headers);
+            case OPTIONS -> options(appKey, appSecret, url, headers);
+        };
     }
 
     public static HttpRequestBase put(String ak,
@@ -45,7 +36,7 @@ public class Client {
                                       Map<String, String> headers,
                                       String putBody) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.PUT;
+        MethodType httpMethod = MethodType.PUT;
         if (putBody == null) {
             putBody = "";
         }
@@ -59,7 +50,7 @@ public class Client {
                                         Map<String, String> headers,
                                         String body) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.PATCH;
+        MethodType httpMethod = MethodType.PATCH;
         if (body == null) {
             body = "";
         }
@@ -72,7 +63,7 @@ public class Client {
                                          String requestUrl,
                                          Map<String, String> headers) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.DELETE;
+        MethodType httpMethod = MethodType.DELETE;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -81,7 +72,7 @@ public class Client {
                                       String requestUrl,
                                       Map<String, String> headers) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.GET;
+        MethodType httpMethod = MethodType.GET;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -95,7 +86,7 @@ public class Client {
             postbody = "";
         }
 
-        HttpMethodName httpMethod = HttpMethodName.POST;
+        MethodType httpMethod = MethodType.POST;
         return accessService.access(requestUrl, headers, postbody, httpMethod);
     }
 
@@ -104,7 +95,7 @@ public class Client {
                                        String requestUrl,
                                        Map<String, String> headers) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.HEAD;
+        MethodType httpMethod = MethodType.HEAD;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -113,7 +104,7 @@ public class Client {
                                           String requestUrl,
                                           Map<String, String> headers) throws Exception {
         AccessService accessService = new AccessServiceImpl(ak, sk);
-        HttpMethodName httpMethod = HttpMethodName.OPTIONS;
+        MethodType httpMethod = MethodType.OPTIONS;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 

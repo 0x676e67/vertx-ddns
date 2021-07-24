@@ -1,5 +1,6 @@
 package com.zf1976.ddns.api.huawei;
 
+import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.util.ApiURLEncoder;
 
 import java.net.URLDecoder;
@@ -53,14 +54,13 @@ public class Request {
         }
     }
 
-    public HttpMethodName getMethod() {
-        return HttpMethodName.valueOf(this.method.toUpperCase());
+    public MethodType getMethod() {
+        return MethodType.valueOf(this.method.toUpperCase());
     }
 
-    public void setMethod(String method) throws Exception {
-        if (null == method) {
-            throw new Exception("method can not be empty");
-        } else if (!method.equalsIgnoreCase("post") && !method.equalsIgnoreCase("put") && !method.equalsIgnoreCase("patch") && !method.equalsIgnoreCase("delete") && !method.equalsIgnoreCase("get") && !method.equalsIgnoreCase("options") && !method.equalsIgnoreCase("head")) {
+    public void setMethod(MethodType methodType) throws Exception {
+        final var method = methodType.name();
+        if (!method.equalsIgnoreCase("post") && !method.equalsIgnoreCase("put") && !method.equalsIgnoreCase("patch") && !method.equalsIgnoreCase("delete") && !method.equalsIgnoreCase("get") && !method.equalsIgnoreCase("options") && !method.equalsIgnoreCase("head")) {
             throw new Exception("unsupported method");
         } else {
             this.method = method;

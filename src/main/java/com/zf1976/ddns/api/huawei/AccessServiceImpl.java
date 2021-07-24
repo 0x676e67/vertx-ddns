@@ -1,5 +1,6 @@
 package com.zf1976.ddns.api.huawei;
 
+import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.api.huawei.signer.Signer;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
@@ -21,10 +22,10 @@ public class AccessServiceImpl extends AccessService {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static HttpRequestBase createRequest(String url, Header header, String content, HttpMethodName httpMethod) {
+    private static HttpRequestBase createRequest(String url, Header header, String content, MethodType httpMethod) {
         HttpRequestBase httpRequest;
         StringEntity entity;
-        if (httpMethod == HttpMethodName.POST) {
+        if (httpMethod == MethodType.POST) {
             HttpPost postMethod = new HttpPost(url);
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
@@ -32,28 +33,28 @@ public class AccessServiceImpl extends AccessService {
             }
 
             httpRequest = postMethod;
-        } else if (httpMethod == HttpMethodName.PUT) {
+        } else if (httpMethod == MethodType.PUT) {
             HttpPut putMethod = new HttpPut(url);
             httpRequest = putMethod;
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
                 putMethod.setEntity(entity);
             }
-        } else if (httpMethod == HttpMethodName.PATCH) {
+        } else if (httpMethod == MethodType.PATCH) {
             HttpPatch patchMethod = new HttpPatch(url);
             httpRequest = patchMethod;
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
                 patchMethod.setEntity(entity);
             }
-        } else if (httpMethod == HttpMethodName.GET) {
+        } else if (httpMethod == MethodType.GET) {
             httpRequest = new HttpGet(url);
-        } else if (httpMethod == HttpMethodName.DELETE) {
+        } else if (httpMethod == MethodType.DELETE) {
             httpRequest = new HttpDelete(url);
-        } else if (httpMethod == HttpMethodName.OPTIONS) {
+        } else if (httpMethod == MethodType.OPTIONS) {
             httpRequest = new HttpOptions(url);
         } else {
-            if (httpMethod != HttpMethodName.HEAD) {
+            if (httpMethod != MethodType.HEAD) {
                 throw new RuntimeException("Unknown HTTP method name: " + httpMethod);
             }
 
@@ -67,11 +68,11 @@ public class AccessServiceImpl extends AccessService {
     public HttpRequestBase access(String url,
                                   Map<String, String> headers,
                                   String content,
-                                  HttpMethodName httpMethod) throws Exception {
+                                  MethodType httpMethod) throws Exception {
         Request request = new Request();
         request.setAppKey(this.ak);
         request.setAppSecret(this.sk);
-        request.setMethod(httpMethod.name());
+        request.setMethod(httpMethod);
         request.setUrl(url);
 
         for (String k : headers.keySet()) {
@@ -98,7 +99,7 @@ public class AccessServiceImpl extends AccessService {
                                   Map<String, String> headers,
                                   InputStream content,
                                   Long contentLength,
-                                  HttpMethodName httpMethod) throws Exception {
+                                  MethodType httpMethod) throws Exception {
         String body = "";
         if (content != null) {
             ByteArrayOutputStream result = new ByteArrayOutputStream();
