@@ -1,6 +1,6 @@
 <p align="center">
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
-		<img src="https://img.shields.io/badge/JDK-11+-green.svg" ></img>
+		<img src="https://img.shields.io/badge/JDK-16+-green.svg" ></img>
 	</a>
 </p>
 
