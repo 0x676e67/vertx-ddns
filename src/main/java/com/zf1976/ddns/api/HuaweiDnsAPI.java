@@ -4,7 +4,6 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signer.HuaweiClient;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.CollectionUtil;
@@ -40,12 +39,13 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
     public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials) {
         super(dnsApiCredentials);
         this.zoneMap = new HashMap<>();
-        final var huaweiRequest = new HuaweiRequest(dnsApiCredentials);
-        huaweiRequest.setUrl(api)
-                     .setMethod(MethodType.GET);
+
         CloseableHttpResponse httpResponse = null;
         try {
-            final var httpRequestBase = HuaweiClient.sign(huaweiRequest);
+            final var httpRequestBase = HuaweiRequest.newBuilder(dnsApiCredentials)
+                                                     .setUrl(api)
+                                                     .setMethod(MethodType.GET)
+                                                     .build();
             httpResponse = this.closeableHttpClient.execute(httpRequestBase);
             if (httpResponse.getStatusLine()
                             .getStatusCode() == 200) {
@@ -68,24 +68,18 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         } finally {
-            if (httpResponse != null) {
-                try {
-                    httpResponse.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e.getCause());
-                }
-            }
+            this.closeHttpResponse(httpResponse);
         }
     }
 
     public HuaweiDataResult findDnsRecord(String domain, DNSRecordType recordType) {
-        final var huaweiRequest = this.getRequest()
-                                      .setUrl(api + "/" + this.zoneMap.get(domain) + "/recordsets")
-                                      .addQueryStringParam("type", recordType.name())
-                                      .setMethod(MethodType.GET);
         CloseableHttpResponse httpResponse = null;
         try {
-            final var httpRequestBase = HuaweiClient.sign(huaweiRequest);
+            final var httpRequestBase = this.getRequestBuilder()
+                                            .setUrl(api + "/" + this.zoneMap.get(domain) + "/recordsets")
+                                            .addQueryStringParam("type", recordType.name())
+                                            .setMethod(MethodType.GET)
+                                            .build();
             httpResponse = this.closeableHttpClient.execute(httpRequestBase);
             final var contentBytes = this.getContentBytes(httpResponse);
             return this.mapperResult(contentBytes, HuaweiDataResult.class);
@@ -93,13 +87,7 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
             log.error(e.getMessage(), e.getCause());
             return null;
         } finally {
-            if (httpResponse != null) {
-                try {
-                    httpResponse.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e.getCause());
-                }
-            }
+            this.closeHttpResponse(httpResponse);
         }
     }
 
@@ -113,7 +101,17 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         return new byte[0];
     }
 
-    private HuaweiRequest getRequest() {
-        return new HuaweiRequest(this.dnsApiCredentials);
+    private void closeHttpResponse(CloseableHttpResponse response) {
+        if (response != null) {
+            try {
+                response.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e.getCause());
+            }
+        }
+    }
+
+    private HuaweiRequest getRequestBuilder() {
+        return HuaweiRequest.newBuilder(this.dnsApiCredentials);
     }
 }

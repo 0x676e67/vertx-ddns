@@ -71,9 +71,9 @@ public class HuaweiAccessServiceImpl extends HuaweiAccessService {
                                   Map<String, String> headers,
                                   String content,
                                   MethodType httpMethod) throws Exception {
-        HuaweiRequest request = new HuaweiRequest(new BasicCredentials(this.ak, this.sk));
-        request.setMethod(httpMethod);
-        request.setUrl(url);
+        HuaweiRequest request = HuaweiRequest.newBuilder(new BasicCredentials(this.ak, this.sk))
+                                             .setMethod(httpMethod)
+                                             .setUrl(url);
 
         for (String k : headers.keySet()) {
             request.addHeader(k, headers.get(k));

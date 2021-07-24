@@ -11,8 +11,8 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public class HuaweiClient {
-    public HuaweiClient() {
+public class HuaweiClientSigner {
+    public HuaweiClientSigner() {
     }
 
     public static HttpRequestBase sign(HuaweiRequest request) throws Exception {
