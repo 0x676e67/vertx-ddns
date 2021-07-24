@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.Json;
 
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,7 +53,7 @@ public class AbstractDnsAPI {
      * @param clazz 元素类型
      * @return {@link JavaType}
      */
-    public static JavaType getListType(Class<?> clazz) {
+    protected static JavaType getListType(Class<?> clazz) {
         return CollectionType
                 .construct(LinkedList.class, SimpleType.construct(clazz));
     }
@@ -62,8 +65,15 @@ public class AbstractDnsAPI {
      * @param valueType 值类型
      * @return {@link JavaType}
      */
-    public static JavaType getMapType(Class<?> keyType, Class<?> valueType) {
+    protected static JavaType getMapType(Class<?> keyType, Class<?> valueType) {
         return MapType.construct(HashMap.class, SimpleType.constructUnsafe(keyType), SimpleType.constructUnsafe(valueType));
     }
 
+    protected <T> T mapperResult(byte[] bytes, Class<T> tClass) {
+        return Json.decodeValue(Buffer.buffer(bytes), tClass);
+    }
+
+    protected <T> T mapperResult(String content, Class<T> tClass) {
+        return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
+    }
 }

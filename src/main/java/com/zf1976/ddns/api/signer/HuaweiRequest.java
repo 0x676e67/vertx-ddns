@@ -1,5 +1,6 @@
 package com.zf1976.ddns.api.signer;
 
+import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.util.ApiURLEncoder;
 
@@ -15,7 +16,7 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public class Request {
+public class HuaweiRequest {
     private final Map<String, String> headers = new Hashtable<>();
     private final Map<String, List<String>> queryString = new Hashtable<>();
     private String key = null;
@@ -25,19 +26,21 @@ public class Request {
     private String body = null;
     private String fragment = null;
 
-    public Request() {
+    public HuaweiRequest(DnsApiCredentials basicCredentials) {
+        this.setKey(basicCredentials.getAccessKeyId());
+        this.setSecret(basicCredentials.getAccessKeySecret());
     }
 
     public String getKey() {
         return this.key;
     }
 
-    public void setKey(String appKey) throws Exception {
+    private void setKey(String appKey) {
         if (null != appKey && !appKey.trim()
                                      .isEmpty()) {
             this.key = appKey;
         } else {
-            throw new Exception("appKey can not be empty");
+            throw new RuntimeException("appKey can not be empty");
         }
     }
 
@@ -45,12 +48,12 @@ public class Request {
         return this.secret;
     }
 
-    public void setSecret(String appSecret) throws Exception {
+    private void setSecret(String appSecret) {
         if (null != appSecret && !appSecret.trim()
                                            .isEmpty()) {
             this.secret = appSecret;
         } else {
-            throw new Exception("appSecret can not be empty");
+            throw new RuntimeException("appSecret can not be empty");
         }
     }
 
@@ -58,43 +61,27 @@ public class Request {
         return MethodType.valueOf(this.method.toUpperCase());
     }
 
-    public void setMethod(MethodType methodType) throws Exception {
+    public HuaweiRequest setMethod(MethodType methodType) {
         final var method = methodType.name();
         if (!method.equalsIgnoreCase("post") && !method.equalsIgnoreCase("put") && !method.equalsIgnoreCase("patch") && !method.equalsIgnoreCase("delete") && !method.equalsIgnoreCase("get") && !method.equalsIgnoreCase("options") && !method.equalsIgnoreCase("head")) {
-            throw new Exception("unsupported method");
+            throw new RuntimeException("unsupported method");
         } else {
             this.method = method;
         }
+        return this;
     }
 
     public String getBody() {
         return this.body;
     }
 
-    public void setBody(String body) {
+    public HuaweiRequest setBody(String body) {
         this.body = body;
+        return this;
     }
 
     public Map<String, String> getHeaders() {
         return this.headers;
-    }
-
-    public void setAppKey(String appKey) throws Exception {
-        if (null != appKey && !appKey.trim()
-                                     .isEmpty()) {
-            this.key = appKey;
-        } else {
-            throw new Exception("appKey can not be empty");
-        }
-    }
-
-    public void setAppSecret(String appSecret) throws Exception {
-        if (null != appSecret && !appSecret.trim()
-                                           .isEmpty()) {
-            this.secret = appSecret;
-        } else {
-            throw new Exception("appSecret can not be empty");
-        }
     }
 
     public String getUrl() {
@@ -126,7 +113,7 @@ public class Request {
         return uri.toString();
     }
 
-    public void setUrl(String url) throws Exception {
+    public HuaweiRequest setUrl(String url) {
         if (null != url && !url.trim()
                                .isEmpty()) {
             int i = url.indexOf(35);
@@ -160,8 +147,9 @@ public class Request {
 
             this.url = url;
         } else {
-            throw new Exception("url can not be empty");
+            throw new RuntimeException("url can not be empty");
         }
+        return this;
     }
 
     public String getPath() {
@@ -190,9 +178,10 @@ public class Request {
         return url;
     }
 
-    public void addQueryStringParam(String name, String value) {
+    public HuaweiRequest addQueryStringParam(String name, String value) {
         this.queryString.computeIfAbsent(name, k -> new ArrayList<>())
                         .add(value);
+        return this;
     }
 
     public Map<String, List<String>> getQueryStringParams() {
@@ -203,19 +192,21 @@ public class Request {
         return this.fragment;
     }
 
-    public void setFragment(String fragment) throws Exception {
+    public HuaweiRequest setFragment(String fragment) {
         if (null != fragment && !fragment.trim()
                                          .isEmpty()) {
             this.fragment = URLEncoder.encode(fragment, StandardCharsets.UTF_8);
         } else {
-            throw new Exception("fragment can not be empty");
+            throw new RuntimeException("fragment can not be empty");
         }
+        return this;
     }
 
-    public void addHeader(String name, String value) {
+    public HuaweiRequest addHeader(String name, String value) {
         if (null != name && !name.trim()
                                  .isEmpty()) {
             this.headers.put(name, value);
         }
+        return this;
     }
 }

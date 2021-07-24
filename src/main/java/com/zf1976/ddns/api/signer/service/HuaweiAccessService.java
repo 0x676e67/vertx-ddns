@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signer;
+package com.zf1976.ddns.api.signer.service;
 
 import com.zf1976.ddns.api.enums.MethodType;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -10,11 +10,11 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public abstract class AccessService {
+public abstract class HuaweiAccessService {
     protected String ak;
     protected String sk;
 
-    public AccessService(String ak, String sk) {
+    public HuaweiAccessService(String ak, String sk) {
         this.ak = ak;
         this.sk = sk;
     }

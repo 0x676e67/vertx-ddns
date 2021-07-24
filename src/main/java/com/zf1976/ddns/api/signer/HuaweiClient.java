@@ -1,6 +1,8 @@
 package com.zf1976.ddns.api.signer;
 
 import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.signer.service.HuaweiAccessService;
+import com.zf1976.ddns.api.signer.service.HuaweiAccessServiceImpl;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.util.Map;
@@ -9,11 +11,11 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public class Client {
-    public Client() {
+public class HuaweiClient {
+    public HuaweiClient() {
     }
 
-    public static HttpRequestBase sign(Request request) throws Exception {
+    public static HttpRequestBase sign(HuaweiRequest request) throws Exception {
         String appKey = request.getKey();
         String appSecret = request.getSecret();
         String url = request.getUrl();
@@ -35,7 +37,7 @@ public class Client {
                                       String requestUrl,
                                       Map<String, String> headers,
                                       String putBody) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.PUT;
         if (putBody == null) {
             putBody = "";
@@ -49,7 +51,7 @@ public class Client {
                                         String requestUrl,
                                         Map<String, String> headers,
                                         String body) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.PATCH;
         if (body == null) {
             body = "";
@@ -62,7 +64,7 @@ public class Client {
                                          String sk,
                                          String requestUrl,
                                          Map<String, String> headers) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.DELETE;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -71,7 +73,7 @@ public class Client {
                                       String sk,
                                       String requestUrl,
                                       Map<String, String> headers) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.GET;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -81,7 +83,7 @@ public class Client {
                                        String requestUrl,
                                        Map<String, String> headers,
                                        String postbody) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         if (postbody == null) {
             postbody = "";
         }
@@ -94,7 +96,7 @@ public class Client {
                                        String sk,
                                        String requestUrl,
                                        Map<String, String> headers) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.HEAD;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -103,7 +105,7 @@ public class Client {
                                           String sk,
                                           String requestUrl,
                                           Map<String, String> headers) throws Exception {
-        AccessService accessService = new AccessServiceImpl(ak, sk);
+        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.OPTIONS;
         return accessService.access(requestUrl, headers, httpMethod);
     }

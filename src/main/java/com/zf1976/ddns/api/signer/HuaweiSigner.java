@@ -32,7 +32,7 @@ public class HuaweiSigner {
     public HuaweiSigner() {
     }
 
-    public void sign(Request request) {
+    public void sign(HuaweiRequest request) {
         String singerDate = this.getHeader(request, "X-Sdk-Date");
         if (singerDate == null) {
             singerDate = TIME_FORMATTER.format(new Date());
@@ -106,7 +106,7 @@ public class HuaweiSigner {
         return result.toString();
     }
 
-    protected String createCanonicalRequest(Request request, String[] signedHeaders, String contentSha256) {
+    protected String createCanonicalRequest(HuaweiRequest request, String[] signedHeaders, String contentSha256) {
         return request.getMethod()
                       .toString() + "\n" +
                 this.getCanonicalizedResourcePath(request.getPath()) +
@@ -159,7 +159,7 @@ public class HuaweiSigner {
                 signatureHeader;
     }
 
-    protected String[] getSignedHeaders(Request request) {
+    protected String[] getSignedHeaders(HuaweiRequest request) {
         String[] signedHeaders = request.getHeaders()
                                         .keySet()
                                         .toArray(new String[0]);
@@ -167,7 +167,7 @@ public class HuaweiSigner {
         return signedHeaders;
     }
 
-    protected String getCanonicalizedHeaderString(Request request, String[] signedHeaders) {
+    protected String getCanonicalizedHeaderString(HuaweiRequest request, String[] signedHeaders) {
         Map<String, String> requestHeaders = request.getHeaders();
         StringBuilder buffer = new StringBuilder();
 
@@ -200,7 +200,7 @@ public class HuaweiSigner {
         return buffer.toString();
     }
 
-    protected void addHostHeader(Request request) {
+    protected void addHostHeader(HuaweiRequest request) {
         boolean haveHostHeader = false;
 
         for (String key : request.getHeaders()
@@ -217,7 +217,7 @@ public class HuaweiSigner {
 
     }
 
-    protected String getHeader(Request request, String header) {
+    protected String getHeader(HuaweiRequest request, String header) {
         if (header == null) {
             return null;
         } else {
@@ -238,7 +238,7 @@ public class HuaweiSigner {
         }
     }
 
-    public boolean verify(Request request) {
+    public boolean verify(HuaweiRequest request) {
         String singerDate = this.getHeader(request, "X-Sdk-Date");
         String authorization = this.getHeader(request, "Authorization");
         Matcher m = AUTHORIZATION_PATTERN.matcher(authorization);
@@ -257,7 +257,7 @@ public class HuaweiSigner {
         }
     }
 
-    protected String calculateContentHash(Request request) {
+    protected String calculateContentHash(HuaweiRequest request) {
         String content_sha256 = this.getHeader(request, "x-sdk-content-sha256");
         return content_sha256 != null ? content_sha256 : BinaryUtils.toHex(this.hash(request.getBody()));
     }

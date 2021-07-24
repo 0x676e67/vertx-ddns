@@ -48,11 +48,12 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         try {
             final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                              .body();
-            final var cloudflareDataResult = Json.decodeValue(body, CloudflareDataResult.class);
+            final var cloudflareDataResult = this.mapperResult(body, CloudflareDataResult.class);
             Assert.notNull(cloudflareDataResult, "result cannot been null");
             if (!cloudflareDataResult.getSuccess()) {
                 throw new RuntimeException(Json.encodePrettily(cloudflareDataResult.getErrors()));
             }
+            // 默认支持一个主域名区域
             @SuppressWarnings("unchecked") final var zoneId = ((List<LinkedHashMap<String, String>>) cloudflareDataResult.getResult()).get(0)
                                                                                                                                       .get("id");
             Assert.notNull(zoneId, "cloudflare zone id cannot been null!");

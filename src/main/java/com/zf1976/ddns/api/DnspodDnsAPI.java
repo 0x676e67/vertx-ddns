@@ -8,7 +8,6 @@ import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
-import io.vertx.core.json.Json;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -132,7 +131,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         try {
             final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                             .body();
-            return Json.decodeValue(body, DnspodDataResult.class);
+            return this.mapperResult(body, DnspodDataResult.class);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

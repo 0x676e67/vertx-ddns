@@ -1,6 +1,9 @@
-package com.zf1976.ddns.api.signer;
+package com.zf1976.ddns.api.signer.service;
 
+import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.signer.HuaweiRequest;
+import com.zf1976.ddns.api.signer.HuaweiSigner;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -14,9 +17,9 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public class AccessServiceImpl extends AccessService {
+public class HuaweiAccessServiceImpl extends HuaweiAccessService {
 
-    public AccessServiceImpl(String ak, String sk) {
+    public HuaweiAccessServiceImpl(String ak, String sk) {
         super(ak, sk);
     }
 
@@ -68,9 +71,7 @@ public class AccessServiceImpl extends AccessService {
                                   Map<String, String> headers,
                                   String content,
                                   MethodType httpMethod) throws Exception {
-        Request request = new Request();
-        request.setAppKey(this.ak);
-        request.setAppSecret(this.sk);
+        HuaweiRequest request = new HuaweiRequest(new BasicCredentials(this.ak, this.sk));
         request.setMethod(httpMethod);
         request.setUrl(url);
 
