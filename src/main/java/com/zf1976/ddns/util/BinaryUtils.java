@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.huawei;
+package com.zf1976.ddns.util;
 
 import java.util.Locale;
 
@@ -27,4 +27,5 @@ public class BinaryUtils {
         return sb.toString()
                  .toLowerCase(Locale.getDefault());
     }
+
 }

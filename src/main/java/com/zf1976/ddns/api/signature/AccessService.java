@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.huawei;
+package com.zf1976.ddns.api.signature;
 
 import com.zf1976.ddns.api.enums.MethodType;
 import org.apache.http.client.methods.HttpRequestBase;

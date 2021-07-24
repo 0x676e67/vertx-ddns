@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.huawei.signer;
+package com.zf1976.ddns.api.signature;
 
 /**
  * @author mac

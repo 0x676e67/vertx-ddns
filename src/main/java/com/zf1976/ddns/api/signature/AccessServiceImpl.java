@@ -1,7 +1,6 @@
-package com.zf1976.ddns.api.huawei;
+package com.zf1976.ddns.api.signature;
 
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.huawei.signer.Signer;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -80,7 +79,7 @@ public class AccessServiceImpl extends AccessService {
         }
 
         request.setBody(content);
-        Signer signer = new Signer();
+        HuaweiSigner signer = new HuaweiSigner();
         signer.sign(request);
         HttpRequestBase httpRequestBase = createRequest(url, null, content, httpMethod);
         Map<String, String> requestHeaders = request.getHeaders();

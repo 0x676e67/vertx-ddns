@@ -1,8 +1,7 @@
-package com.zf1976.ddns.api.huawei.signer;
+package com.zf1976.ddns.api.signature;
 
-import com.zf1976.ddns.api.huawei.BinaryUtils;
-import com.zf1976.ddns.api.huawei.Request;
 import com.zf1976.ddns.util.ApiURLEncoder;
+import com.zf1976.ddns.util.BinaryUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -21,7 +20,7 @@ import java.util.regex.Pattern;
  * @author mac
  * @date 2021/7/24
  */
-public class Signer {
+public class HuaweiSigner {
     public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
     public static final String HOST = "Host";
     private static final Pattern AUTHORIZATION_PATTERN = Pattern.compile("SDK-HMAC-SHA256\\s+Access=([^,]+),\\s?SignedHeaders=([^,]+),\\s?Signature=(\\w+)");
@@ -30,7 +29,7 @@ public class Signer {
         TIME_FORMATTER.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
-    public Signer() {
+    public HuaweiSigner() {
     }
 
     public void sign(Request request) {
