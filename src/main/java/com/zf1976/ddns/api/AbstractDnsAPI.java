@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
  * @author mac
  * @date 2021/7/18
  */
+@SuppressWarnings("deprecation")
 public class AbstractDnsAPI {
 
     protected final DnsApiCredentials dnsApiCredentials;
