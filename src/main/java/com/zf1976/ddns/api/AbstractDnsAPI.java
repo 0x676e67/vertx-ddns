@@ -8,6 +8,7 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 
 import java.net.http.HttpClient;
@@ -71,7 +72,11 @@ public class AbstractDnsAPI {
     }
 
     protected <T> T mapperResult(byte[] bytes, Class<T> tClass) {
-        return Json.decodeValue(Buffer.buffer(bytes), tClass);
+        try {
+            return Json.decodeValue(Buffer.buffer(bytes), tClass);
+        } catch (DecodeException e) {
+            return null;
+        }
     }
 
     protected <T> T mapperResult(String content, Class<T> tClass) {
