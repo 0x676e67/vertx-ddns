@@ -225,7 +225,7 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
         if (StringUtil.isEmpty(zoneId)) {
             throw new RuntimeException("Resolved primary domain name:" + domain + "does not exist");
         }
-        return this.api + "/" + zoneId + "/dns_records";
+        return this.concatUrl(this.api, zoneId, "dns_records");
     }
 
     private Map<String, String> getQueryParam(DNSRecordType dnsRecordType) {

@@ -8,6 +8,7 @@ import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.StringUtil;
+import io.vertx.core.json.JsonObject;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ import java.util.Map;
  * @author ant
  * Create by Ant on 2021/7/17 1:25 上午
  */
-@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue"})
+@SuppressWarnings({"SpellCheckingInspection"})
 public class HuaweiDnsAPI extends AbstractDnsAPI {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsAPI]");
@@ -72,16 +74,29 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         return this.mapperResult(contentBytes, HuaweiDataResult.class);
     }
 
+    public HuaweiDataResult addDnsRecord(String domain, String ip, DNSRecordType recordType) {
+        final var jsonObject = new JsonObject().put("name", domain + ".")
+                                               .put("type", recordType.name())
+                                               .put("records", Collections.singletonList(ip));
+        final var httpRequestBase = this.getRequestBuilder()
+                              .setUrl(this.getZoneUrl(domain))
+                              .setMethod(MethodType.POST)
+                              .setBody(jsonObject.encode())
+                              .build();
+        final var contentBytes = this.executeRequest(httpRequestBase);
+        return this.mapperResult(contentBytes, HuaweiDataResult.class);
+    }
+
+    public HuaweiDataResult updateDnsRecord(String doamin, String ip, DNSRecordType recordType) {
+        return null;
+    }
+
     private byte[] executeRequest(HttpRequestBase httpRequestBase) {
-        CloseableHttpResponse httpResponse = null;
-        try {
-            httpResponse = this.closeableHttpClient.execute(httpRequestBase);
+        try (CloseableHttpResponse httpResponse = this.closeableHttpClient.execute(httpRequestBase)){
             return this.getContentBytes(httpResponse);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());
             return null;
-        } finally {
-            this.closeHttpResponse(httpResponse);
         }
     }
 
@@ -96,21 +111,18 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
     }
 
     private String getZoneUrl(String domain) {
+        return this.getZoneUrl(domain, null);
+    }
+
+    private String getZoneUrl(String domain, String recordSetId) {
         String zoneId = this.zoneMap.get(domain);
         if (StringUtil.isEmpty(zoneId)) {
             throw new RuntimeException("Resolved primary domain name:" + domain + "does not exist");
         }
-        return this.api + "/" + zoneId + "/recordsets";
-    }
-
-    private void closeHttpResponse(CloseableHttpResponse response) {
-        if (response != null) {
-            try {
-                response.close();
-            } catch (IOException e) {
-                log.error(e.getMessage(), e.getCause());
-            }
+        if (StringUtil.isEmpty(recordSetId)) {
+            return this.concatUrl(this.api, zoneId, "recordsets");
         }
+        return this.concatUrl(this.api, zoneId, "recordsets", recordSetId);
     }
 
     private HuaweiRequest getRequestBuilder() {

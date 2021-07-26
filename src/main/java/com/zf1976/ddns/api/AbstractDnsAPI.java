@@ -13,6 +13,7 @@ import io.vertx.core.json.Json;
 
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -81,5 +82,11 @@ public class AbstractDnsAPI {
 
     protected <T> T mapperResult(String content, Class<T> tClass) {
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
+    }
+
+    protected String concatUrl(String first, String ...more) {
+        return Paths.get(first, more)
+                    .toFile()
+                    .getAbsolutePath();
     }
 }
