@@ -52,11 +52,11 @@ public class ApiVerticle extends TemplateVerticle {
                 try {
                     super.start(startPromise);
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e.getCause());
                     startPromise.fail(e);
                 }
             })
             .onFailure(startPromise::fail);
-
     }
 
     @Override

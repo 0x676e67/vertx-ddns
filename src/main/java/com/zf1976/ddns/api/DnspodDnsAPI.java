@@ -4,11 +4,10 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signature.rpc.DnspodSignatureComposer;
-import com.zf1976.ddns.api.signature.rpc.RpcAPISignatureComposer;
+import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
+import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
-import io.vertx.core.json.Json;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -51,7 +50,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("Domain", extractDomain[0]);
         queryParam.put("Subdomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
-        final var url = composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -74,7 +73,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordType", dnsRecordType.name());
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -99,7 +98,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         queryParam.put("RecordLine", "默认");
         queryParam.put("Value", ip);
         queryParam.put("RecordId", recordId);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -116,7 +115,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         final var queryParam = this.getQueryParam("DeleteRecord");
         queryParam.put("Domain", mainDomain);
         queryParam.put("RecordId", recordId);
-        final var url = this.composer.toUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
+        final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
     }
@@ -132,7 +131,7 @@ public class DnspodDnsAPI extends AbstractDnsAPI {
         try {
             final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                             .body();
-            return Json.decodeValue(body, DnspodDataResult.class);
+            return this.mapperResult(body, DnspodDataResult.class);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

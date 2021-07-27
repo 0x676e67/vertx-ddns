@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signature;
+package com.zf1976.ddns.api.signer;
 /*
  * 各DDNS服务商签名工具包
  * @author mac

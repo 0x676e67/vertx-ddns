@@ -10,8 +10,8 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signature.rpc.AliyunSignatureComposer;
-import com.zf1976.ddns.api.signature.rpc.RpcAPISignatureComposer;
+import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
+import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
@@ -128,7 +128,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     }
 
     private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
-        final var url = this.rpcSignatureComposer.toUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
+        final var url = this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
         return HttpRequest.newBuilder()
                           .GET()
                           .uri(URI.create(url))
@@ -156,7 +156,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         queryParam.put("SignatureVersion", rpcSignatureComposer.getSignerVersion());
         queryParam.put("Version", "2015-01-09");
         queryParam.put("UserClientIp", HttpUtil.getCurrentHostIp());
-        queryParam.put("Timestamp", ParameterHelper.getISO8601Time(new Date()));
+        queryParam.put("Timestamp", ParameterHelper.getISO8601Time1(new Date()));
         return queryParam;
     }
 

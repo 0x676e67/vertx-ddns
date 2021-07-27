@@ -1,8 +1,8 @@
-package com.zf1976.ddns.api.signature.rpc;
+package com.zf1976.ddns.api.signer.rpc;
 
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signature.Signer;
-import com.zf1976.ddns.util.AliyunURLEncoder;
+import com.zf1976.ddns.api.signer.Signer;
+import com.zf1976.ddns.util.ApiURLEncoder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -41,31 +41,36 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         try {
             for (String key : sortedKeys) {
                 canonicalizedQueryString.append("&")
-                                        .append(AliyunURLEncoder.percentEncode(key))
+                                        .append(ApiURLEncoder.aliyunPercentEncode(key))
                                         .append("=")
-                                        .append(AliyunURLEncoder.percentEncode(queryParamMap.get(key)
-                                                                                            .toString()));
+                                        .append(ApiURLEncoder.aliyunPercentEncode(queryParamMap.get(key)
+                                                                                               .toString()));
             }
 
             return method.name() +
                     SEPARATOR +
-                    AliyunURLEncoder.percentEncode("/") +
+                    ApiURLEncoder.aliyunPercentEncode("/") +
                     SEPARATOR +
-                    AliyunURLEncoder.percentEncode(canonicalizedQueryString.substring(1));
+                    ApiURLEncoder.aliyunPercentEncode(canonicalizedQueryString.substring(1));
         } catch (UnsupportedEncodingException exp) {
             throw new RuntimeException("UTF-8 encoding is not supported.");
         }
 
     }
 
+
     @Override
-    public String toUrl(String accessKeySecret, String urlPattern, MethodType methodType, Map<String, Object> queries) {
+    public String toSignatureUrl(String accessKeySecret,
+                                 String urlPattern,
+                                 MethodType methodType,
+                                 Map<String, Object> queries) {
         // stringToSign
         final var stringToSign = this.composeStringToSign(methodType, queries);
         // 签名
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
-        return getUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        return canonicalizedRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
     }
+
 
     @Override
     public String signatureMethod() {

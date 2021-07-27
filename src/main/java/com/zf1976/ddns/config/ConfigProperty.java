@@ -3,8 +3,11 @@ package com.zf1976.ddns.config;
 import com.zf1976.ddns.property.AliyunDnsProperties;
 import com.zf1976.ddns.property.CommonProperties;
 import com.zf1976.ddns.util.PropertyUtil;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.yaml.snakeyaml.Yaml;
+
+import java.io.BufferedInputStream;
 
 /**
  * @author mac
@@ -31,8 +34,18 @@ public class ConfigProperty {
     }
 
     private JsonObject loadLocalConfig() {
-        final var jsonStr = new Yaml().load(PropertyUtil.class.getClassLoader().getResourceAsStream("config.yaml"));
-        return JsonObject.mapFrom(jsonStr);
+        final var resourceAsStream = PropertyUtil.class.getClassLoader()
+                                                       .getResourceAsStream("conf.json");
+        if (resourceAsStream == null) {
+            throw new RuntimeException("Failed to load default configuration");
+        }
+        try {
+            final var bufferedInputStream = new BufferedInputStream(resourceAsStream);
+            final var decodeValue = Json.decodeValue(Buffer.buffer(bufferedInputStream.readAllBytes()));
+            return JsonObject.mapFrom(decodeValue);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     public static CommonProperties getCommonProperties() {
