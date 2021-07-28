@@ -70,6 +70,7 @@ public class CloudflareDnsAPI extends AbstractDnsAPI {
     /**
      * 查询所有记录
      *
+     * @param domain  域名/不区分主域名、多级域名（相当于查询主域名下所有记录）
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult<List<Result>>}
      */

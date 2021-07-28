@@ -10,7 +10,6 @@ import java.util.List;
 public class CloudflareDataResult<T> {
 
     private T result;
-
     private boolean success;
     private List<Object> errors;
     private List<Object> messages;

@@ -7,9 +7,12 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.util.ObjectUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +29,7 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("deprecation")
 public class AbstractDnsAPI {
 
+    protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
     protected final DnsApiCredentials dnsApiCredentials;
 
     protected HttpClient httpClient = HttpClient.newBuilder()
@@ -74,8 +78,12 @@ public class AbstractDnsAPI {
 
     protected <T> T mapperResult(byte[] bytes, Class<T> tClass) {
         try {
+            if (ObjectUtil.isEmpty(bytes)) {
+                return null;
+            }
             return Json.decodeValue(Buffer.buffer(bytes), tClass);
         } catch (DecodeException e) {
+            log.error(e.getMessage(), e.getCause());
             return null;
         }
     }
@@ -85,8 +93,11 @@ public class AbstractDnsAPI {
     }
 
     protected String concatUrl(String first, String ...more) {
-        return Paths.get(first, more)
-                    .toFile()
-                    .getAbsolutePath();
+        final var urlBuilder = new StringBuilder(first);
+        for (String path : more) {
+            urlBuilder.append("/")
+                      .append(path);
+        }
+        return urlBuilder.toString();
     }
 }

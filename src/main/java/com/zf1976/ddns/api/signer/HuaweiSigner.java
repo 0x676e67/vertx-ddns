@@ -2,6 +2,7 @@ package com.zf1976.ddns.api.signer;
 
 import com.zf1976.ddns.util.ApiURLEncoder;
 import com.zf1976.ddns.util.BinaryUtils;
+import org.apache.http.HttpHeaders;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
  * @author mac
  * @date 2021/7/24
  */
+@SuppressWarnings("SpellCheckingInspection")
 public class HuaweiSigner {
     public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
     public static final String HOST = "Host";
@@ -46,7 +48,7 @@ public class HuaweiSigner {
         String stringToSign = this.createStringToSign(canonicalRequest, singerDate);
         byte[] signingKey = this.deriveSigningKey(request.getSecret());
         byte[] signature = this.computeSignature(stringToSign, signingKey);
-        request.addHeader("Authorization", this.buildAuthorizationHeader(signedHeaders, signature, request.getKey()));
+        request.addHeader(HttpHeaders.AUTHORIZATION, this.buildAuthorizationHeader(signedHeaders, signature, request.getKey()));
     }
 
     protected String getCanonicalizedResourcePath(String resourcePath) {
@@ -240,7 +242,7 @@ public class HuaweiSigner {
 
     public boolean verify(HuaweiRequest request) {
         String singerDate = this.getHeader(request, "X-Sdk-Date");
-        String authorization = this.getHeader(request, "Authorization");
+        String authorization = this.getHeader(request, HttpHeaders.AUTHORIZATION);
         Matcher m = AUTHORIZATION_PATTERN.matcher(authorization);
         if (!m.find()) {
             return false;
