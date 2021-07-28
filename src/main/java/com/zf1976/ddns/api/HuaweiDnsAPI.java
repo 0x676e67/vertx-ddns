@@ -32,7 +32,7 @@ import java.util.Map;
  * Create by Ant on 2021/7/17 1:25 上午
  */
 @SuppressWarnings({"SpellCheckingInspection"})
-public class HuaweiDnsAPI extends AbstractDnsAPI {
+public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult> {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsAPI]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
@@ -68,7 +68,14 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         }
     }
 
-    public HuaweiDataResult findDnsRecord(String domain, DNSRecordType recordType) {
+    /**
+     * 查找记录列表
+     *
+     * @param domain 域名/不区分顶级域名、多级域名
+     * @param recordType 记录类型
+     * @return {@link HuaweiDataResult}
+     */
+    public HuaweiDataResult findDnsRecords(String domain, DNSRecordType recordType) {
         final var httpRequestBase = this.getRequestBuilder()
                 .setUrl(this.getZoneUrl(domain))
                 .addQueryStringParam("type", recordType.name())
@@ -78,7 +85,15 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
         return this.mapperResult(contentBytes, HuaweiDataResult.class);
     }
 
-    public HuaweiDataResult.Recordsets addDnsRecord(String domain, String ip, DNSRecordType recordType) {
+    /**
+     * 新增记录
+     *
+     * @param domain 域名/不区分顶级域名、多级域名
+     * @param ip ip
+     * @param recordType 记录类型
+     * @return {@link HuaweiDataResult}
+     */
+    public HuaweiDataResult addDnsRecord(String domain, String ip, DNSRecordType recordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", recordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -89,10 +104,20 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
                                         .setBody(jsonObject.encode())
                                         .build();
         final var contentBytes = this.sendRequest(httpRequestBase);
-        return this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        return this.resultToList(result);
     }
 
-    public HuaweiDataResult.Recordsets updateDnsRecord(String reocrdSetId,String domain, String ip, DNSRecordType recordType) {
+    /**
+     * 更新记录
+     *
+     * @param reocrdSetId 记录唯一id
+     * @param domain 域名/不区分顶级域名、多级域名
+     * @param ip ip
+     * @param recordType 记录类型
+     * @return {@link HuaweiDataResult}
+     */
+    public HuaweiDataResult updateDnsRecord(String reocrdSetId,String domain, String ip, DNSRecordType recordType) {
         final var jsonObject = new JsonObject().put("type", recordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
@@ -103,16 +128,32 @@ public class HuaweiDnsAPI extends AbstractDnsAPI {
                               .setBody(jsonObject.encode())
                               .build();
         final var contentBytes = this.sendRequest(httpRequestBase);
-        return mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        return this.resultToList(result);
     }
 
-    public HuaweiDataResult.Recordsets deleteDnsRecord(String recordSetId, String domain) {
+    /**
+     * 删除记录
+     *
+     * @param recordSetId 记录唯一id
+     * @param domain 域名/不区分顶级域名、多级域名
+     * @return {@link HuaweiDataResult}
+     */
+    public HuaweiDataResult deleteDnsRecord(String recordSetId, String domain) {
         final var httpRequestBase = this.getRequestBuilder()
                               .setUrl(this.getZoneUrl(domain, recordSetId))
                               .setMethod(MethodType.DELETE)
                               .build();
         final var contentBytes = this.sendRequest(httpRequestBase);
-        return this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
+        return this.resultToList(result);
+    }
+
+    private HuaweiDataResult resultToList(HuaweiDataResult.Recordsets result) {
+        if (result != null) {
+            return new HuaweiDataResult().setRecordsets(Collections.singletonList(result));
+        }
+        return null;
     }
 
     private byte[] sendRequest(HttpRequestBase httpRequestBase) {

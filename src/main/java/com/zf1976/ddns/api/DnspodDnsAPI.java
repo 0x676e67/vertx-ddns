@@ -23,7 +23,7 @@ import java.util.Random;
  * Create by Ant on 2021/7/17 1:23 上午
  */
 @SuppressWarnings({"FieldCanBeLocal", "DuplicatedCode"})
-public class DnspodDnsAPI extends AbstractDnsAPI {
+public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult> {
 
     private final String api = "https://dnspod.tencentcloudapi.com/";
     private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();

@@ -33,8 +33,8 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/14
  */
-@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsAPI extends AbstractDnsAPI {
+@SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode", "unchecked"})
+public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
     private final String api = "https://alidns.aliyuncs.com";
@@ -62,6 +62,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
      * @param dnsRecordType 记录类型
      * @return {@link AliyunDataResult}
      */
+    @Override
     public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("DescribeDomainRecords");
         final var extractDomain = HttpUtil.extractDomain(domain);
@@ -115,12 +116,24 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     }
 
     /**
+     * 删除域名记录
+     *
+     * @param id 记录id（记录唯一凭证）
+     * @param domain 阿里云域名可以忽略
+     * @return {@link AliyunDataResult}
+     */
+    @Override
+    AliyunDataResult deleteDnsRecord(String id, String domain) {
+        return this.deleteDnsRecord(id);
+    }
+
+    /**
      * 删除记录
      *
      * @param recordId 记录id
      * @return {@link AliyunDataResult}
      */
-    public AliyunDataResult deleteDnsRecord(String recordId) {
+    private AliyunDataResult deleteDnsRecord(String recordId) {
         final var queryParam = this.getQueryParam("DeleteDomainRecord");
         queryParam.put("RecordId", recordId);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);

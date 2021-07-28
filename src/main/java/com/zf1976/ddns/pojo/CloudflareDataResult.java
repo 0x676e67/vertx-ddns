@@ -7,20 +7,20 @@ import java.util.Date;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CloudflareDataResult<T> {
+public class CloudflareDataResult {
 
-    private T result;
+    private List<CloudflareDataResult.Result> result;
     private boolean success;
     private List<Object> errors;
     private List<Object> messages;
     @JsonProperty("result_info")
     private ResultInfo resultInfo;
 
-    public T getResult() {
+    public List<Result> getResult() {
         return result;
     }
 
-    public CloudflareDataResult<T> setResult(T result) {
+    public CloudflareDataResult setResult(List<Result> result) {
         this.result = result;
         return this;
     }
