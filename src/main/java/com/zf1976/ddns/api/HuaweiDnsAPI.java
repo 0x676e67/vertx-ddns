@@ -9,6 +9,7 @@ import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -53,9 +54,7 @@ public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult> {
             final var contentBytes = this.sendRequest(httpRequestBase);
             final var huaweiDataResult = this.mapperResult(contentBytes, HuaweiDataResult.class);
             final var zones = huaweiDataResult.getZones();
-            if (CollectionUtil.isEmpty(zones)) {
-                throw new RuntimeException("Failed to get zone id");
-            } else {
+            if (!CollectionUtil.isEmpty(zones)) {
                 // 按域名划分区域
                 for (HuaweiDataResult.Zones zone : zones) {
                     var domain = zone.getName();
@@ -141,12 +140,23 @@ public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult> {
      */
     public HuaweiDataResult deleteDnsRecord(String recordSetId, String domain) {
         final var httpRequestBase = this.getRequestBuilder()
-                              .setUrl(this.getZoneUrl(domain, recordSetId))
-                              .setMethod(MethodType.DELETE)
-                              .build();
+                                        .setUrl(this.getZoneUrl(domain, recordSetId))
+                                        .setMethod(MethodType.DELETE)
+                                        .build();
         final var contentBytes = this.sendRequest(httpRequestBase);
         final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
         return this.resultToList(result);
+    }
+
+    /**
+     * 是否支持
+     *
+     * @param dnsServiceType DNS服务商类型
+     * @return {@link boolean}
+     */
+    @Override
+    public boolean supports(DNSServiceType dnsServiceType) {
+        return DNSServiceType.HUAWEI.check(dnsServiceType);
     }
 
     private HuaweiDataResult resultToList(HuaweiDataResult.Recordsets result) {
@@ -157,7 +167,7 @@ public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult> {
     }
 
     private byte[] sendRequest(HttpRequestBase httpRequestBase) {
-        try (CloseableHttpResponse httpResponse = this.executeRequest(httpRequestBase)){
+        try (CloseableHttpResponse httpResponse = this.executeRequest(httpRequestBase)) {
             if (httpResponse != null) {
                 return this.getContentBytes(httpResponse);
             }

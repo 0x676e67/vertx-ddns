@@ -4,6 +4,7 @@ import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.timer.DnsConfigTimerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -43,6 +44,8 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected static final String ACCOUNT_FILENAME = "account.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
+    protected DnsConfigTimerService dnsConfigTimerService;
+
 
     protected synchronized Router getRouter() {
         return router;
@@ -121,31 +124,22 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                       })
                       .onFailure(err -> this.handleError(ctx, err)));
         // 静态资源处理
-        router.get().handler(StaticHandler.create());
+        router.get()
+              .handler(StaticHandler.create());
     }
 
     protected Future<Void> loadDDNSServiceConfig(FileSystem fileSystem) {
         return this.readDDNSConfig(fileSystem)
-                    .compose(configList -> {
-                       try {
-                           for (DDNSConfig ddnsConfig : configList) {
-                               this.loadConfig(ddnsConfig);
-                           }
-                           return Future.succeededFuture();
-                       } catch (Exception e) {
-                           return Future.failedFuture(e);
-                       }
-                   });
+                   .compose(this::newDnsConfigTimerService);
     }
 
-    protected void loadConfig(DDNSConfig ddnsConfig) {
-        switch (ddnsConfig.getDnsServiceType()) {
-            case ALIYUN:
-            case DNSPOD:
-            case HUAWEI:
-            case CLOUDFLARE:
-            default:
+    protected Future<Void> newDnsConfigTimerService(List<DDNSConfig> configList) {
+        try {
+            this.dnsConfigTimerService = new DnsConfigTimerService(configList);
+        } catch (Exception e) {
+            return Future.failedFuture(e);
         }
+        return Future.succeededFuture();
     }
 
 

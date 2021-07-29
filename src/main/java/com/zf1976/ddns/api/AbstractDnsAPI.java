@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
+import com.zf1976.ddns.util.StringUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  * @date 2021/7/18
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractDnsAPI<T> {
+public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
     protected final DnsApiCredentials dnsApiCredentials;
@@ -37,44 +37,6 @@ public abstract class AbstractDnsAPI<T> {
                                                 .executor(Executors.newSingleThreadExecutor())
                                                 .build();
 
-    /**
-     * 具体参数作用请看实现类注释
-     *
-     * @param domain 域名
-     * @param dnsRecordType 记录类型
-     * @return {@link T}
-     */
-    abstract T findDnsRecords(String domain, DNSRecordType dnsRecordType);
-
-    /**
-     * 具体参数作用请看实现类注释
-     *
-     * @param domain 域名
-     * @param ip ip
-     * @param dnsRecordType 记录类型
-     * @return {@link T}
-     */
-    abstract T addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType);
-
-    /**
-     * 具体参数作用请看实现类注释
-     *
-     * @param id 记录唯一凭证
-     * @param domain 域名
-     * @param ip ip
-     * @param dnsRecordType 记录类型
-     * @return {@link T}
-     */
-    abstract T updateDnsRecord(String id, String domain ,String ip, DNSRecordType dnsRecordType);
-
-    /**
-     * 具体参数作用请看实现类注释
-     *
-     * @param id 记录唯一凭证
-     * @param domain 域名
-     * @return {@link T}
-     */
-    abstract T deleteDnsRecord(String id, String domain);
 
     protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
         Assert.notNull(dnsApiCredentials, "AlibabaCloudCredentials cannot been null!");
@@ -115,7 +77,7 @@ public abstract class AbstractDnsAPI<T> {
         return MapType.construct(HashMap.class, SimpleType.constructUnsafe(keyType), SimpleType.constructUnsafe(valueType));
     }
 
-    protected <T> T mapperResult(byte[] bytes, Class<T> tClass) {
+    protected <E> E mapperResult(byte[] bytes, Class<E> tClass) {
         try {
             if (ObjectUtil.isEmpty(bytes)) {
                 return null;
@@ -127,11 +89,14 @@ public abstract class AbstractDnsAPI<T> {
         }
     }
 
-    protected <T> T mapperResult(String content, Class<T> tClass) {
+    protected <E> E mapperResult(String content, Class<E> tClass) {
+        if (StringUtil.isEmpty(content)) {
+            return null;
+        }
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
     }
 
-    protected String concatUrl(String first, String ...more) {
+    protected String concatUrl(String first, String... more) {
         final var urlBuilder = new StringBuilder(first);
         for (String path : more) {
             urlBuilder.append("/")

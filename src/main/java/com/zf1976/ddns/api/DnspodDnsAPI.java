@@ -8,6 +8,7 @@ import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.verticle.DNSServiceType;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -106,18 +107,29 @@ public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult> {
     /**
      * 根据主域名、记录ID删除记录
      *
-     * @param recordId   记录id
-     * @param mainDomain 主域名
+     * @param recordId 记录id
+     * @param domain   域名/不区分顶级域名、多级域名
      * @return {@link DnspodDataResult}
      */
-    public DnspodDataResult deleteDnsRecord(String recordId, String mainDomain) {
-        this.checkDomain(mainDomain);
+    public DnspodDataResult deleteDnsRecord(String recordId, String domain) {
+        final var extractDomain = HttpUtil.extractDomain(domain);
         final var queryParam = this.getQueryParam("DeleteRecord");
-        queryParam.put("Domain", mainDomain);
+        queryParam.put("Domain", extractDomain[0]);
         queryParam.put("RecordId", recordId);
         final var url = this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), this.api, MethodType.GET, queryParam);
         final var httpRequest = this.requestBuild(url);
         return this.sendRequest(httpRequest);
+    }
+
+    /**
+     * 是否支持
+     *
+     * @param dnsServiceType DNS服务商类型
+     * @return {@link boolean}
+     */
+    @Override
+    public boolean supports(DNSServiceType dnsServiceType) {
+        return DNSServiceType.DNSPOD.check(dnsServiceType);
     }
 
     private HttpRequest requestBuild(String url) {
