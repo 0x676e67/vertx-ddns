@@ -1,9 +1,5 @@
 package com.zf1976.ddns.util;
 
-/**
- * @author mac
- * @date 2021/7/7
- */
 
 import com.zf1976.ddns.annotation.Nullable;
 
@@ -20,6 +16,10 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 
+/**
+ * @author mac
+ * @date 2020/7/7
+ */
 public abstract class StreamUtil {
     public static final int BUFFER_SIZE = 4096;
     private static final byte[] EMPTY_CONTENT = new byte[0];
@@ -31,8 +31,8 @@ public abstract class StreamUtil {
         if (in == null) {
             return new byte[0];
         } else {
-            ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-            copy((InputStream)in, out);
+            ByteArrayOutputStream out = new ByteArrayOutputStream(BUFFER_SIZE);
+            copy(in, out);
             return out.toByteArray();
         }
     }
@@ -44,7 +44,6 @@ public abstract class StreamUtil {
             StringBuilder out = new StringBuilder();
             InputStreamReader reader = new InputStreamReader(in, charset);
             char[] buffer = new char[4096];
-            boolean var5 = true;
 
             int bytesRead;
             while((bytesRead = reader.read(buffer)) != -1) {
@@ -57,12 +56,7 @@ public abstract class StreamUtil {
 
     public static String copyToString(ByteArrayOutputStream baos, Charset charset) {
         Assert.notNull(baos, "No ByteArrayOutputStream specified");
-        Assert.notNull(charset, "No Charset specified");
-
-        try {
-            return baos.toString(charset.name());
-        } catch (UnsupportedEncodingException var3) {
-            throw new RuntimeException("Failed to copy contents of ByteArrayOutputStream into a String", var3);
+        Assert.notNull(charset, "No Charset specified"); try { return baos.toString(charset.name()); } catch (UnsupportedEncodingException var3) { throw new RuntimeException("Failed to copy contents of ByteArrayOutputStream into a String", var3);
         }
     }
 
@@ -88,7 +82,7 @@ public abstract class StreamUtil {
         byte[] buffer = new byte[4096];
 
         int bytesRead;
-        for(boolean var4 = true; (bytesRead = in.read(buffer)) != -1; byteCount += bytesRead) {
+        for(; (bytesRead = in.read(buffer)) != -1; byteCount += bytesRead) {
             out.write(buffer, 0, bytesRead);
         }
 
