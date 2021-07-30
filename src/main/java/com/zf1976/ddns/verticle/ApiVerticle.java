@@ -1,8 +1,8 @@
 package com.zf1976.ddns.verticle;
 
+import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.util.CollectionUtil;
-import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.util.Validator;
 import io.vertx.core.Future;
@@ -76,24 +76,13 @@ public class ApiVerticle extends TemplateVerticle {
 
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {
-        final var request = routingContext.request();
-        final var ipRecordType = request.getParam(ApiConstants.IP_RECORD_TYPE);
-        final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
         try {
-            if (ObjectUtil.isEmpty(dnsServiceType)) {
-                throw new RuntimeException("The DDNS api provider does not exist");
-            }
+            final var request = routingContext.request();
+            final var ipRecordType = DNSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
+            final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            switch (dnsServiceType) {
-                case ALIYUN:
-
-                    break;
-                case CLOUDFLARE:
-
-                case HUAWEI:
-                case DNSPOD:
-                default:
-            }
+            final var dataResult = this.dnsConfigTimerService.findDnsRecords(dnsServiceType, domain, ipRecordType);
+            this.returnJsonWithCache(routingContext, dataResult);
         } catch (RuntimeException exception) {
             this.handleBad(routingContext, exception);
         } catch (Exception exception) {
@@ -103,9 +92,12 @@ public class ApiVerticle extends TemplateVerticle {
 
     protected void deleteDDNSRecordHandler(RoutingContext routingContext) {
         try {
-            final var recordId = routingContext.request().getParam(ApiConstants.RECORD_ID);
-//            this.aliyunDNSService.deleteDomainRecordResponse(recordId);
-            this.returnJsonWithCache(routingContext);
+            final var request = routingContext.request();
+            final var recordId = request.getParam(ApiConstants.RECORD_ID);
+            final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
+            final var domain = request.getParam(ApiConstants.DOMAIN);
+            final var success = this.dnsConfigTimerService.deleteRecords(dnsServiceType, recordId, domain);
+            this.returnJsonWithCache(routingContext, success);
         } catch (Exception e) {
             this.handleBad(routingContext, e);
         }
@@ -138,12 +130,12 @@ public class ApiVerticle extends TemplateVerticle {
         }
     }
 
-    private Future<Void> storeDDNSConfig(DDNSConfig ddnsConfig) {
+    private Future<Void> storeDDNSConfig(DDNSConfig config) {
         final var fileSystem = vertx.fileSystem();
         final String configFilePath = this.pathToAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
         return this.readDDNSConfig(fileSystem)
-                   .compose(ddnsConfigList -> this.writeDDNSConfig(ddnsConfigList, ddnsConfig, configFilePath))
-                   .compose(v -> this.reloadDDNSServiceConfig(ddnsConfig));
+                   .compose(configList -> this.writeDDNSConfig(configList, config, configFilePath)
+                                              .compose(v -> newDnsConfigTimerService(configList)));
     }
 
     private Future<Void> writeDDNSConfig(List<DDNSConfig> ddnsConfigs, DDNSConfig ddnsConfig, String configFilePath) {
@@ -160,15 +152,6 @@ public class ApiVerticle extends TemplateVerticle {
             } catch (Exception e) {
                 return Future.failedFuture(new RuntimeException("Server Error"));
             }
-        }
-    }
-
-    protected Future<Void> reloadDDNSServiceConfig(DDNSConfig ddnsConfig) {
-        try {
-            this.loadConfig(ddnsConfig);
-            return Future.succeededFuture();
-        } catch (Exception e) {
-            return Future.failedFuture(e);
         }
     }
 

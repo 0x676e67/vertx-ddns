@@ -7,13 +7,16 @@ import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.util.ObjectUtil;
+import com.zf1976.ddns.util.StringUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,8 +27,9 @@ import java.util.concurrent.Executors;
  * @date 2021/7/18
  */
 @SuppressWarnings("deprecation")
-public class AbstractDnsAPI {
+public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
 
+    protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
     protected final DnsApiCredentials dnsApiCredentials;
 
     protected HttpClient httpClient = HttpClient.newBuilder()
@@ -33,18 +37,19 @@ public class AbstractDnsAPI {
                                                 .executor(Executors.newSingleThreadExecutor())
                                                 .build();
 
+
     protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
         Assert.notNull(dnsApiCredentials, "AlibabaCloudCredentials cannot been null!");
         this.dnsApiCredentials = dnsApiCredentials;
     }
 
-    public void checkIp(String ip) {
+    protected void checkIp(String ip) {
         if (!HttpUtil.isIp(ip)) {
             throw new RuntimeException("ip：" + ip + " unqualified");
         }
     }
 
-    public void checkDomain(String domain) {
+    protected void checkDomain(String domain) {
         if (!HttpUtil.isDomain(domain)) {
             throw new RuntimeException("domain：" + domain + " unqualified");
         }
@@ -72,21 +77,31 @@ public class AbstractDnsAPI {
         return MapType.construct(HashMap.class, SimpleType.constructUnsafe(keyType), SimpleType.constructUnsafe(valueType));
     }
 
-    protected <T> T mapperResult(byte[] bytes, Class<T> tClass) {
+    protected <E> E mapperResult(byte[] bytes, Class<E> tClass) {
         try {
+            if (ObjectUtil.isEmpty(bytes)) {
+                return null;
+            }
             return Json.decodeValue(Buffer.buffer(bytes), tClass);
         } catch (DecodeException e) {
+            log.error(e.getMessage(), e.getCause());
             return null;
         }
     }
 
-    protected <T> T mapperResult(String content, Class<T> tClass) {
+    protected <E> E mapperResult(String content, Class<E> tClass) {
+        if (StringUtil.isEmpty(content)) {
+            return null;
+        }
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
     }
 
-    protected String concatUrl(String first, String ...more) {
-        return Paths.get(first, more)
-                    .toFile()
-                    .getAbsolutePath();
+    protected String concatUrl(String first, String... more) {
+        final var urlBuilder = new StringBuilder(first);
+        for (String path : more) {
+            urlBuilder.append("/")
+                      .append(path);
+        }
+        return urlBuilder.toString();
     }
 }

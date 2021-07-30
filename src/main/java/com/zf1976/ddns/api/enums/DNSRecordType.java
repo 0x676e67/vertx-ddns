@@ -12,5 +12,15 @@ public enum DNSRecordType {
     /**
      * ipv6
      */
-    AAAA
+    AAAA;
+
+    public static DNSRecordType checkType(String value) {
+        for (DNSRecordType type : values()) {
+            if (type.toString()
+                    .equals(value)) {
+                return type;
+            }
+        }
+        throw new RuntimeException("The DNS Record Type provider does not exist");
+    }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HuaweiDataResult {
 
+
     private List<Recordsets> recordsets;
     private List<HuaweiDataResult.Zones> zones;
     private HuaweiDataResult.Links links;

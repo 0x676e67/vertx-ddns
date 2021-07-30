@@ -1,11 +1,5 @@
 package com.zf1976.ddns.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
@@ -16,6 +10,7 @@ import com.zf1976.ddns.pojo.AliyunDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
 import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.verticle.DNSServiceType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,11 +29,10 @@ import java.util.Map;
  * @date 2021/7/14
  */
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsAPI extends AbstractDnsAPI {
+public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
     private final String api = "https://alidns.aliyuncs.com";
-    private final ObjectMapper objectMapper;
     private final RpcAPISignatureComposer rpcSignatureComposer = AliyunSignatureComposer.getComposer();
 
     public AliyunDnsAPI(String accessKeyId, String accessKeySecret) {
@@ -47,12 +41,6 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
 
     public AliyunDnsAPI(DnsApiCredentials credentials) {
         super(credentials);
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
-        this.objectMapper.enable(MapperFeature.USE_STD_BEAN_NAMING);
-        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.objectMapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
-        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /**
@@ -62,6 +50,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
      * @param dnsRecordType 记录类型
      * @return {@link AliyunDataResult}
      */
+    @Override
     public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam("DescribeDomainRecords");
         final var extractDomain = HttpUtil.extractDomain(domain);
@@ -115,12 +104,35 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
     }
 
     /**
+     * 删除域名记录
+     *
+     * @param id     记录id（记录唯一凭证）
+     * @param domain 阿里云域名可以忽略
+     * @return {@link AliyunDataResult}
+     */
+    @Override
+    public AliyunDataResult deleteDnsRecord(String id, String domain) {
+        return this.deleteDnsRecord(id);
+    }
+
+    /**
+     * 是否支持
+     *
+     * @param dnsServiceType DNS服务商类型
+     * @return {@link boolean}
+     */
+    @Override
+    public boolean supports(DNSServiceType dnsServiceType) {
+        return DNSServiceType.ALIYUN.check(dnsServiceType);
+    }
+
+    /**
      * 删除记录
      *
      * @param recordId 记录id
      * @return {@link AliyunDataResult}
      */
-    public AliyunDataResult deleteDnsRecord(String recordId) {
+    private AliyunDataResult deleteDnsRecord(String recordId) {
         final var queryParam = this.getQueryParam("DeleteDomainRecord");
         queryParam.put("RecordId", recordId);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
@@ -139,7 +151,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI {
         try {
             final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                             .body();
-            return this.objectMapper.readValue(body, AliyunDataResult.class);
+            return this.mapperResult(body, AliyunDataResult.class);
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage());

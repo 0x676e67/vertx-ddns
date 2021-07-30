@@ -25,10 +25,15 @@ public enum DNSServiceType {
 
     public static DNSServiceType checkType(String value) {
         for (DNSServiceType type : values()) {
-            if (type.toString().equals(value)) {
+            if (type.toString()
+                    .equals(value)) {
                 return type;
             }
         }
-        return null;
+        throw new RuntimeException("The DDNS api provider does not exist");
+    }
+
+    public boolean check(DNSServiceType dnsServiceType) {
+        return this == dnsServiceType;
     }
 }
