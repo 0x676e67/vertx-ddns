@@ -16,21 +16,17 @@ import java.io.BufferedInputStream;
 public class ConfigProperty {
 
     private final JsonObject jsonConfig;
-    private static ConfigProperty config;
 
     private ConfigProperty() {
         this.jsonConfig = loadLocalConfig();
     }
 
+    private static final class ConfigHolder {
+        private static final ConfigProperty config = new ConfigProperty();
+    }
+
     public static ConfigProperty getInstance() {
-       if (config == null) {
-           synchronized (ConfigProperty.class) {
-               if (config == null) {
-                   config = new ConfigProperty();
-               }
-           }
-       }
-       return config;
+        return ConfigHolder.config;
     }
 
     private JsonObject loadLocalConfig() {

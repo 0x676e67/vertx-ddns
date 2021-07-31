@@ -15,10 +15,10 @@ public final class IpUtil {
         Enumeration<NetworkInterface> netInterfaces;
         List<String> networkIpList = new ArrayList<>();
         try {
-            // 拿到所有网卡
+            // Get all network cards
             netInterfaces = NetworkInterface.getNetworkInterfaces();
             InetAddress ip;
-            // 遍历每个网卡，拿到ip
+            // Traverse each network card and get the ip
             while (netInterfaces.hasMoreElements()) {
                 NetworkInterface ni = netInterfaces.nextElement();
                 Enumeration<InetAddress> addresses = ni.getInetAddresses();
@@ -39,10 +39,10 @@ public final class IpUtil {
         Enumeration<NetworkInterface> netInterfaces;
         List<String> networkIpList = new ArrayList<>();
         try {
-            // 拿到所有网卡
+            // Get all network cards
             netInterfaces = NetworkInterface.getNetworkInterfaces();
             InetAddress ip;
-            // 遍历每个网卡，拿到ip
+            // Traverse each network card and get the ip
             while (netInterfaces.hasMoreElements()) {
                 NetworkInterface ni = netInterfaces.nextElement();
                 Enumeration<InetAddress> addresses = ni.getInetAddresses();
@@ -68,7 +68,7 @@ public final class IpUtil {
             final var inetAddresses = networkInterfaces.nextElement().getInetAddresses();
             while (inetAddresses.hasMoreElements()) {
                 inetAddress = inetAddresses.nextElement();
-                //检查此地址是否是IPv6地址以及是否是保留地址
+                // Check whether this address is an IPV 6 address and whether it is a reserved address
                 if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet6Address && !isReservedAddress(inetAddress)) {
                     break outer;
                 }
@@ -76,7 +76,7 @@ public final class IpUtil {
         }
         assert inetAddress != null;
         String hostAddress = inetAddress.getHostAddress();
-        //过滤网卡
+        // Filter card
         int index = hostAddress.indexOf('%');
         if (index > 0) {
             hostAddress = hostAddress.substring(0, index);
