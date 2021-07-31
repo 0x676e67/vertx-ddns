@@ -1,11 +1,9 @@
 package com.zf1976.ddns.api.auth;
 
-public class BasicCredentials implements DnsApiCredentials {
+public record BasicCredentials(String accessKeyId,
+                               String accessKeySecret) implements DnsApiCredentials {
 
-    private final String accessKeyId;
-    private final String accessKeySecret;
-
-    public BasicCredentials(String accessKeyId, String accessKeySecret) {
+    public BasicCredentials {
         if (accessKeyId == null) {
             throw new IllegalArgumentException("Access key ID cannot be null.");
         }
@@ -13,8 +11,6 @@ public class BasicCredentials implements DnsApiCredentials {
             throw new IllegalArgumentException("Access key secret cannot be null.");
         }
 
-        this.accessKeyId = accessKeyId;
-        this.accessKeySecret = accessKeySecret;
     }
 
     @Override
