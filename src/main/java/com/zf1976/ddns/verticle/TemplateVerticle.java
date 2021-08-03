@@ -251,15 +251,14 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                         return Future.failedFuture("RSA keyless");
                     }
                     try {
-                        String username = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), secureConfig.getUsername());
-                        String password = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), secureConfig.getPassword());
-                        secureConfig.setUsername(username);
-                        secureConfig.setPassword(password);
+                        secureConfig.setUsername(RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), secureConfig.getUsername()));
+                        secureConfig.setPassword(RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), secureConfig.getPassword()));
                         return Future.succeededFuture(secureConfig);
                     } catch (Exception e) {
                         return this.readSecureConfig()
                                 .compose(rawConfig -> {
                                     if (this.isHide(rawConfig.getPassword(), secureConfig.getPassword())) {
+                                        secureConfig.setUsername(rawConfig.getUsername());
                                         secureConfig.setPassword(rawConfig.getPassword());
                                         return Future.succeededFuture(secureConfig);
                                     }

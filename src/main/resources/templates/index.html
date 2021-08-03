@@ -438,7 +438,6 @@
             "username" : encrypt(username),
             "password" : passwordIsHide(password)? password : encrypt(password)
         }
-        console.log(secureConfig)
         axiosInstance.post("/api/storeSecureConfig", secureConfig)
                     .then(res => {
                         confirm.show("Successfully saved!")
