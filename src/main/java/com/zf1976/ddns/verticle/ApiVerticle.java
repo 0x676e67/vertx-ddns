@@ -3,21 +3,27 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
-import com.zf1976.ddns.util.Assert;
-import com.zf1976.ddns.util.CollectionUtil;
-import com.zf1976.ddns.util.StringUtil;
-import com.zf1976.ddns.util.Validator;
+import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.auth.RedirectAuthenticationProvider;
+import com.zf1976.ddns.verticle.auth.UsernamePasswordAuthenticationProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
+import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.FormLoginHandler;
+import io.vertx.ext.web.handler.RedirectAuthHandler;
+import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author mac
@@ -31,34 +37,56 @@ public class ApiVerticle extends TemplateVerticle {
     public void start(Promise<Void> startPromise) {
         final var serverPort = serverPort();
         final var router = getRouter();
-        final var httpServer = vertx.createHttpServer().exceptionHandler(Throwable::printStackTrace);
-        // 存储DNS服务商密钥
+        final var httpServer = vertx.createHttpServer()
+                                    .exceptionHandler(Throwable::printStackTrace);
+        final var sessionStore = LocalSessionStore.create(vertx, ApiConstants.SESSION_NAME);
+        final var sessionHandler = SessionHandler.create(sessionStore)
+                                                 .setLazySession(true)
+                                                 // 使用严格模式的同站策略
+                                                 .setCookieSameSite(CookieSameSite.STRICT)
+                                                 .setCookieSecureFlag(true);
+        final var formLoginHandler = FormLoginHandler.create(new UsernamePasswordAuthenticationProvider(this))
+                                                     .setDirectLoggedInOKURL(ApiConstants.INDEX_PATH);
+        // All routes use session
+        router.route()
+              .handler(sessionHandler)
+              .failureHandler(this::returnError);
+        final var redirectAuthHandler = RedirectAuthHandler.create(new RedirectAuthenticationProvider(), ApiConstants.LOGIN_PATH);
+        // Redirect authentication
+        router.route("/api/*")
+              .handler(redirectAuthHandler);
+        router.route("/index.html")
+              .handler(redirectAuthHandler);
+        // The page must have POST form login data
+        router.post("/login")
+              .handler(BodyHandler.create())
+              .handler(formLoginHandler);
+        // Sign out
+        router.post("/logout")
+              .handler(this::logoutHandler);
+        // Store DNS service provider key
         router.post("/api/storeConfig")
-                .consumes("application/json")
-                .handler(BodyHandler.create())
-                .handler(this::storeDDNSConfigHandle);
+              .consumes("application/json")
+              .handler(BodyHandler.create())
+              .handler(this::storeDDNSConfigHandle);
         // sava secure config
         router.post("/api/storeSecureConfig")
-                .consumes("application/json")
-                .handler(BodyHandler.create())
-                .handler(this::storeSecureConfigHandler);
-        // 查询DNS服务商域名解析记录
+              .consumes("application/json")
+              .handler(BodyHandler.create())
+              .handler(this::storeSecureConfigHandler);
+        // Query DNS service provider's domain name resolution record
         router.post("/api/ddnsRecord")
-                .handler(this::findDDNSRecordsHandler);
-        // 删除解析记录
+              .handler(this::findDDNSRecordsHandler);
+        // Delete analysis record
         router.delete("/api/ddnsRecord")
-                .handler(this::deleteDDNSRecordHandler);
-        // 获取RSA公钥
-        router.get("/api/rsa/publicKey")
-                .handler(ctx -> this.readRsaKeyPair()
-                        .onSuccess(rsaKeyPair -> this.returnJson(ctx, rsaKeyPair.getPublicKey()))
-                        .onFailure(err -> this.handleErrorRequest(ctx, err))
-                );
-        // /api/** PATH 异常处理
-        router.route("/api/*")
-                .failureHandler(this::returnError);
+              .handler(this::deleteDDNSRecordHandler);
+        // Obtain the RSA public key
+        router.get("/common/rsa/publicKey")
+              .handler(this::getRsaPublicKeyHandler);
+        // Initial configuration
         this.initConfig(vertx)
-            .compose(v -> httpServer.requestHandler(router).listen(serverPort))
+            .compose(v -> httpServer.requestHandler(router)
+                                    .listen(serverPort))
             .onSuccess(event -> {
                 log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
                 log.info("DDNS-Vertx is running at http://localhost:" + serverPort);
@@ -83,6 +111,30 @@ public class ApiVerticle extends TemplateVerticle {
 //                System.out.println(periodicId);
 //            }
 //        });
+    }
+
+    protected void logoutHandler(RoutingContext ctx) {
+        if (ctx.user() != null) {
+            final var session = ctx.session();
+            final var id = session.id();
+            for (Map.Entry<String, Cookie> cookieEntry : ctx.cookieMap()
+                                                            .entrySet()) {
+                final var cookie = cookieEntry.getValue();
+                if (ObjectUtil.nullSafeEquals(id, cookie.getValue())) {
+                    ctx.clearUser();
+                    this.returnJson(ctx, "Sign out successfully！");
+                    break;
+                }
+            }
+        } else {
+            this.handleBadRequest(ctx, "Invalid request");
+        }
+    }
+
+    protected void getRsaPublicKeyHandler(RoutingContext ctx) {
+        this.readRsaKeyPair()
+            .onSuccess(rsaKeyPair -> this.returnJson(ctx, rsaKeyPair.getPublicKey()))
+            .onFailure(err -> this.handleErrorRequest(ctx, err));
     }
 
     protected void findDDNSRecordsHandler(RoutingContext routingContext) {

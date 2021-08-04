@@ -5,6 +5,7 @@ import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.auth.SecureHandler;
 import com.zf1976.ddns.verticle.timer.DnsConfigTimerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -35,7 +36,7 @@ import java.util.List;
  * @author mac
  * @date 2021/7/7
  */
-public abstract class TemplateVerticle extends AbstractVerticle {
+public abstract class TemplateVerticle extends AbstractVerticle implements SecureHandler {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
@@ -93,51 +94,56 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                               log.info("Initialize rsa key configuration file：" + rsaKeyPath);
                               log.info("RSA key has been initialized");
                               TemplateVerticle.workDir = projectWorkPath;
-                              this.handleTemplate(router, vertx);
+                              this.routeTemplateHandler(router, vertx);
                               return this.initDDNSServiceConfig(vertx.fileSystem());
                           });
      }
 
-    private void handleTemplate(Router router, Vertx vertx) {
+    private void routeTemplateHandler(Router router, Vertx vertx) {
         TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
-        TemplateHandler handler = TemplateHandler.create(templateEngine);
+        TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         // 设置默认模版
-        handler.setIndexTemplate("index.html");
-        // 域名端口
-        router.get("/").handler(ctx -> ctx.redirect("/login.html"));
-        // 将所有以 `.html` 结尾的 GET 请求路由到模板处理器上
+        templateHandler.setIndexTemplate("index.html");
+        // 将 "/"路径映射到 "/login.html"
+        router.get("/")
+              .handler(ctx -> ctx.redirect("/index.html"));
+        // Mapping template
         router.getWithRegex(".+\\.html")
-              .handler(ctx -> readDDNSConfig(vertx.fileSystem())
-                      .compose(ddnsConfigList -> {
-                          if (!CollectionUtil.isEmpty(ddnsConfigList)) {
-                              for (DDNSConfig ddnsConfig : ddnsConfigList) {
-                                  ddnsConfig.setId(this.hideHandler(ddnsConfig.getId()))
-                                          .setSecret(this.hideHandler(ddnsConfig.getSecret()));
-                              }
-                          }
-                          ctx.put("ddnsConfigList", ddnsConfigList);
-                          return this.readRsaKeyPair();
-                      })
-                      .compose(rsaKeyPair -> {
-                          if (rsaKeyPair != null) {
-                              ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
-                          }
-                          return this.readSecureConfig();
-                      })
-                      .onSuccess(secureConfig -> {
-                          if (secureConfig != null) {
-                              secureConfig.setPassword(this.hideHandler(secureConfig.getPassword()));
-                              ctx.put("secureConfig", secureConfig);
-                          }
-                          ctx.put("common", ConfigProperty.getCommonProperties())
-                                  .put("ipv4", IpUtil.getNetworkIpv4List())
-                                  .put("ipv6", IpUtil.getNetworkIpv6List());
-                          handler.handle(ctx);
-                      })
-                      .onFailure(err -> this.handleErrorRequest(ctx, err)));
-        // 静态资源处理
-        router.get()
+              .handler(ctx -> this.customTemplateHandler(ctx, templateHandler));
+        // Static resource processing
+        router.get("/*")
               .handler(StaticHandler.create());
+    }
+
+    protected void customTemplateHandler(RoutingContext ctx, TemplateHandler templateHandler) {
+        readDDNSConfig(vertx.fileSystem())
+                .compose(ddnsConfigList -> {
+                    if (!CollectionUtil.isEmpty(ddnsConfigList)) {
+                        for (DDNSConfig ddnsConfig : ddnsConfigList) {
+                            ddnsConfig.setId(this.hideHandler(ddnsConfig.getId()))
+                                      .setSecret(this.hideHandler(ddnsConfig.getSecret()));
+                        }
+                    }
+                    ctx.put("ddnsConfigList", ddnsConfigList);
+                    return this.readRsaKeyPair();
+                })
+                .compose(rsaKeyPair -> {
+                    if (rsaKeyPair != null) {
+                        ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
+                    }
+                    return this.readSecureConfig();
+                })
+                .onSuccess(secureConfig -> {
+                    if (secureConfig != null) {
+                        secureConfig.setPassword(this.hideHandler(secureConfig.getPassword()));
+                        ctx.put("secureConfig", secureConfig);
+                    }
+                    ctx.put("common", ConfigProperty.getCommonProperties())
+                       .put("ipv4", IpUtil.getNetworkIpv4List())
+                       .put("ipv6", IpUtil.getNetworkIpv6List());
+                    templateHandler.handle(ctx);
+                })
+                .onFailure(err -> this.handleErrorRequest(ctx, err));
     }
 
     protected Future<Void> initDDNSServiceConfig(FileSystem fileSystem) {
@@ -180,7 +186,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         return Future.succeededFuture();
     }
 
-    protected Future<RsaUtil.RsaKeyPair> readRsaKeyPair() {
+    public Future<RsaUtil.RsaKeyPair> readRsaKeyPair() {
         if (this.rsaKeyPair != null) {
             return Future.succeededFuture(this.rsaKeyPair);
         }
@@ -189,17 +195,17 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                     .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, RsaUtil.RsaKeyPair.class)));
     }
 
-    protected Future<SecureConfig> readSecureConfig() {
+    public Future<SecureConfig> readSecureConfig() {
         String absolutePath = this.toAbsolutePath(workDir, SECURE_CONFIG_FILENAME);
         return vertx.fileSystem()
-                .readFile(absolutePath)
-                .compose(buffer -> {
-                    try {
-                        // config is empty
-                        if (StringUtil.isEmpty(buffer.toString())) {
-                            return Future.succeededFuture();
-                        }
-                        SecureConfig secure = Json.decodeValue(buffer, SecureConfig.class);
+                    .readFile(absolutePath)
+                    .compose(buffer -> {
+                        try {
+                            // config is empty
+                            if (StringUtil.isEmpty(buffer.toString())) {
+                                return Future.succeededFuture();
+                            }
+                            SecureConfig secure = Json.decodeValue(buffer, SecureConfig.class);
                         return Future.succeededFuture(secure);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e.getCause());
@@ -329,11 +335,13 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         if (routingContext.failure() instanceof ReplyException) {
             errorCode = ((ReplyException) routingContext.failure()).failureCode();
         }
-        final var result = DataResult.fail(errorCode, routingContext.failure().getMessage());
-        setCommonHeader(routingContext.response()
-                .setStatusCode(errorCode)
-                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
-                .end(Json.encodePrettily(result));
+        final var throwable = routingContext.failure()
+                                            .getCause();
+        final var result = DataResult.fail(errorCode, throwable.getMessage());
+        this.setCommonHeader(routingContext.response()
+                                           .setStatusCode(errorCode)
+                                           .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
+            .end(Json.encodePrettily(result));
     }
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {
@@ -369,7 +377,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     }
 
     protected void handleException(RoutingContext routingContext, int statusCode, Throwable throwable) {
-        log.error(throwable.getMessage(), throwable.getCause());
         routingContext.fail(statusCode, throwable);
     }
 }

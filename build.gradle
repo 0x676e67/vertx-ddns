@@ -21,7 +21,7 @@ repositories {
 
 ext{
     jacksonVersion = "2.10.3"
-    vertxVersion = "4.1.1"
+    vertxVersion = "4.1.2"
     junitVersion = "5.7.0"
     log4jVersion = "2.14.1"
 }

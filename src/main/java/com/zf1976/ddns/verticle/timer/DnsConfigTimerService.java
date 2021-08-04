@@ -47,6 +47,7 @@ public class DnsConfigTimerService {
                 final var result = api.findDnsRecords(domain, dnsRecordType);
                 return this.handlerGenericsResult(result, domain);
             } catch (Exception e) {
+                log.error(e.getMessage(), e.getCause());
                 throw new RuntimeException(e.getMessage(), e.getCause());
             }
         }
@@ -69,6 +70,7 @@ public class DnsConfigTimerService {
                     return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
                 }
             } catch (Exception e) {
+                log.error(e.getMessage(), e.getCause());
                 throw new RuntimeException(e);
             }
         }

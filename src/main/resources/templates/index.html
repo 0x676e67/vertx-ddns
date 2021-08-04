@@ -32,6 +32,7 @@
         <strong style="color: #000000">DDNS</strong>
       </a>
     </div>
+      <button class="btn btn-primary submit_btn" onclick="logout()">logout</button>
   </div>
 </header>
 <main role="main" style="margin-top: 20px; overflow: hidden">
@@ -357,9 +358,17 @@
     getLogs()
     setInterval(getLogs, 1000)
 
+    function logout() {
+        axiosInstance.post("/logout")
+            .then(res => {
+                window.location.href = 'login.html';
+            })
+    }
+
     function setIpv4RecordType() {
         selectIpRecordType = ipv4RecordType
     }
+
     function setIpv6RecordType() {
         selectIpRecordType = ipv6RecordType
     }
