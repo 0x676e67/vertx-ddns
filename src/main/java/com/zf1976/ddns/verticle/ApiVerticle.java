@@ -77,10 +77,10 @@ public class ApiVerticle extends TemplateVerticle {
               .handler(this::storeSecureConfigHandler);
         // Query DNS service provider's domain name resolution record
         router.post("/api/ddnsRecord")
-              .handler(this::findDDNSRecordsHandler);
+              .blockingHandler(this::findDDNSRecordsHandler);
         // Delete analysis record
         router.delete("/api/ddnsRecord")
-              .handler(this::deleteDDNSRecordHandler);
+              .blockingHandler(this::deleteDDNSRecordHandler);
         // Obtain the RSA public key
         router.get("/common/rsa/publicKey")
               .handler(this::getRsaPublicKeyHandler);

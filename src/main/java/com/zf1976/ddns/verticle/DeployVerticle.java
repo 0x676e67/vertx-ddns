@@ -14,12 +14,12 @@ import org.apache.logging.log4j.Logger;
  * @author mac
  * @date 2021/7/6
  */
-public class ConfigVerticle extends AbstractVerticle {
+public class DeployVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger("[ConfigVerticle]");
     private final String[] args;
 
-    public ConfigVerticle(String[] args) {
+    public DeployVerticle(String[] args) {
         this.args = args;
     }
 
