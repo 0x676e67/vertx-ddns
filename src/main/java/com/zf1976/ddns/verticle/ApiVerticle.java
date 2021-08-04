@@ -43,9 +43,8 @@ public class ApiVerticle extends TemplateVerticle {
         final var sessionStore = LocalSessionStore.create(vertx, ApiConstants.SESSION_NAME);
         final var sessionHandler = SessionHandler.create(sessionStore)
                                                  .setLazySession(true)
-                                                 // 使用严格模式的同站策略
-                                                 .setCookieSameSite(CookieSameSite.STRICT)
-                                                 .setCookieSecureFlag(true);
+                                                 // Same site strategy using strict mode
+                                                 .setCookieSameSite(CookieSameSite.STRICT);
         final var formLoginHandler = FormLoginHandler.create(new UsernamePasswordAuthenticationProvider(this))
                                                      .setDirectLoggedInOKURL(ApiConstants.INDEX_PATH);
         // All routes use session
