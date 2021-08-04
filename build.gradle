@@ -1,5 +1,7 @@
+//file:noinspection GroovyAssignabilityCheck
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 group 'com.zf1976'
@@ -40,4 +42,15 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    // MANIFEST.MF指定main class
+    manifest {
+        attributes(
+                "Manifest-Version": 1.0,
+                'Main-Class': 'com.zf1976.ddns.Application'
+        )
+    }
+
 }
