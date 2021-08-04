@@ -65,8 +65,7 @@ public record UsernamePasswordAuthenticationProvider(
                     if (event.succeeded()) {
                         resultHandler.handle(Future.succeededFuture(user));
                     } else {
-                        resultHandler.handle(Future.failedFuture(event.cause()
-                                .getMessage()));
+                        resultHandler.handle(Future.failedFuture(event.cause().getMessage()));
                     }
                 });
     }

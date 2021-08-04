@@ -144,7 +144,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                        .put("ipv6", IpUtil.getNetworkIpv6List());
                     templateHandler.handle(ctx);
                 })
-                .onFailure(err -> this.handleErrorRequest(ctx, err));
+                .onFailure(err -> this.routeErrorHandler(ctx, err));
     }
 
     protected Future<Void> initDDNSServiceConfig(FileSystem fileSystem) {
@@ -331,7 +331,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         return "*".repeat(rawStrLength);
     }
 
-    protected void returnError(RoutingContext routingContext) {
+    protected void routeErrorHandler(RoutingContext routingContext) {
         int errorCode = routingContext.statusCode() > 0 ? routingContext.statusCode() : 500;
         // 不懂 Vert.x 为什么 EventBus 和 Web 是两套异常系统
         if (routingContext.failure() instanceof ReplyException) {
@@ -346,38 +346,42 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     }
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {
-        return response
-                .putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+        return response.putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                        .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
     }
 
-    protected void returnJson(RoutingContext routingContext, Object object) {
+    protected void routeResultJson(RoutingContext routingContext, Object object) {
         routingContext.response()
                       .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                       .end(Json.encodePrettily(DataResult.success(object)));
     }
 
-    protected void returnJson(RoutingContext routingContext) {
-        this.returnJson(routingContext, null);
+    protected void routeResultJson(RoutingContext routingContext) {
+        this.routeResultJson(routingContext, null);
     }
 
-    protected void handleErrorRequest(RoutingContext routingContext, String message) {
-         this.handleErrorRequest(routingContext, new Exception(message));
+    protected void routeErrorHandler(RoutingContext routingContext, String message) {
+         this.routeErrorHandler(routingContext, new Exception(message));
     }
 
-    protected void handleErrorRequest(RoutingContext routingContext, Throwable throwable) {
-        this.handleException(routingContext, 500, throwable);
+    protected void routeErrorHandler(RoutingContext routingContext, Throwable throwable) {
+        this.exceptionHandler(routingContext, 500, throwable);
     }
 
-    protected void handleBadRequest(RoutingContext routingContext, String message) {
-         this.handleBadRequest(routingContext, new RuntimeException(message));
+    protected void routeBadRequestHandler(RoutingContext routingContext, String message) {
+         this.routeBadRequestHandler(routingContext, new RuntimeException(message));
     }
 
-    protected void handleBadRequest(RoutingContext routingContext, Throwable throwable) {
-        this.handleException(routingContext, 400, throwable);
+    protected void routeBadRequestHandler(RoutingContext routingContext, Throwable throwable) {
+        this.exceptionHandler(routingContext, 400, throwable);
     }
 
-    protected void handleException(RoutingContext routingContext, int statusCode, Throwable throwable) {
-        routingContext.fail(statusCode, throwable);
+    protected void exceptionHandler(RoutingContext routingContext, int statusCode, Throwable throwable) {
+        HttpServerResponse response = routingContext.response()
+                .setStatusCode(statusCode)
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+        final Throwable cause = throwable.getCause();
+        final String message = cause == null? throwable.getMessage() : cause.getMessage();
+        this.setCommonHeader(response).end(Json.encodePrettily(DataResult.fail(message)));
     }
 }

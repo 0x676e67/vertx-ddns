@@ -51,7 +51,7 @@ public class ApiVerticle extends TemplateVerticle {
         router.route()
               .handler(this::notAllowWanAccessHandler)
               .handler(sessionHandler)
-              .failureHandler(this::returnError);
+              .failureHandler(this::routeErrorHandler);
         final var redirectAuthHandler = RedirectAuthHandler.create(new RedirectAuthenticationProvider(), ApiConstants.LOGIN_PATH);
         // Redirect authentication
         router.route("/api/*")
@@ -125,7 +125,7 @@ public class ApiVerticle extends TemplateVerticle {
         if (IpUtil.isInnerIp(ipAddress)) {
             ctx.next();
         } else {
-            this.handleErrorRequest(ctx, "Prohibit WAN access！");
+            this.routeBadRequestHandler(ctx, "Prohibit WAN access！");
         }
     }
 
@@ -143,12 +143,12 @@ public class ApiVerticle extends TemplateVerticle {
                 final var cookie = cookieEntry.getValue();
                 if (ObjectUtil.nullSafeEquals(id, cookie.getValue())) {
                     ctx.clearUser();
-                    this.returnJson(ctx, "Sign out successfully！");
+                    this.routeResultJson(ctx, "Sign out successfully！");
                     break;
                 }
             }
         } else {
-            this.handleBadRequest(ctx, "Invalid request");
+            this.routeBadRequestHandler(ctx, "Invalid request");
         }
     }
 
@@ -159,8 +159,8 @@ public class ApiVerticle extends TemplateVerticle {
      */
     protected void getRsaPublicKeyHandler(RoutingContext ctx) {
         this.readRsaKeyPair()
-            .onSuccess(rsaKeyPair -> this.returnJson(ctx, rsaKeyPair.getPublicKey()))
-            .onFailure(err -> this.handleErrorRequest(ctx, err));
+            .onSuccess(rsaKeyPair -> this.routeResultJson(ctx, rsaKeyPair.getPublicKey()))
+            .onFailure(err -> this.routeErrorHandler(ctx, err));
     }
 
     /**
@@ -175,11 +175,11 @@ public class ApiVerticle extends TemplateVerticle {
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             final var dataResult = this.dnsConfigTimerService.findDnsRecords(dnsServiceType, domain, ipRecordType);
-            this.returnJson(ctx, dataResult);
+            this.routeResultJson(ctx, dataResult);
         } catch (RuntimeException exception) {
-            this.handleBadRequest(ctx, exception);
+            this.routeBadRequestHandler(ctx, exception);
         } catch (Exception exception) {
-            this.handleErrorRequest(ctx, new RuntimeException("Parameter abnormal"));
+            this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));
         }
     }
 
@@ -195,9 +195,9 @@ public class ApiVerticle extends TemplateVerticle {
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             final var success = this.dnsConfigTimerService.deleteRecords(dnsServiceType, recordId, domain);
-            this.returnJson(ctx, success);
+            this.routeResultJson(ctx, success);
         } catch (Exception e) {
-            this.handleBadRequest(ctx, e.getMessage());
+            this.routeBadRequestHandler(ctx, e.getMessage());
         }
     }
 
@@ -215,10 +215,10 @@ public class ApiVerticle extends TemplateVerticle {
             Assert.hasLength(secureConfig.getPassword(), "username cannot been null!");
             this.secureConfigDecryptHandler(secureConfig)
                     .compose(this::storeSecureConfig)
-                    .onSuccess(success -> this.returnJson(ctx))
-                    .onFailure(err -> this.handleErrorRequest(ctx, err));
+                    .onSuccess(success -> this.routeResultJson(ctx))
+                    .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception e) {
-            this.handleErrorRequest(ctx, new RuntimeException("Parameter abnormal"));
+            this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));
         }
     }
 
@@ -245,10 +245,10 @@ public class ApiVerticle extends TemplateVerticle {
             }
             this.ddnsConfigDecryptHandler(ddnsConfig)
                     .compose(this::storeDDNSConfig)
-                    .onSuccess(success -> this.returnJson(ctx))
-                    .onFailure(err -> this.handleErrorRequest(ctx, err));
+                    .onSuccess(success -> this.routeResultJson(ctx))
+                    .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception exception) {
-            this.handleBadRequest(ctx, new RuntimeException("Parameter abnormal"));
+            this.routeBadRequestHandler(ctx, new RuntimeException("Parameter abnormal"));
         }
     }
 
