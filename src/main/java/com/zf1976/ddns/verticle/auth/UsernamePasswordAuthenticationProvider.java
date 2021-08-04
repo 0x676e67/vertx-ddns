@@ -1,5 +1,6 @@
 package com.zf1976.ddns.verticle.auth;
 
+import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
 import io.vertx.core.AsyncResult;
@@ -40,27 +41,9 @@ public record UsernamePasswordAuthenticationProvider(
     @Override
     public void authenticate(JsonObject credentials, Handler<AsyncResult<User>> resultHandler) {
         final var user = new UserImpl(credentials);
-        String usernameKey = "username";
-        var username = (String) user.get(usernameKey);
-        String passwordKey = "password";
-        var password = (String) user.get(passwordKey);
         this.secureHandler.readRsaKeyPair()
                 .compose(rsaKeyPair -> this.secureHandler.readSecureConfig()
-                        .compose(secureConfig -> {
-                            if (secureConfig == null) {
-                                return Future.succeededFuture(user);
-                            }
-                            try {
-                                final var checkUsername = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), username);
-                                final var checkPassword = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), password);
-                                if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), checkUsername) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), checkPassword)) {
-                                    return Future.succeededFuture(user);
-                                }
-                                return Future.failedFuture("wrong user name or password");
-                            } catch (Exception e) {
-                                return Future.failedFuture(e.getMessage());
-                            }
-                        }))
+                        .compose(secureConfig -> this.checkAuthentication(secureConfig, user, rsaKeyPair)))
                 .onComplete(event -> {
                     if (event.succeeded()) {
                         resultHandler.handle(Future.succeededFuture(user));
@@ -68,6 +51,22 @@ public record UsernamePasswordAuthenticationProvider(
                         resultHandler.handle(Future.failedFuture(event.cause().getMessage()));
                     }
                 });
+    }
+
+    private Future<User> checkAuthentication(SecureConfig secureConfig, User user, RsaUtil.RsaKeyPair rsaKeyPair) {
+        if (secureConfig == null) {
+            return Future.succeededFuture(user);
+        }
+        try {
+            final var checkUsername = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), user.get("username"));
+            final var checkPassword = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), user.get("password"));
+            if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), checkUsername) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), checkPassword)) {
+                return Future.succeededFuture(user);
+            }
+            return Future.failedFuture("wrong user name or password");
+        } catch (Exception e) {
+            return Future.failedFuture(e.getMessage());
+        }
     }
 
 }
