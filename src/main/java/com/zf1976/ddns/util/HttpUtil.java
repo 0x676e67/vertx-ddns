@@ -1,5 +1,6 @@
 package com.zf1976.ddns.util;
 
+import io.vertx.core.http.HttpServerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +8,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +19,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"UnusedReturnValue", "RegExpRedundantEscape"})
 public final class HttpUtil {
 
-    private static final Logger log = LoggerFactory.getLogger("[HttpUtil]");
+    private static final Logger LOG = LoggerFactory.getLogger("[HttpUtil]");
     public static final String IP_CHECK_REGEXP = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
     public static final String IP_EXTRACT_REGEXP = "(\\d{1,3}\\.){3}\\d{1,3}";
     public static final String DOMAIN_REGEXP = "^(?=^.{3,255}$)[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
@@ -45,10 +47,10 @@ public final class HttpUtil {
             if (!IP_CHECK_PATTERN.matcher(ip).matches()) {
                 ip = "";
             }
-            log.info("Host IP: {}", ip);
+            LOG.info("Host IP: {}", ip);
             return ip;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            LOG.error(e.getMessage());
         }
         return "";
     }
@@ -75,10 +77,10 @@ public final class HttpUtil {
                 ip = mat.group().trim();
                 break;
             }
-            log.info("Host IP: {}", ip);
+            LOG.info("Host IP: {}", ip);
             return ip;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            LOG.error(e.getMessage());
         }
         return "";
     }
@@ -90,7 +92,7 @@ public final class HttpUtil {
      * @return {@link boolean}
      */
     public static boolean isDomain(String domain) {
-        return DOMAIN_PATTERN.matcher(domain).matches();
+        return !DOMAIN_PATTERN.matcher(domain).matches();
     }
 
     /**
@@ -121,7 +123,7 @@ public final class HttpUtil {
      * @return {@link String[]}
      */
     public static String[] extractDomain(String domain) {
-        if (StringUtil.isEmpty(domain) || !isDomain(domain)) {
+        if (StringUtil.isEmpty(domain) || isDomain(domain)) {
             throw new RuntimeException("The domain name does not meet the specification");
         }
         final var split = domain.split("\\.");
@@ -135,4 +137,63 @@ public final class HttpUtil {
         return new String[] {mainDomain, record};
     }
 
+
+    /**
+     * 获取真实ip地址
+     *
+     * @return ip
+     */
+    public static String getIpAddress(final HttpServerRequest request) {
+        // 获取请求主机IP地址,如果通过代理进来，则透过防火墙获取真实IP地址
+        String ip = request.getHeader("x-forwarded-for");
+        if (LOG.isDebugEnabled()) {
+            LOG.info("x-forwarded-for ip: " + ip);
+        }
+        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+            if(ip.contains(",")){
+                ip = ip.split(",")[0];
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+            if (LOG.isDebugEnabled()) {
+                LOG.info("Proxy-Client-IP ip: " + ip);
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+            if (LOG.isDebugEnabled()) {
+                LOG.info("WL-Proxy-Client-IP ip: " + ip);
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+            if (LOG.isDebugEnabled()) {
+                LOG.info("HTTP_CLIENT_IP ip: " + ip);
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+            if (LOG.isDebugEnabled()) {
+                LOG.info("HTTP_X_FORWARDED_FOR ip: " + ip);
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+            if (LOG.isDebugEnabled()) {
+                LOG.info("X-Real-IP ip: " + ip);
+            }
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.remoteAddress().hostAddress();
+            if (LOG.isDebugEnabled()) {
+                LOG.info("getRemoteAddr ip: " + ip);
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.info("Get client ip: " + ip);
+        }
+        return ip;
+    }
 }

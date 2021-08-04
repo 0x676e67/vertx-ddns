@@ -50,7 +50,7 @@ public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
     }
 
     protected void checkDomain(String domain) {
-        if (!HttpUtil.isDomain(domain)) {
+        if (HttpUtil.isDomain(domain)) {
             throw new RuntimeException("domain：" + domain + " unqualified");
         }
     }

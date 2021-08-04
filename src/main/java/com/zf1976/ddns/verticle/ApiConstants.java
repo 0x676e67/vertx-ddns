@@ -6,6 +6,12 @@ package com.zf1976.ddns.verticle;
  */
 public interface ApiConstants {
 
+    String SESSION_NAME = "ddns-vertx.session";
+
+    String LOGIN_PATH = "/login.html";
+
+    String INDEX_PATH = "/index.html";
+
     String DDNS_SERVICE_TYPE = "ddnsServiceType";
 
     String DOMAIN = "domain";

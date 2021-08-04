@@ -32,6 +32,7 @@
         <strong style="color: #000000">DDNS</strong>
       </a>
     </div>
+      <button class="btn btn-primary submit_btn" onclick="logout()">logout</button>
   </div>
 </header>
 <main role="main" style="margin-top: 20px; overflow: hidden">
@@ -270,10 +271,46 @@
           </div>
       </div>
         <div class="col-md-3">
-            <p class="font-weight-light text-break" style="margin-top: 115px;font-size: 13px;" id="logs"></p>
+            <p class="font-weight-light text-break" style="margin-top: auto;font-size: 13px;" id="logs"></p>
         </div>
-    </div>
+      <div class="col-md-6 offset-md-3" style="margin-top: 50px">
+            <div class="card">
+                <div class="card-header">安全配置</div>
+                <div class="card-body">
+                    <form>
+                        <fieldset class="row mb-1">
+                            <legend class="col-form-label col-sm-2 pt-0">禁止公网访问</legend>
+                            <div class="col-sm-10">
+                                <div class="form-check form-check-inline">
+                                    <label for="ipv4Enable"></label>
+                                    <input class="form-check-input" type="checkbox" checked id="notAllowWanAccess" >
+                                    <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可禁止从公网访问本页面</small>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="row mb" style="margin-top: 15px">
+                            <legend class="col-form-label col-sm-2 pt-0">登录用户名</legend>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="username" id="username" style="width: 90%" aria-describedby="Username_help">
+                                <small id="Username_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                            </div>
+                        </fieldset>
+                        <fieldset class="row mb">
+                            <legend class="col-form-label col-sm-2 pt-0">登录密码</legend>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="password" style="width: 90%" name="password" id="password" aria-describedby="password_help">
+                                <small id="password_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeSecureConfig()">保存</button>
+                </div>
+            </div>
+        </div>
 
+    </div>
 </main>
 
 
@@ -301,6 +338,7 @@
     });
     // 保存的配置
     const ddnsConfigList = [[${ddnsConfigList}]]
+    const secureConfig = [[${secureConfig}]]
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
     const cloudflareType = "CLOUDFLARE"
@@ -316,12 +354,21 @@
     selectIpv4ForApi()
     selectIpv6ForApi()
     setIpv4RecordType()
+    setSecureConfig()
     getLogs()
     setInterval(getLogs, 1000)
+
+    function logout() {
+        axiosInstance.post("/logout")
+            .then(res => {
+                window.location.href = 'login.html';
+            })
+    }
 
     function setIpv4RecordType() {
         selectIpRecordType = ipv4RecordType
     }
+
     function setIpv6RecordType() {
         selectIpRecordType = ipv6RecordType
     }
@@ -380,6 +427,37 @@
                 }
             }
         }
+    }
+
+    function storeSecureConfig() {
+        var notAllowWanAccess = document.getElementById("notAllowWanAccess").checked
+        var username = document.getElementById("username").value
+        var password = document.getElementById("password").value
+        if (username == undefined || username == "") {
+            confirm.show("username cannot been empty!")
+            return
+        }
+        if (password == undefined || password == "") {
+            confirm.show("password cannot been empty!")
+            return
+        }
+        console.log(passwordIsHide(password))
+        let secureConfig = {
+            "notAllowWanAccess" : notAllowWanAccess,
+            "username" : encrypt(username),
+            "password" : passwordIsHide(password)? password : encrypt(password)
+        }
+        axiosInstance.post("/api/storeSecureConfig", secureConfig)
+                    .then(res => {
+                        confirm.show("Successfully saved!")
+                    })
+    }
+
+    function passwordIsHide(password) {
+        if (secureConfig == null || secureConfig == undefined) {
+            return false
+        }
+        return secureConfig.password == password
     }
 
     function storeDDNSConfig() {
@@ -442,10 +520,9 @@
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
         }
-        console.log(data)
         axiosInstance.post("/api/storeConfig",data)
             .then(res => {
-            confirm.show("保存成功")
+            confirm.show("Successfully saved!")
             })
     }
 
@@ -611,6 +688,12 @@
         delCell.appendChild(btnDel);
         //返回tr数据
         return row;
+    }
+
+    function setSecureConfig() {
+        document.getElementById("notAllowWanAccess").checked = secureConfig? secureConfig.notAllowWanAccess : true
+        document.getElementById("username").value = secureConfig? secureConfig.username : ""
+        document.getElementById("password").value = secureConfig? secureConfig.password : ""
     }
 
     function setAliyunType() {
