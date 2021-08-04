@@ -4,11 +4,7 @@ package com.zf1976.ddns.util;
 import com.zf1976.ddns.annotation.Nullable;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 /**
  * @author mac
  * @date 2021/7/7
@@ -228,7 +224,7 @@ public abstract class ObjectUtil {
         } else if (o1 instanceof long[] && o2 instanceof long[]) {
             return Arrays.equals((long[])((long[])o1), (long[])((long[])o2));
         } else {
-            return o1 instanceof short[] && o2 instanceof short[] ? Arrays.equals((short[])((short[])o1), (short[])((short[])o2)) : false;
+            return o1 instanceof short[] && o2 instanceof short[] && Arrays.equals((short[]) ((short[]) o1), (short[]) ((short[]) o2));
         }
     }
 

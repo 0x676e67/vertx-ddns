@@ -69,7 +69,7 @@ public class ApiVerticle extends TemplateVerticle {
         router.post("/api/storeConfig")
               .consumes("application/json")
               .handler(BodyHandler.create())
-              .handler(this::storeDDNSConfigHandle);
+              .blockingHandler(this::storeDDNSConfigHandle);
         // sava secure config
         router.post("/api/storeSecureConfig")
               .consumes("application/json")
@@ -248,7 +248,7 @@ public class ApiVerticle extends TemplateVerticle {
                     .onSuccess(success -> this.routeResultJson(ctx))
                     .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception exception) {
-            this.routeBadRequestHandler(ctx, new RuntimeException("Parameter abnormal"));
+            this.routeBadRequestHandler(ctx, "Parameter abnormal");
         }
     }
 
