@@ -47,6 +47,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
     protected DnsConfigTimerService dnsConfigTimerService;
+    protected Boolean notAllowWanAccess = Boolean.TRUE;
 
 
     protected synchronized Router getRouter() {
@@ -205,8 +206,9 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                             if (StringUtil.isEmpty(buffer.toString())) {
                                 return Future.succeededFuture();
                             }
-                            SecureConfig secure = Json.decodeValue(buffer, SecureConfig.class);
-                        return Future.succeededFuture(secure);
+                            SecureConfig secureConfig = Json.decodeValue(buffer, SecureConfig.class);
+                            this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
+                        return Future.succeededFuture(secureConfig);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e.getCause());
                         return Future.failedFuture(e);
@@ -335,9 +337,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         if (routingContext.failure() instanceof ReplyException) {
             errorCode = ((ReplyException) routingContext.failure()).failureCode();
         }
-        final var throwable = routingContext.failure()
-                                            .getCause();
-        final var result = DataResult.fail(errorCode, throwable.getMessage());
+        final var failure = routingContext.failure();
+        final var result = DataResult.fail(errorCode, failure.getCause() != null? failure.getCause().getMessage() : failure.getMessage());
         this.setCommonHeader(routingContext.response()
                                            .setStatusCode(errorCode)
                                            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))

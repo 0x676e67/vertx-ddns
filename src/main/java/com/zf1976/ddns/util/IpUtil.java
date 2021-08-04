@@ -4,6 +4,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author mac
@@ -11,6 +12,23 @@ import java.util.List;
  */
 public final class IpUtil {
 
+    private static final Pattern INNER_IP_PATTERN = Pattern.compile("^(127\\.0\\.0\\.1)|(0\\:0\\:0\\:0\\:0\\:0\\:0\\:1)|(localhost)|(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})|(172\\.((1[6-9])|(2\\d)|(3[01]))\\.\\d{1,3}\\.\\d{1,3})|(192\\.168\\.\\d{1,3}\\.\\d{1,3})$");
+
+    /**
+     * Determine whether it is an intranet ip
+     *
+     * @param ip IP
+     * @return {@link boolean}
+     */
+    public static boolean isInnerIp(String ip) {
+        return INNER_IP_PATTERN.matcher(ip).find();
+    }
+
+    /**
+     * get ipv4 list
+     *
+     * @return {@link List<String>}
+     */
     public static List<String> getNetworkIpv4List() {
         Enumeration<NetworkInterface> netInterfaces;
         List<String> networkIpList = new ArrayList<>();
@@ -35,6 +53,11 @@ public final class IpUtil {
         return networkIpList;
     }
 
+    /**
+     * get ipv6 list
+     *
+     * @return {@link List<String>}
+     */
     public static List<String> getNetworkIpv6List() {
         Enumeration<NetworkInterface> netInterfaces;
         List<String> networkIpList = new ArrayList<>();

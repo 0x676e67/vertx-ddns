@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.zf1976'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 //指定编译版本
 sourceCompatibility = JavaVersion.VERSION_16

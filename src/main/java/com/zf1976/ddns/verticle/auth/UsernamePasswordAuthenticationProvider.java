@@ -14,13 +14,8 @@ import io.vertx.ext.auth.impl.UserImpl;
  * @author ant
  * Create by Ant on 2021/8/4 1:13 AM
  */
-public class UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
-
-    private final SecureHandler secureHandler;
-
-    public UsernamePasswordAuthenticationProvider(SecureHandler secureHandler) {
-        this.secureHandler = secureHandler;
-    }
+public record UsernamePasswordAuthenticationProvider(
+        SecureHandler secureHandler) implements AuthenticationProvider {
 
     /**
      * Authenticate a user.
@@ -50,30 +45,30 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
         String passwordKey = "password";
         var password = (String) user.get(passwordKey);
         this.secureHandler.readRsaKeyPair()
-                          .compose(rsaKeyPair -> this.secureHandler.readSecureConfig()
-                                                                   .compose(secureConfig -> {
-                                                                       if (secureConfig == null) {
-                                                                           return Future.succeededFuture(user);
-                                                                       }
-                                                                       try {
-                                                                           final var checkUsername = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), username);
-                                                                           final var checkPassword = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), password);
-                                                                           if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), checkUsername) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), checkPassword)) {
-                                                                               return Future.succeededFuture(user);
-                                                                           }
-                                                                           return Future.failedFuture("wrong user name or password");
-                                                                       } catch (Exception e) {
-                                                                           return Future.failedFuture(e.getMessage());
-                                                                       }
-                                                                   }))
-                          .onComplete(event -> {
-                              if (event.succeeded()) {
-                                  resultHandler.handle(Future.succeededFuture(user));
-                              } else {
-                                  resultHandler.handle(Future.failedFuture(event.cause()
-                                                                                .getMessage()));
-                              }
-                          });
+                .compose(rsaKeyPair -> this.secureHandler.readSecureConfig()
+                        .compose(secureConfig -> {
+                            if (secureConfig == null) {
+                                return Future.succeededFuture(user);
+                            }
+                            try {
+                                final var checkUsername = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), username);
+                                final var checkPassword = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), password);
+                                if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), checkUsername) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), checkPassword)) {
+                                    return Future.succeededFuture(user);
+                                }
+                                return Future.failedFuture("wrong user name or password");
+                            } catch (Exception e) {
+                                return Future.failedFuture(e.getMessage());
+                            }
+                        }))
+                .onComplete(event -> {
+                    if (event.succeeded()) {
+                        resultHandler.handle(Future.succeededFuture(user));
+                    } else {
+                        resultHandler.handle(Future.failedFuture(event.cause()
+                                .getMessage()));
+                    }
+                });
     }
 
 }
