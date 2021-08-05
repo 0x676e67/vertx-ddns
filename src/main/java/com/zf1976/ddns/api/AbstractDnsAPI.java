@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
@@ -23,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 /**
@@ -30,7 +32,7 @@ import java.util.concurrent.Executors;
  * @date 2021/7/18
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
+public abstract class AbstractDnsAPI<T, A> implements DnsRecordAPI<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
     protected final DnsApiCredentials dnsApiCredentials;
@@ -109,5 +111,30 @@ public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
                       .append(path);
         }
         return urlBuilder.toString();
+    }
+
+    protected Map<String, Object> getQueryParam(String recordId, A action) {
+        return this.getQueryParam(recordId, null, null, null, action);
+    }
+
+    protected Map<String, Object> getQueryParam(String recordId, String domain, A action) {
+        return this.getQueryParam(recordId, null, null, null, action);
+    }
+
+    protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, A action) {
+        return this.getQueryParam(null, domain, null, dnsRecordType, action);
+    }
+
+    protected Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, A action) {
+        return this.getQueryParam(null, domain, ip, dnsRecordType, action);
+    }
+
+    protected Map<String, Object> getQueryParam(String recordId,
+                                                String domain,
+                                                String ip,
+                                                DNSRecordType dnsRecordType,
+                                                A action) {
+
+        return null;
     }
 }

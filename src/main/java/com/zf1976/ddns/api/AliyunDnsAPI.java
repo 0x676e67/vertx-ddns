@@ -33,7 +33,7 @@ import java.util.Map;
  * @date 2021/7/14
  */
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
+public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult, AliyunDnsAPI.Action> {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
     private final String api = "https://alidns.aliyuncs.com/";
@@ -252,47 +252,45 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
         return queryParam;
     }
 
-    private Map<String, Object> getQueryParam(String recordId, Action action) {
+    protected Map<String, Object> getQueryParam(String recordId, Action action) {
         return this.getQueryParam(recordId, null, null, null, action);
     }
 
-    private Map<String, Object> getQueryParam(String recordId, String domain, Action action) {
-        return this.getQueryParam(recordId, null, null, null, action);
+    protected Map<String, Object> getQueryParam(String recordId, String domain, Action action) {
+        return this.getQueryParam(recordId, domain, null, null, action);
     }
 
-    private Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, Action action) {
+    protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, Action action) {
         return this.getQueryParam(null, domain, null, dnsRecordType, action);
     }
 
-    private Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, Action action) {
+    protected Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, Action action) {
         return this.getQueryParam(null, domain, ip, dnsRecordType, action);
     }
 
-    private Map<String, Object> getQueryParam(String recordId,
-                                              String domain,
-                                              String ip,
-                                              DNSRecordType dnsRecordType,
-                                              Action action) {
+    protected Map<String, Object> getQueryParam(String recordId,
+                                                String domain,
+                                                String ip,
+                                                DNSRecordType dnsRecordType,
+                                                AliyunDnsAPI.Action action) {
         final var queryParam = this.getCommonQueryParam(action);
+        final var extractDomain = HttpUtil.extractDomain(domain);
         switch (action) {
             case ADD -> {
-                final var extractDomain = HttpUtil.extractDomain(domain);
                 queryParam.put("Type", dnsRecordType.name());
                 queryParam.put("Value", ip);
                 queryParam.put("DomainName", extractDomain[0]);
                 queryParam.put("RR", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
             }
-            case DELETE -> {
-                final var extractDomain = HttpUtil.extractDomain(domain);
+            case DELETE -> queryParam.put("RecordId", recordId);
+            case UPDATE -> {
                 queryParam.put("RecordId", recordId);
                 queryParam.put("Type", dnsRecordType.name());
                 queryParam.put("Value", ip);
                 queryParam.put("DomainName", extractDomain[0]);
                 queryParam.put("RR", extractDomain[1]);
             }
-            case UPDATE -> queryParam.put("RecordId", recordId);
             case DESCRIBE -> {
-                final var extractDomain = HttpUtil.extractDomain(domain);
                 queryParam.put("PageSize", "500");
                 queryParam.put("TypeKeyWord", dnsRecordType.name());
                 queryParam.put("DomainName", extractDomain[0]);
@@ -304,7 +302,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
         return queryParam;
     }
 
-    private static enum Action {
+    protected enum Action {
 
         DESCRIBE("DescribeDomainRecords"),
         ADD("AddDomainRecord"),

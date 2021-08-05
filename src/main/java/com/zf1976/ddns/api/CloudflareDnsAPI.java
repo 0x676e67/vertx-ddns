@@ -34,7 +34,7 @@ import java.util.Map;
  * @author ant
  * Create by Ant on 2021/7/17 1:24 上午
  */
-public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult> {
+public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult, Object> {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsAPI]");
     private final String api = "https://api.cloudflare.com/client/v4/zones/";
