@@ -46,7 +46,7 @@ public class DnsConfigTimerService {
         final var api = this.dnsApiMap.get(dnsServiceType);
         if (api != null && api.supports(dnsServiceType)) {
             try {
-                final var result = api.findDnsRecords(domain, dnsRecordType);
+                final var result = api.findDnsRecordList(domain, dnsRecordType);
                 return this.handlerGenericsResult(result, domain);
             } catch (Exception e) {
                 log.error(e.getMessage(), e.getCause());
@@ -62,7 +62,7 @@ public class DnsConfigTimerService {
                                                          DNSRecordType dnsRecordType) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         if (api != null && api.supports(dnsServiceType)) {
-            return api.asyncFindDnsRecords(domain, dnsRecordType)
+            return api.asyncFindDnsRecordList(domain, dnsRecordType)
                       .compose(result -> {
                           final var dnsRecordVoList = this.handlerGenericsResult(result, domain);
                           return Future.succeededFuture(dnsRecordVoList);

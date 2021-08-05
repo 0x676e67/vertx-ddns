@@ -17,7 +17,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T findDnsRecords(String domain, DNSRecordType dnsRecordType);
+    T findDnsRecordList(String domain, DNSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -57,7 +57,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    default Future<T> asyncFindDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    default Future<T> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         return null;
     }
 

@@ -45,7 +45,7 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
      * @param dnsRecordType 记录类型
      * @return {@link DnspodDataResult}
      */
-    public DnspodDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    public DnspodDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var httpRequest = this.requestBuild(queryParam);
         return this.sendRequest(httpRequest);
@@ -101,7 +101,7 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
      * @return {@link Future<DnspodDataResult>}
      */
     @Override
-    public Future<DnspodDataResult> asyncFindDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    public Future<DnspodDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var initQueryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var requestUrl = this.requestUrlBuild(initQueryParam);
         return this.webClient.getAbs(requestUrl)

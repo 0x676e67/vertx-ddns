@@ -72,16 +72,16 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
     /**
      * 查找记录列表
      *
-     * @param domain 域名/不区分顶级域名、多级域名
+     * @param domain     域名/不区分顶级域名、多级域名
      * @param recordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult findDnsRecords(String domain, DNSRecordType recordType) {
+    public HuaweiDataResult findDnsRecordList(String domain, DNSRecordType recordType) {
         final var httpRequestBase = this.getRequestBuilder()
-                .setUrl(this.getZoneUrl(domain))
-                .addQueryStringParam("type", recordType.name())
-                .setMethod(MethodType.GET)
-                .build();
+                                        .setUrl(this.getZoneUrl(domain))
+                                        .addQueryStringParam("type", recordType.name())
+                                        .setMethod(MethodType.GET)
+                                        .build();
         byte[] contentBytes = this.sendRequest(httpRequestBase);
         return this.mapperResult(contentBytes, HuaweiDataResult.class);
     }

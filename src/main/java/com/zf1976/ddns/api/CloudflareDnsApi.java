@@ -47,6 +47,10 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Objec
 
     public CloudflareDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
+        this.initZoneMap();
+    }
+
+    private void initZoneMap() {
         final var request = HttpRequest.newBuilder()
                                        .GET()
                                        .uri(URI.create(api))
@@ -73,11 +77,11 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Objec
     /**
      * 查询所有记录
      *
-     * @param domain  域名/不区分主域名、多级域名（相当于查询主域名下所有记录）
+     * @param domain        域名/不区分主域名、多级域名（相当于查询主域名下所有记录）
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    public CloudflareDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = getQueryParam(dnsRecordType);
         final var url = this.toUrl(domain, queryParam);
         final var request = this.requestBuild(url, MethodType.GET);

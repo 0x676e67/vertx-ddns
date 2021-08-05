@@ -52,7 +52,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
      * @return {@link AliyunDataResult}
      */
     @Override
-    public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    public AliyunDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var httpRequest = this.requestBuild(queryParam);
         return this.sendRequest(httpRequest);
@@ -109,7 +109,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
      * @return {@link Future<AliyunDataResult>}
      */
     @Override
-    public Future<AliyunDataResult> asyncFindDnsRecords(String domain, DNSRecordType dnsRecordType) {
+    public Future<AliyunDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var requestUrl = this.requestUrlBuild(queryParam);
         return this.webClient.getAbs(requestUrl)
