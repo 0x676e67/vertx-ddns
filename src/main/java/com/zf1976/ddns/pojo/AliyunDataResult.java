@@ -240,7 +240,7 @@ public class AliyunDataResult {
 
         @Override
         public String toString() {
-            return "recordList{" +
+            return "record{" +
                     "domainName='" + domainName + '\'' +
                     ", recordId='" + recordId + '\'' +
                     ", rr='" + rr + '\'' +

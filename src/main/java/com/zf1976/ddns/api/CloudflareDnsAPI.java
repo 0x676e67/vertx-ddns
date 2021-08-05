@@ -11,6 +11,7 @@ import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -36,16 +37,16 @@ import java.util.Map;
 public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult> {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsAPI]");
-    private final String api = "https://api.cloudflare.com/client/v4/zones";
+    private final String api = "https://api.cloudflare.com/client/v4/zones/";
     private final Map<String, String> zoneMap = new HashMap<>();
 
-    public CloudflareDnsAPI(String token) {
-        this(new TokenCredentials(token));
+    public CloudflareDnsAPI(String token, Vertx vertx) {
+        this(new TokenCredentials(token), vertx);
     }
 
 
-    public CloudflareDnsAPI(DnsApiCredentials dnsApiCredentials) {
-        super(dnsApiCredentials);
+    public CloudflareDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+        super(dnsApiCredentials, vertx);
         final var request = HttpRequest.newBuilder()
                                        .GET()
                                        .uri(URI.create(api))

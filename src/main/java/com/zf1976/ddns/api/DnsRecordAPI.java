@@ -2,6 +2,7 @@ package com.zf1976.ddns.api;
 
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Future;
 
 /**
  * @author ant
@@ -47,6 +48,54 @@ public interface DnsRecordAPI<T> {
      * @return {@link T}
      */
     T deleteDnsRecord(String id, String domain);
+
+
+    /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param dnsRecordType 记录类型
+     * @return {@link T}
+     */
+    default Future<T> asyncFindDnsRecords(String domain, DNSRecordType dnsRecordType) {
+        return null;
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<T>}
+     */
+    default Future<T> asyncAddDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+        return null;
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id            id
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<T>}
+     */
+    default Future<T> asyncUpdateDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+        return null;
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id     id
+     * @param domain 域名
+     * @return {@link Future<T>}
+     */
+    default Future<T> asyncDeleteDnsRecord(String id, String domain) {
+        return null;
+    }
 
     /**
      * 是否支持

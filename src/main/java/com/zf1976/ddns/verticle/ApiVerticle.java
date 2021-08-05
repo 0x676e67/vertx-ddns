@@ -77,8 +77,8 @@ public class ApiVerticle extends TemplateVerticle {
               .handler(this::storeSecureConfigHandler);
         // Query DNS service provider's domain name resolution record
         router.post("/api/ddnsRecord")
-              .blockingHandler(this::findDDNSRecordsHandler);
-        // Delete analysis record
+              .handler(this::findDDNSRecordsHandler);
+        // DELETE analysis record
         router.delete("/api/ddnsRecord")
               .blockingHandler(this::deleteDDNSRecordHandler);
         // Obtain the RSA public key
@@ -174,12 +174,11 @@ public class ApiVerticle extends TemplateVerticle {
             final var ipRecordType = DNSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            final var dataResult = this.dnsConfigTimerService.findDnsRecords(dnsServiceType, domain, ipRecordType);
-            this.routeResultJson(ctx, dataResult);
-        } catch (RuntimeException exception) {
-            this.routeBadRequestHandler(ctx, exception);
-        } catch (Exception exception) {
-            this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));
+            this.dnsConfigTimerService.asyncFindDnsRecords(dnsServiceType, domain, ipRecordType)
+                                      .onSuccess(v -> this.routeResultJson(ctx, v))
+                                      .onFailure(err -> this.routeBadRequestHandler(ctx, err));
+        } catch (Exception e) {
+            this.routeErrorHandler(ctx, e.getMessage());
         }
     }
 
@@ -194,7 +193,7 @@ public class ApiVerticle extends TemplateVerticle {
             final var recordId = request.getParam(ApiConstants.RECORD_ID);
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            final var success = this.dnsConfigTimerService.deleteRecords(dnsServiceType, recordId, domain);
+            final var success = this.dnsConfigTimerService.deleteRecord(dnsServiceType, recordId, domain);
             this.routeResultJson(ctx, success);
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());

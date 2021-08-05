@@ -9,9 +9,12 @@ import com.zf1976.ddns.util.Assert;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.StringUtil;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,16 +34,19 @@ public abstract class AbstractDnsAPI<T> implements DnsRecordAPI<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
     protected final DnsApiCredentials dnsApiCredentials;
+    protected final HttpClient httpClient = HttpClient.newBuilder()
+                                                      .connectTimeout(Duration.ofSeconds(5))
+                                                      .executor(Executors.newSingleThreadExecutor())
+                                                      .build();
+    protected final WebClient webClient;
 
-    protected HttpClient httpClient = HttpClient.newBuilder()
-                                                .connectTimeout(Duration.ofSeconds(5))
-                                                .executor(Executors.newSingleThreadExecutor())
-                                                .build();
-
-
-    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials) {
-        Assert.notNull(dnsApiCredentials, "AlibabaCloudCredentials cannot been null!");
+    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+        vertx = vertx != null ? vertx : Vertx.vertx();
+        Assert.notNull(dnsApiCredentials, "Credentials cannot been null!");
         this.dnsApiCredentials = dnsApiCredentials;
+        final var webClientOptions = new WebClientOptions()
+                .setSsl(true);
+        this.webClient = WebClient.create(vertx, webClientOptions);
     }
 
     protected void checkIp(String ip) {

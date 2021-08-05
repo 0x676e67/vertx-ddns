@@ -154,7 +154,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
 
     protected Future<Void> newDnsConfigTimerService(List<DDNSConfig> configList) {
         try {
-            this.dnsConfigTimerService = new DnsConfigTimerService(configList);
+            this.dnsConfigTimerService = new DnsConfigTimerService(configList, this.vertx);
             return Future.succeededFuture();
         } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());

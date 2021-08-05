@@ -11,6 +11,9 @@ import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ParameterHelper;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,6 +23,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -32,15 +36,15 @@ import java.util.Map;
 public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
 
     private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
-    private final String api = "https://alidns.aliyuncs.com";
+    private final String api = "https://alidns.aliyuncs.com/";
     private final RpcAPISignatureComposer rpcSignatureComposer = AliyunSignatureComposer.getComposer();
 
-    public AliyunDnsAPI(String accessKeyId, String accessKeySecret) {
-        this(new BasicCredentials(accessKeyId, accessKeySecret));
+    public AliyunDnsAPI(String accessKeyId, String accessKeySecret, Vertx vertx) {
+        this(new BasicCredentials(accessKeyId, accessKeySecret), vertx);
     }
 
-    public AliyunDnsAPI(DnsApiCredentials credentials) {
-        super(credentials);
+    public AliyunDnsAPI(DnsApiCredentials credentials, Vertx vertx) {
+        super(credentials, vertx);
     }
 
     /**
@@ -52,14 +56,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
      */
     @Override
     public AliyunDataResult findDnsRecords(String domain, DNSRecordType dnsRecordType) {
-        final var queryParam = this.getQueryParam("DescribeDomainRecords");
-        final var extractDomain = HttpUtil.extractDomain(domain);
-        queryParam.put("PageSize", "500");
-        queryParam.put("TypeKeyWord", dnsRecordType.name());
-        queryParam.put("DomainName", extractDomain[0]);
-        if (!StringUtil.isEmpty(extractDomain[1])) {
-            queryParam.put("RRKeyWord", extractDomain[1]);
-        }
+        final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -73,12 +70,7 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
      * @return {@link AliyunDataResult}
      */
     public AliyunDataResult addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
-        final var queryParam = this.getQueryParam("AddDomainRecord");
-        final var extractDomain = HttpUtil.extractDomain(domain);
-        queryParam.put("Type", dnsRecordType.name());
-        queryParam.put("Value", ip);
-        queryParam.put("DomainName", extractDomain[0]);
-        queryParam.put("RR", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
+        final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.ADD);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -92,13 +84,19 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
      * @param dnsRecordType 记录类型
      */
     public AliyunDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
-        final var queryParam = this.getQueryParam("UpdateDomainRecord");
-        final var extractDomain = HttpUtil.extractDomain(domain);
-        queryParam.put("RecordId", recordId);
-        queryParam.put("Type", dnsRecordType.name());
-        queryParam.put("Value", ip);
-        queryParam.put("DomainName", extractDomain[0]);
-        queryParam.put("RR", extractDomain[1]);
+        final var queryParam = this.getQueryParam(recordId, domain, ip, dnsRecordType, Action.UPDATE);
+        final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
+        return this.sendRequest(httpRequest);
+    }
+
+    /**
+     * 删除记录
+     *
+     * @param recordId 记录id
+     * @return {@link AliyunDataResult}
+     */
+    private AliyunDataResult deleteDnsRecord(String recordId) {
+        final var queryParam = this.getQueryParam(recordId, Action.DELETE);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -116,6 +114,84 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
     }
 
     /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<AliyunDataResult>}
+     */
+    @Override
+    public Future<AliyunDataResult> asyncFindDnsRecords(String domain, DNSRecordType dnsRecordType) {
+        final var initQueryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
+        final var requestUrl = this.getRequestUrl(MethodType.GET, initQueryParam);
+        return this.webClient.getAbs(requestUrl)
+                             .send()
+                             .compose(this::resultFuture);
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<AliyunDataResult>}
+     */
+    @Override
+    public Future<AliyunDataResult> asyncAddDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+        final var initQueryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.ADD);
+        final var requestUrl = this.getRequestUrl(MethodType.GET, initQueryParam);
+        return this.webClient.getAbs(requestUrl)
+                             .send()
+                             .compose(this::resultFuture);
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id            id
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<AliyunDataResult>}
+     */
+    @Override
+    public Future<AliyunDataResult> asyncUpdateDnsRecord(String id,
+                                                         String domain,
+                                                         String ip,
+                                                         DNSRecordType dnsRecordType) {
+        final var initQueryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.UPDATE);
+        final var requestUrl = this.getRequestUrl(MethodType.GET, initQueryParam);
+        return this.webClient.getAbs(requestUrl)
+                             .send()
+                             .compose(this::resultFuture);
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id     id
+     * @param domain 域名
+     * @return {@link Future<AliyunDataResult>}
+     */
+    @Override
+    public Future<AliyunDataResult> asyncDeleteDnsRecord(String id, String domain) {
+        final var initQueryParam = this.getQueryParam(id, domain, Action.DELETE);
+        final var requestUrl = this.getRequestUrl(MethodType.GET, initQueryParam);
+        return this.webClient.getAbs(requestUrl)
+                             .send()
+                             .compose(this::resultFuture);
+    }
+
+    private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
+        final var requestUrl = this.getRequestUrl(methodType, queryParam);
+        return HttpRequest.newBuilder()
+                          .GET()
+                          .uri(URI.create(requestUrl))
+                          .build();
+    }
+
+    /**
      * 是否支持
      *
      * @param dnsServiceType DNS服务商类型
@@ -126,25 +202,30 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
         return DNSServiceType.ALIYUN.check(dnsServiceType);
     }
 
-    /**
-     * 删除记录
-     *
-     * @param recordId 记录id
-     * @return {@link AliyunDataResult}
-     */
-    private AliyunDataResult deleteDnsRecord(String recordId) {
-        final var queryParam = this.getQueryParam("DeleteDomainRecord");
-        queryParam.put("RecordId", recordId);
-        final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
-        return this.sendRequest(httpRequest);
+    private Map<String, String> urlToQueryParam(String url) {
+        final var canonicalizeString = url.substring(url.lastIndexOf("?") + 1);
+        final var split = canonicalizeString.split("&");
+        Map<String, String> queryParam = new LinkedHashMap<>(split.length + 2);
+        for (String kv : split) {
+            final var kvArrays = kv.split("=");
+            queryParam.put(kvArrays[0], kvArrays[1]);
+        }
+        return queryParam;
     }
 
-    private HttpRequest requestBuild(MethodType methodType, Map<String, Object> queryParam) {
-        final var url = this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
-        return HttpRequest.newBuilder()
-                          .GET()
-                          .uri(URI.create(url))
-                          .build();
+    private String getRequestUrl(MethodType methodType, Map<String, Object> queryParam) {
+        return this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", this.api, methodType, queryParam);
+    }
+
+    private Future<AliyunDataResult> resultFuture(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
+        final var body = responseFuture.bodyAsString();
+        final AliyunDataResult aliyunDataResult;
+        try {
+            aliyunDataResult = this.mapperResult(body, AliyunDataResult.class);
+            return Future.succeededFuture(aliyunDataResult);
+        } catch (Exception e) {
+            return Future.failedFuture(e);
+        }
     }
 
     private AliyunDataResult sendRequest(HttpRequest request) {
@@ -158,18 +239,83 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult> {
         }
     }
 
-    private Map<String, Object> getQueryParam(String action) {
+    private Map<String, Object> getCommonQueryParam(Action action) {
         final var queryParam = new HashMap<String, Object>();
         queryParam.put("Format", "JSON");
         queryParam.put("AccessKeyId", this.dnsApiCredentials.getAccessKeyId());
-        queryParam.put("Action", action);
+        queryParam.put("Action", action.value);
         queryParam.put("SignatureMethod", rpcSignatureComposer.signatureMethod());
         queryParam.put("SignatureNonce", ParameterHelper.getUniqueNonce());
         queryParam.put("SignatureVersion", rpcSignatureComposer.getSignerVersion());
         queryParam.put("Version", "2015-01-09");
-        queryParam.put("UserClientIp", HttpUtil.getCurrentHostIp());
         queryParam.put("Timestamp", ParameterHelper.getISO8601Time1(new Date()));
         return queryParam;
+    }
+
+    private Map<String, Object> getQueryParam(String recordId, Action action) {
+        return this.getQueryParam(recordId, null, null, null, action);
+    }
+
+    private Map<String, Object> getQueryParam(String recordId, String domain, Action action) {
+        return this.getQueryParam(recordId, null, null, null, action);
+    }
+
+    private Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, Action action) {
+        return this.getQueryParam(null, domain, null, dnsRecordType, action);
+    }
+
+    private Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, Action action) {
+        return this.getQueryParam(null, domain, ip, dnsRecordType, action);
+    }
+
+    private Map<String, Object> getQueryParam(String recordId,
+                                              String domain,
+                                              String ip,
+                                              DNSRecordType dnsRecordType,
+                                              Action action) {
+        final var queryParam = this.getCommonQueryParam(action);
+        switch (action) {
+            case ADD -> {
+                final var extractDomain = HttpUtil.extractDomain(domain);
+                queryParam.put("Type", dnsRecordType.name());
+                queryParam.put("Value", ip);
+                queryParam.put("DomainName", extractDomain[0]);
+                queryParam.put("RR", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
+            }
+            case DELETE -> {
+                final var extractDomain = HttpUtil.extractDomain(domain);
+                queryParam.put("RecordId", recordId);
+                queryParam.put("Type", dnsRecordType.name());
+                queryParam.put("Value", ip);
+                queryParam.put("DomainName", extractDomain[0]);
+                queryParam.put("RR", extractDomain[1]);
+            }
+            case UPDATE -> queryParam.put("RecordId", recordId);
+            case DESCRIBE -> {
+                final var extractDomain = HttpUtil.extractDomain(domain);
+                queryParam.put("PageSize", "500");
+                queryParam.put("TypeKeyWord", dnsRecordType.name());
+                queryParam.put("DomainName", extractDomain[0]);
+                if (!StringUtil.isEmpty(extractDomain[1])) {
+                    queryParam.put("RRKeyWord", extractDomain[1]);
+                }
+            }
+        }
+        return queryParam;
+    }
+
+    private static enum Action {
+
+        DESCRIBE("DescribeDomainRecords"),
+        ADD("AddDomainRecord"),
+        UPDATE("UpdateDomainRecord"),
+        DELETE("DeleteDomainRecord");
+
+        public final String value;
+
+        Action(String action) {
+            value = action;
+        }
     }
 
 }

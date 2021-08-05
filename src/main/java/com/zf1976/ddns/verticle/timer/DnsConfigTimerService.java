@@ -7,6 +7,8 @@ import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,15 +24,15 @@ public class DnsConfigTimerService {
     private final Logger log = LogManager.getLogger("[DnsConfigTimerService]");
     private final Map<DNSServiceType, DnsRecordAPI> dnsApiMap;
 
-    public DnsConfigTimerService(List<DDNSConfig> ddnsConfigList) {
+    public DnsConfigTimerService(List<DDNSConfig> ddnsConfigList, Vertx vertx) {
         this(new HashMap<>(4));
         for (DDNSConfig config : ddnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
                 switch (config.getDnsServiceType()) {
-                    case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsAPI(config.getId(), config.getSecret()));
-                    case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsAPI(config.getId(), config.getSecret()));
-                    case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsAPI(config.getId(), config.getSecret()));
-                    case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsAPI(config.getSecret()));
+                    case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsAPI(config.getId(), config.getSecret(), vertx));
+                    case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsAPI(config.getId(), config.getSecret(), vertx));
+                    case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsAPI(config.getId(), config.getSecret(), vertx));
+                    case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsAPI(config.getSecret(), vertx));
                 }
             }
         }
@@ -54,7 +56,22 @@ public class DnsConfigTimerService {
         throw new RuntimeException("No service provider key configured");
     }
 
-    public boolean deleteRecords(DNSServiceType dnsServiceType, String recordId, String domain) {
+    @SuppressWarnings("unchecked")
+    public Future<List<DnsRecordVo>> asyncFindDnsRecords(DNSServiceType dnsServiceType,
+                                                         String domain,
+                                                         DNSRecordType dnsRecordType) {
+        final var api = this.dnsApiMap.get(dnsServiceType);
+        if (api != null && api.supports(dnsServiceType)) {
+            return api.asyncFindDnsRecords(domain, dnsRecordType)
+                      .compose(result -> {
+                          final var dnsRecordVoList = this.handlerGenericsResult(result, domain);
+                          return Future.succeededFuture(dnsRecordVoList);
+                      });
+        }
+        return Future.failedFuture("No service provider key configured");
+    }
+
+    public Boolean deleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         if (api != null && api.supports(dnsServiceType)) {
             try {
@@ -75,6 +92,30 @@ public class DnsConfigTimerService {
             }
         }
         throw new RuntimeException("No service provider key configured");
+    }
+
+    @SuppressWarnings("unchecked")
+    public Future<Boolean> asyncDeleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
+        final var api = this.dnsApiMap.get(dnsServiceType);
+        if (api != null && api.supports(dnsServiceType)) {
+            return api.asyncDeleteDnsRecord(recordId, domain)
+                      .compose(result -> {
+                          Boolean complete = Boolean.FALSE;
+                          if (api instanceof DnspodDnsAPI) {
+                              final var dnspodDataResult = (DnspodDataResult) result;
+                              complete = dnspodDataResult != null && dnspodDataResult.getResponse()
+                                                                                     .getError() == null;
+                          }
+                          if (api instanceof AliyunDnsAPI || api instanceof HuaweiDnsAPI) {
+                              complete = result != null;
+                          }
+                          if (api instanceof CloudflareDnsAPI) {
+                              complete = ((CloudflareDataResult) result).getSuccess();
+                          }
+                          return Future.succeededFuture(complete);
+                      });
+        }
+        return Future.failedFuture("No service provider key configured");
     }
 
     private List<DnsRecordVo> handlerGenericsResult(Object obj, String domain) {

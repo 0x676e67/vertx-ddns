@@ -9,6 +9,7 @@ import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Vertx;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -29,12 +30,12 @@ public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult> {
     private final String api = "https://dnspod.tencentcloudapi.com/";
     private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();
 
-    public DnspodDnsAPI(String id, String secret) {
-        this(new BasicCredentials(id, secret));
+    public DnspodDnsAPI(String id, String secret, Vertx vertx) {
+        this(new BasicCredentials(id, secret), vertx);
     }
 
-    public DnspodDnsAPI(DnsApiCredentials dnsApiCredentials) {
-        super(dnsApiCredentials);
+    public DnspodDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+        super(dnsApiCredentials, vertx);
     }
 
     /**

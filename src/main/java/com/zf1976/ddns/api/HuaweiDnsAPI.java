@@ -10,6 +10,7 @@ import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -37,20 +38,21 @@ public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult> {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsAPI]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
-    private final CloseableHttpClient closeableHttpClient = HttpClients.custom().build();
+    private final CloseableHttpClient closeableHttpClient = HttpClients.custom()
+                                                                       .build();
     private final Map<String, String> zoneMap = new HashMap<>();
 
-    public HuaweiDnsAPI(String id, String secret) {
-        this(new BasicCredentials(id, secret));
+    public HuaweiDnsAPI(String id, String secret, Vertx vertx) {
+        this(new BasicCredentials(id, secret), vertx);
     }
 
-    public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials) {
-        super(dnsApiCredentials);
+    public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+        super(dnsApiCredentials, vertx);
         try {
             final var httpRequestBase = HuaweiRequest.newBuilder(dnsApiCredentials)
-                    .setUrl(api)
-                    .setMethod(MethodType.GET)
-                    .build();
+                                                     .setUrl(this.api)
+                                                     .setMethod(MethodType.GET)
+                                                     .build();
             final var contentBytes = this.sendRequest(httpRequestBase);
             final var huaweiDataResult = this.mapperResult(contentBytes, HuaweiDataResult.class);
             final var zones = huaweiDataResult.getZones();
