@@ -34,7 +34,7 @@ import java.util.Map;
  * Create by Ant on 2021/7/17 1:25 上午
  */
 @SuppressWarnings({"SpellCheckingInspection"})
-public class HuaweiDnsAPI extends AbstractDnsAPI<HuaweiDataResult, Object> {
+public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsAPI]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";

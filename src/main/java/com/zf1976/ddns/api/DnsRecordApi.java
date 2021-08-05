@@ -8,7 +8,7 @@ import io.vertx.core.Future;
  * @author ant
  * Create by Ant on 2021/7/29 1:46 上午
  */
-public interface DnsRecordAPI<T> {
+public interface DnsRecordApi<T> {
 
     /**
      * 具体参数作用请看实现类注释

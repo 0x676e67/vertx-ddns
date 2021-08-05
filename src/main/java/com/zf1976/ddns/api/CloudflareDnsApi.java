@@ -34,18 +34,18 @@ import java.util.Map;
  * @author ant
  * Create by Ant on 2021/7/17 1:24 上午
  */
-public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult, Object> {
+public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Object> {
 
-    private final Logger log = LogManager.getLogger("[CloudflareDnsAPI]");
+    private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
     private final String api = "https://api.cloudflare.com/client/v4/zones/";
     private final Map<String, String> zoneMap = new HashMap<>();
 
-    public CloudflareDnsAPI(String token, Vertx vertx) {
+    public CloudflareDnsApi(String token, Vertx vertx) {
         this(new TokenCredentials(token), vertx);
     }
 
 
-    public CloudflareDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public CloudflareDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
         final var request = HttpRequest.newBuilder()
                                        .GET()
@@ -106,23 +106,23 @@ public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult, Objec
     /**
      * 更新记录值
      *
-     * @param identifier    记录标识符
+     * @param id            记录标识符
      * @param domain        域名
      * @param ip            ip值
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult updateDnsRecord(String identifier,
-                                                        String domain,
-                                                        String ip,
-                                                        DNSRecordType dnsRecordType) {
+    public CloudflareDataResult updateDnsRecord(String id,
+                                                String domain,
+                                                String ip,
+                                                DNSRecordType dnsRecordType) {
         this.checkIp(ip);
         this.checkDomain(domain);
         final var queryParam = this.getQueryParam(dnsRecordType);
         queryParam.put("name", domain);
         queryParam.put("content", ip);
         queryParam.put("ttl", "120");
-        final var url = this.toUrl(domain, queryParam, identifier);
+        final var url = this.toUrl(domain, queryParam, id);
         final var httpRequest = this.requestBuild(url, queryParam, MethodType.PUT);
         return this.sendRequest(httpRequest);
     }
@@ -130,12 +130,12 @@ public class CloudflareDnsAPI extends AbstractDnsAPI<CloudflareDataResult, Objec
     /**
      * 删除记录
      *
-     * @param identifier 记录标识符
-     * @param domain     域名/不区分顶级域名、多级域名
+     * @param id     记录标识符
+     * @param domain 域名/不区分顶级域名、多级域名
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult deleteDnsRecord(String identifier, String domain) {
-        final var url = this.toUrl(domain, identifier);
+    public CloudflareDataResult deleteDnsRecord(String id, String domain) {
+        final var url = this.toUrl(domain, id);
         final var httpRequest = this.requestBuild(url, MethodType.DELETE);
         return this.sendRequest(httpRequest);
     }

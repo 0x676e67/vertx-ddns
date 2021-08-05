@@ -22,23 +22,23 @@ import java.util.*;
 public class DnsConfigTimerService {
 
     private final Logger log = LogManager.getLogger("[DnsConfigTimerService]");
-    private final Map<DNSServiceType, DnsRecordAPI> dnsApiMap;
+    private final Map<DNSServiceType, DnsRecordApi> dnsApiMap;
 
     public DnsConfigTimerService(List<DDNSConfig> ddnsConfigList, Vertx vertx) {
         this(new HashMap<>(4));
         for (DDNSConfig config : ddnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
                 switch (config.getDnsServiceType()) {
-                    case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsAPI(config.getId(), config.getSecret(), vertx));
-                    case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsAPI(config.getId(), config.getSecret(), vertx));
+                    case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsApi(config.getId(), config.getSecret(), vertx));
+                    case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsApi(config.getId(), config.getSecret(), vertx));
                     case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsAPI(config.getId(), config.getSecret(), vertx));
-                    case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsAPI(config.getSecret(), vertx));
+                    case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsApi(config.getSecret(), vertx));
                 }
             }
         }
     }
 
-    public DnsConfigTimerService(Map<DNSServiceType, DnsRecordAPI> dnsApiMap) {
+    public DnsConfigTimerService(Map<DNSServiceType, DnsRecordApi> dnsApiMap) {
         this.dnsApiMap = dnsApiMap;
     }
 
@@ -75,15 +75,15 @@ public class DnsConfigTimerService {
         final var api = this.dnsApiMap.get(dnsServiceType);
         if (api != null && api.supports(dnsServiceType)) {
             try {
-                if (api instanceof DnspodDnsAPI) {
+                if (api instanceof DnspodDnsApi) {
                     final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
                     return dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                        .getError() == null;
                 }
-                if (api instanceof AliyunDnsAPI || api instanceof HuaweiDnsAPI) {
+                if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
                     return api.deleteDnsRecord(recordId, domain) != null;
                 }
-                if (api instanceof CloudflareDnsAPI) {
+                if (api instanceof CloudflareDnsApi) {
                     return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
                 }
             } catch (Exception e) {
@@ -101,15 +101,15 @@ public class DnsConfigTimerService {
             return api.asyncDeleteDnsRecord(recordId, domain)
                       .compose(result -> {
                           Boolean complete = Boolean.FALSE;
-                          if (api instanceof DnspodDnsAPI) {
+                          if (api instanceof DnspodDnsApi) {
                               final var dnspodDataResult = (DnspodDataResult) result;
                               complete = dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                                      .getError() == null;
                           }
-                          if (api instanceof AliyunDnsAPI || api instanceof HuaweiDnsAPI) {
+                          if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
                               complete = result != null;
                           }
-                          if (api instanceof CloudflareDnsAPI) {
+                          if (api instanceof CloudflareDnsApi) {
                               complete = ((CloudflareDataResult) result).getSuccess();
                           }
                           return Future.succeededFuture(complete);

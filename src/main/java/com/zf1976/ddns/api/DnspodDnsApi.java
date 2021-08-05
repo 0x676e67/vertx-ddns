@@ -27,16 +27,16 @@ import java.util.Random;
  * Create by Ant on 2021/7/17 1:23 上午
  */
 @SuppressWarnings({"FieldCanBeLocal", "DuplicatedCode", "SameParameterValue"})
-public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult, DnspodDnsAPI.Action> {
+public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.Action> {
 
     private final String api = "https://dnspod.tencentcloudapi.com/";
     private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();
 
-    public DnspodDnsAPI(String id, String secret, Vertx vertx) {
+    public DnspodDnsApi(String id, String secret, Vertx vertx) {
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public DnspodDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public DnspodDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -70,14 +70,14 @@ public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult, DnspodDnsAPI.
     /**
      * 更新记录
      *
-     * @param recordId      记录ID
+     * @param id            记录ID
      * @param domain        域名/区分主域名跟多级域名
      * @param ip            ip
      * @param dnsRecordType 记录类型
      * @return {@link DnspodDataResult}
      */
-    public DnspodDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
-        final var queryParam = this.getQueryParam(recordId, domain, ip, dnsRecordType, Action.UPDATE);
+    public DnspodDataResult updateDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+        final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.UPDATE);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -85,12 +85,12 @@ public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult, DnspodDnsAPI.
     /**
      * 根据主域名、记录ID删除记录
      *
-     * @param recordId 记录id
-     * @param domain   域名/不区分顶级域名、多级域名
+     * @param id     记录id
+     * @param domain 域名/不区分顶级域名、多级域名
      * @return {@link DnspodDataResult}
      */
-    public DnspodDataResult deleteDnsRecord(String recordId, String domain) {
-        final var queryParam = this.getQueryParam(recordId, domain, Action.DELETE);
+    public DnspodDataResult deleteDnsRecord(String id, String domain) {
+        final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
@@ -220,32 +220,11 @@ public class DnspodDnsAPI extends AbstractDnsAPI<DnspodDataResult, DnspodDnsAPI.
         return params;
     }
 
-    protected Map<String, Object> getQueryParam(String recordId, DnspodDnsAPI.Action action) {
-        return this.getQueryParam(recordId, null, null, null, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String recordId, String domain, DnspodDnsAPI.Action action) {
-        return this.getQueryParam(recordId, domain, null, null, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String domain,
-                                                DNSRecordType dnsRecordType,
-                                                DnspodDnsAPI.Action action) {
-        return this.getQueryParam(null, domain, null, dnsRecordType, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String domain,
-                                                String ip,
-                                                DNSRecordType dnsRecordType,
-                                                DnspodDnsAPI.Action action) {
-        return this.getQueryParam(null, domain, ip, dnsRecordType, action);
-    }
-
     protected Map<String, Object> getQueryParam(String recordId,
                                                 String domain,
                                                 String ip,
                                                 DNSRecordType dnsRecordType,
-                                                DnspodDnsAPI.Action action) {
+                                                DnspodDnsApi.Action action) {
         final var queryParam = this.getCommonQueryParam(action);
         final var extractDomain = HttpUtil.extractDomain(domain);
         switch (action) {

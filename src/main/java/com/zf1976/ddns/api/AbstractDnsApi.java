@@ -32,9 +32,9 @@ import java.util.concurrent.Executors;
  * @date 2021/7/18
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractDnsAPI<T, A> implements DnsRecordAPI<T> {
+public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
 
-    protected final Logger log = LogManager.getLogger("[AbstractDnsAPI]");
+    protected final Logger log = LogManager.getLogger("[AbstractDnsApi]");
     protected final DnsApiCredentials dnsApiCredentials;
     protected final HttpClient httpClient = HttpClient.newBuilder()
                                                       .connectTimeout(Duration.ofSeconds(5))
@@ -42,7 +42,7 @@ public abstract class AbstractDnsAPI<T, A> implements DnsRecordAPI<T> {
                                                       .build();
     protected final WebClient webClient;
 
-    protected AbstractDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    protected AbstractDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         vertx = vertx != null ? vertx : Vertx.vertx();
         Assert.notNull(dnsApiCredentials, "Credentials cannot been null!");
         this.dnsApiCredentials = dnsApiCredentials;
@@ -113,12 +113,8 @@ public abstract class AbstractDnsAPI<T, A> implements DnsRecordAPI<T> {
         return urlBuilder.toString();
     }
 
-    protected Map<String, Object> getQueryParam(String recordId, A action) {
-        return this.getQueryParam(recordId, null, null, null, action);
-    }
-
     protected Map<String, Object> getQueryParam(String recordId, String domain, A action) {
-        return this.getQueryParam(recordId, null, null, null, action);
+        return this.getQueryParam(recordId, domain, null, null, action);
     }
 
     protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, A action) {

@@ -33,17 +33,17 @@ import java.util.Map;
  * @date 2021/7/14
  */
 @SuppressWarnings({"FieldCanBeLocal", "SameParameterValue", "DuplicatedCode"})
-public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult, AliyunDnsAPI.Action> {
+public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.Action> {
 
-    private final Logger log = LogManager.getLogger("[AliyunDnsAPI]");
+    private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
     private final String api = "https://alidns.aliyuncs.com/";
     private final RpcAPISignatureComposer rpcSignatureComposer = AliyunSignatureComposer.getComposer();
 
-    public AliyunDnsAPI(String accessKeyId, String accessKeySecret, Vertx vertx) {
+    public AliyunDnsApi(String accessKeyId, String accessKeySecret, Vertx vertx) {
         this(new BasicCredentials(accessKeyId, accessKeySecret), vertx);
     }
 
-    public AliyunDnsAPI(DnsApiCredentials credentials, Vertx vertx) {
+    public AliyunDnsApi(DnsApiCredentials credentials, Vertx vertx) {
         super(credentials, vertx);
     }
 
@@ -78,28 +78,17 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult, AliyunDnsAPI.
     /**
      * 更新记录
      *
-     * @param recordId      记录id
+     * @param id            记录id
      * @param domain        域名/区分主域名、多级域名
      * @param ip            ip值
      * @param dnsRecordType 记录类型
      */
-    public AliyunDataResult updateDnsRecord(String recordId, String domain, String ip, DNSRecordType dnsRecordType) {
-        final var queryParam = this.getQueryParam(recordId, domain, ip, dnsRecordType, Action.UPDATE);
+    public AliyunDataResult updateDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+        final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.UPDATE);
         final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
         return this.sendRequest(httpRequest);
     }
 
-    /**
-     * 删除记录
-     *
-     * @param recordId 记录id
-     * @return {@link AliyunDataResult}
-     */
-    private AliyunDataResult deleteDnsRecord(String recordId) {
-        final var queryParam = this.getQueryParam(recordId, Action.DELETE);
-        final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
-        return this.sendRequest(httpRequest);
-    }
 
     /**
      * 删除域名记录
@@ -110,7 +99,9 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult, AliyunDnsAPI.
      */
     @Override
     public AliyunDataResult deleteDnsRecord(String id, String domain) {
-        return this.deleteDnsRecord(id);
+        final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
+        final var httpRequest = this.requestBuild(MethodType.GET, queryParam);
+        return this.sendRequest(httpRequest);
     }
 
     /**
@@ -252,27 +243,11 @@ public class AliyunDnsAPI extends AbstractDnsAPI<AliyunDataResult, AliyunDnsAPI.
         return queryParam;
     }
 
-    protected Map<String, Object> getQueryParam(String recordId, Action action) {
-        return this.getQueryParam(recordId, null, null, null, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String recordId, String domain, Action action) {
-        return this.getQueryParam(recordId, domain, null, null, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, Action action) {
-        return this.getQueryParam(null, domain, null, dnsRecordType, action);
-    }
-
-    protected Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, Action action) {
-        return this.getQueryParam(null, domain, ip, dnsRecordType, action);
-    }
-
     protected Map<String, Object> getQueryParam(String recordId,
                                                 String domain,
                                                 String ip,
                                                 DNSRecordType dnsRecordType,
-                                                AliyunDnsAPI.Action action) {
+                                                AliyunDnsApi.Action action) {
         final var queryParam = this.getCommonQueryParam(action);
         final var extractDomain = HttpUtil.extractDomain(domain);
         switch (action) {
