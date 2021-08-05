@@ -14,22 +14,18 @@ import java.util.Map;
  */
 public class DnspodSignatureComposer implements RpcAPISignatureComposer {
 
-    private static RpcAPISignatureComposer composer = null;
     private final Signer signer = Signer.getSHA256Signer();
 
     private DnspodSignatureComposer() {
 
     }
 
+    private static final class ComposerHolder {
+        private static final RpcAPISignatureComposer composer = new DnspodSignatureComposer();
+    }
+
     public static RpcAPISignatureComposer getComposer() {
-        if (null == composer) {
-            synchronized (AliyunSignatureComposer.class) {
-                if (null == composer) {
-                    composer = new DnspodSignatureComposer();
-                }
-            }
-        }
-        return composer;
+        return ComposerHolder.composer;
     }
 
     @Override
@@ -57,7 +53,7 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
         // 这里需要给签名做URL编码，否则会连续请求会间歇性认证失败
-        return canonicalizedRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        return canonicalizeRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
     }
 
     @Override

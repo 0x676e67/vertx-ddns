@@ -54,7 +54,7 @@ public interface RpcAPISignatureComposer {
      * @param signature  签名
      * @return {@link String}
      */
-    default String canonicalizedRequestUrl(String urlPattern, Map<String, Object> queries, String signature) {
+    default String canonicalizeRequestUrl(String urlPattern, Map<String, Object> queries, String signature) {
         queries.put("Signature", signature);
         StringBuilder canonicalizeQueryString = new StringBuilder();
         for (String key : queries.keySet()) {

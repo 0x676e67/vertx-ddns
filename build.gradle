@@ -7,7 +7,7 @@ plugins {
 group 'com.zf1976'
 version '1.0'
 
-//指定编译版本
+// Specify compilation version
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
@@ -31,6 +31,7 @@ ext{
 dependencies {
     implementation "io.vertx:vertx-core:${vertxVersion}"
     implementation "io.vertx:vertx-web:${vertxVersion}"
+    implementation "io.vertx:vertx-web-client:${vertxVersion}"
     implementation "io.vertx:vertx-web-templ-thymeleaf:${vertxVersion}"
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.6'
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
@@ -45,7 +46,7 @@ test {
 }
 
 jar {
-    // MANIFEST.MF指定main class
+    // MANIFEST.MF specifies the main class
     manifest {
         attributes(
                 "Manifest-Version": 1.0,
