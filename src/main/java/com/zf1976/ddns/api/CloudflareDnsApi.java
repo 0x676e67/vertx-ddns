@@ -37,7 +37,7 @@ import java.util.Map;
 public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Object> {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
-    private final String api = "https://api.cloudflare.com/client/v4/zones/";
+    private final String api = "https://api.cloudflare.com/client/v4/zones";
     private final Map<String, String> zoneMap = new HashMap<>();
 
     public CloudflareDnsApi(String token, Vertx vertx) {
@@ -92,7 +92,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Objec
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    public CloudflareDataResult createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         this.checkIp(ip);
         final var queryParam = this.getQueryParam(dnsRecordType);
         queryParam.put("name", domain);
@@ -112,7 +112,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Objec
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult updateDnsRecord(String id,
+    public CloudflareDataResult modifyDnsRecord(String id,
                                                 String domain,
                                                 String ip,
                                                 DNSRecordType dnsRecordType) {

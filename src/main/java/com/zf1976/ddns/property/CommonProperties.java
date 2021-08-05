@@ -16,12 +16,26 @@ public class CommonProperties {
      */
     private List<String> ipApiList;
 
+    /**
+     * DNS Server List
+     */
+    private List<String> dnsServerList;
+
     public List<String> getIpApiList() {
         return ipApiList;
     }
 
     public CommonProperties setIpApiList(List<String> ipApiList) {
         this.ipApiList = ipApiList;
+        return this;
+    }
+
+    public List<String> getDnsServerList() {
+        return dnsServerList;
+    }
+
+    public CommonProperties setDnsServerList(List<String> dnsServerList) {
+        this.dnsServerList = dnsServerList;
         return this;
     }
 

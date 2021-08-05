@@ -89,12 +89,12 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
     /**
      * 新增记录
      *
-     * @param domain 域名/不区分顶级域名、多级域名
-     * @param ip ip
+     * @param domain     域名/不区分顶级域名、多级域名
+     * @param ip         ip
      * @param recordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult addDnsRecord(String domain, String ip, DNSRecordType recordType) {
+    public HuaweiDataResult createDnsRecord(String domain, String ip, DNSRecordType recordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", recordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -113,21 +113,21 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
      * 更新记录
      *
      * @param reocrdSetId 记录唯一id
-     * @param domain 域名/不区分顶级域名、多级域名
-     * @param ip ip
-     * @param recordType 记录类型
+     * @param domain      域名/不区分顶级域名、多级域名
+     * @param ip          ip
+     * @param recordType  记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult updateDnsRecord(String reocrdSetId,String domain, String ip, DNSRecordType recordType) {
+    public HuaweiDataResult modifyDnsRecord(String reocrdSetId, String domain, String ip, DNSRecordType recordType) {
         final var jsonObject = new JsonObject().put("type", recordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
         final var httpRequestBase = this.getRequestBuilder()
-                              .setUrl(this.getZoneUrl(domain, reocrdSetId))
-                              .setMethod(MethodType.PUT)
-                              .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                              .setBody(jsonObject.encode())
-                              .build();
+                                        .setUrl(this.getZoneUrl(domain, reocrdSetId))
+                                        .setMethod(MethodType.PUT)
+                                        .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                        .setBody(jsonObject.encode())
+                                        .build();
         final var contentBytes = this.sendRequest(httpRequestBase);
         final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
         return this.resultToList(result);

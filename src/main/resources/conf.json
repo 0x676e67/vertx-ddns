@@ -8,6 +8,13 @@
       "https://api-ipv6.ip.sb/ip",
       "https://v6.myip.la/json",
       "https://speed.neu6.edu.cn/getIP.php"
+    ],
+    "dnsServerList": [
+      "223.5.5.5",
+      "223.6.6.6",
+      "180.76.76.76",
+      "114.114.114.114",
+      "114.114.115.115"
     ]
   },
   "aliyun": {

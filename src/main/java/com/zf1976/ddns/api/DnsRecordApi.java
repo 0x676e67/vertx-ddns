@@ -27,7 +27,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T addDnsRecord(String domain, String ip, DNSRecordType dnsRecordType);
+    T createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -38,7 +38,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T updateDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType);
+    T modifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -69,7 +69,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncAddDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    default Future<T> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         return null;
     }
 
@@ -82,7 +82,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncUpdateDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+    default Future<T> asyncModifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
         return null;
     }
 
