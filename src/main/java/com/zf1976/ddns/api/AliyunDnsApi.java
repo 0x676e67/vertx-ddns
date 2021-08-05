@@ -190,6 +190,11 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
         return DNSServiceType.ALIYUN.check(dnsServiceType);
     }
 
+    @Override
+    public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
+        return Future.succeededFuture(this.supports(dnsServiceType));
+    }
+
     private String requestUrlBuild(Map<String, Object> queryParam) {
         final String api = "https://alidns.aliyuncs.com/";
         return this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", api, MethodType.GET, queryParam);

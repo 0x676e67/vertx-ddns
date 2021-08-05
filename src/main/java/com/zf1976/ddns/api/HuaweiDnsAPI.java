@@ -10,6 +10,7 @@ import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -159,6 +160,17 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
     @Override
     public boolean supports(DNSServiceType dnsServiceType) {
         return DNSServiceType.HUAWEI.check(dnsServiceType);
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param dnsServiceType DNS服务商类型
+     * @return {@link Future <Boolean>}
+     */
+    @Override
+    public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
+        return null;
     }
 
     private HuaweiDataResult resultToList(HuaweiDataResult.Recordsets result) {

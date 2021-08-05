@@ -98,10 +98,18 @@ public interface DnsRecordApi<T> {
     }
 
     /**
-     * 是否支持
+     * 某些使用zone区域划分域名记录的DNS服务商，需强迫使用supports
      *
      * @param dnsServiceType DNS服务商类型
      * @return {@link boolean}
      */
     boolean supports(DNSServiceType dnsServiceType);
+
+    /**
+     * 异步版本
+     *
+     * @param dnsServiceType DNS服务商类型
+     * @return {@link Future<Boolean>}
+     */
+    Future<Boolean> asyncSupports(DNSServiceType dnsServiceType);
 }

@@ -100,7 +100,7 @@ public class DnsConfigTimerService {
         if (api != null && api.supports(dnsServiceType)) {
             return api.asyncDeleteDnsRecord(recordId, domain)
                       .compose(result -> {
-                          Boolean complete = Boolean.FALSE;
+                          boolean complete = Boolean.FALSE;
                           if (api instanceof DnspodDnsApi) {
                               final var dnspodDataResult = (DnspodDataResult) result;
                               complete = dnspodDataResult != null && dnspodDataResult.getResponse()

@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
  * @author mac
  * @date 2021/7/18
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"RedundantCast"})
 public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsApi]");
@@ -88,15 +88,15 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
     }
 
     protected Map<String, Object> getQueryParam(String recordId, String domain, A action) {
-        return this.getQueryParam(recordId, domain, null, null, action);
+        return this.getQueryParam(recordId, domain, (String) null, (DNSRecordType) null, action);
     }
 
     protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, A action) {
-        return this.getQueryParam(null, domain, null, dnsRecordType, action);
+        return this.getQueryParam((String) null, domain, (String) null, dnsRecordType, action);
     }
 
     protected Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, A action) {
-        return this.getQueryParam(null, domain, ip, dnsRecordType, action);
+        return this.getQueryParam((String) null, domain, ip, dnsRecordType, action);
     }
 
     protected Map<String, Object> getQueryParam(String recordId,

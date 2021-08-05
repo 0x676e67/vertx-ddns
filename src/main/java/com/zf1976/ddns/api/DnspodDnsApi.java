@@ -174,6 +174,11 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
         return DNSServiceType.DNSPOD.check(dnsServiceType);
     }
 
+    @Override
+    public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
+        return Future.succeededFuture(this.supports(dnsServiceType));
+    }
+
     private String requestUrlBuild(Map<String, Object> queryParam) {
         final String api = "https://dnspod.tencentcloudapi.com/";
         return this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), api, MethodType.GET, queryParam);
