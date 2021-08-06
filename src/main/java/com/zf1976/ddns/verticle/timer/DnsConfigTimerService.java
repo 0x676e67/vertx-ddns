@@ -1,11 +1,16 @@
 package com.zf1976.ddns.verticle.timer;
 
-import com.zf1976.ddns.api.*;
+import com.zf1976.ddns.api.DnsRecordApi;
 import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.impl.AliyunDnsApi;
+import com.zf1976.ddns.api.impl.CloudflareDnsApi;
+import com.zf1976.ddns.api.impl.DnspodDnsApi;
+import com.zf1976.ddns.api.impl.HuaweiDnsAPI;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -44,14 +49,14 @@ public class DnsConfigTimerService {
 
     public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DNSRecordType dnsRecordType) {
         final var api = this.dnsApiMap.get(dnsServiceType);
-        if (api != null && api.supports(dnsServiceType)) {
-            try {
+        try {
+            if (api != null && api.supports(dnsServiceType)) {
                 final var result = api.findDnsRecordList(domain, dnsRecordType);
                 return this.handlerGenericsResult(result, domain);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e.getCause());
-                throw new RuntimeException(e.getMessage(), e.getCause());
             }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e.getCause());
+            throw new RuntimeException(e.getMessage(), e.getCause());
         }
         throw new RuntimeException("No service provider key configured");
     }
@@ -60,21 +65,28 @@ public class DnsConfigTimerService {
     public Future<List<DnsRecordVo>> asyncFindDnsRecords(DNSServiceType dnsServiceType,
                                                          String domain,
                                                          DNSRecordType dnsRecordType) {
-        final var api = this.dnsApiMap.get(dnsServiceType);
-        if (api != null && api.supports(dnsServiceType)) {
-            return api.asyncFindDnsRecordList(domain, dnsRecordType)
-                      .compose(result -> {
-                          final var dnsRecordVoList = this.handlerGenericsResult(result, domain);
-                          return Future.succeededFuture(dnsRecordVoList);
-                      });
-        }
-        return Future.failedFuture("No service provider key configured");
+        return Future.succeededFuture(this.dnsApiMap.get(dnsServiceType))
+                     .compose(api -> {
+                         if (api == null) {
+                             return Future.failedFuture("No service provider");
+                         }
+                         return api.asyncSupports(dnsServiceType)
+                                   .compose(v -> api.asyncFindDnsRecordList(domain, dnsRecordType));
+                     })
+                     .compose(result -> {
+                         final var dnsRecordVoList = this.handlerGenericsResult(result, domain);
+                         return Future.succeededFuture(dnsRecordVoList);
+                     });
+
     }
 
     public Boolean deleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
-        if (api != null && api.supports(dnsServiceType)) {
-            try {
+        if (api == null) {
+            throw new RuntimeException("No service provider");
+        }
+        try {
+            if (api.supports(dnsServiceType)) {
                 if (api instanceof DnspodDnsApi) {
                     final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
                     return dnspodDataResult != null && dnspodDataResult.getResponse()
@@ -86,36 +98,43 @@ public class DnsConfigTimerService {
                 if (api instanceof CloudflareDnsApi) {
                     return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
                 }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e.getCause());
-                throw new RuntimeException(e);
             }
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new RuntimeException(e);
         }
-        throw new RuntimeException("No service provider key configured");
+        return Boolean.FALSE;
     }
 
     @SuppressWarnings("unchecked")
     public Future<Boolean> asyncDeleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
-        if (api != null && api.supports(dnsServiceType)) {
-            return api.asyncDeleteDnsRecord(recordId, domain)
-                      .compose(result -> {
-                          boolean complete = Boolean.FALSE;
-                          if (api instanceof DnspodDnsApi) {
-                              final var dnspodDataResult = (DnspodDataResult) result;
-                              complete = dnspodDataResult != null && dnspodDataResult.getResponse()
-                                                                                     .getError() == null;
-                          }
-                          if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
-                              complete = result != null;
-                          }
-                          if (api instanceof CloudflareDnsApi) {
-                              complete = ((CloudflareDataResult) result).getSuccess();
-                          }
-                          return Future.succeededFuture(complete);
-                      });
+        return Future.succeededFuture(api)
+                     .compose(checkApi -> {
+                         if (checkApi == null) {
+                             return Future.failedFuture("No service provider");
+                         }
+                         return checkApi.asyncSupports(dnsServiceType)
+                                        .compose(v -> checkApi.asyncDeleteDnsRecord(recordId, domain));
+                     })
+                     .compose(result -> this.futureDeleteResultHandler(api, result));
+
+    }
+
+    private Future<Boolean> futureDeleteResultHandler(DnsRecordApi api, Object result) {
+        boolean complete = Boolean.FALSE;
+        if (api instanceof DnspodDnsApi) {
+            final var dnspodDataResult = (DnspodDataResult) result;
+            complete = dnspodDataResult != null && dnspodDataResult.getResponse()
+                                                                   .getError() == null;
         }
-        return Future.failedFuture("No service provider key configured");
+        if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
+            complete = result != null;
+        }
+        if (api instanceof CloudflareDnsApi) {
+            complete = ((CloudflareDataResult) result).getSuccess();
+        }
+        return Future.succeededFuture(complete);
     }
 
     private List<DnsRecordVo> handlerGenericsResult(Object obj, String domain) {

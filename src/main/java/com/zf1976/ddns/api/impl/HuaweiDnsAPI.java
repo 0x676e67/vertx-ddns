@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api;
+package com.zf1976.ddns.api.impl;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
@@ -15,6 +15,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -25,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 华为DNS
@@ -41,7 +42,7 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
     private final CloseableHttpClient closeableHttpClient = HttpClients.custom()
                                                                        .build();
-    private final Map<String, String> zoneMap = new HashMap<>();
+    private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 
     public HuaweiDnsAPI(String id, String secret, Vertx vertx) {
         this(new BasicCredentials(id, secret), vertx);
@@ -49,6 +50,12 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
 
     public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
+    }
+
+    private void initZoneMap() {
+        if (!CollectionUtil.isEmpty(this.zoneMap)) {
+            return;
+        }
         try {
             final var httpRequestBase = HuaweiRequest.newBuilder(dnsApiCredentials)
                                                      .setUrl(this.api)
@@ -68,6 +75,13 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private Future<Void> asyncInitZoneMap() {
+        if (!CollectionUtil.isEmpty(this.zoneMap)) {
+            return Future.succeededFuture();
+        }
+        return Future.failedFuture(new RuntimeException());
     }
 
     /**
@@ -159,6 +173,7 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
      */
     @Override
     public boolean supports(DNSServiceType dnsServiceType) {
+        this.initZoneMap();
         return DNSServiceType.HUAWEI.check(dnsServiceType);
     }
 
@@ -170,6 +185,21 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
      */
     @Override
     public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
+        return null;
+    }
+
+    @Override
+    HuaweiDataResult resultHandler(String body) {
+        return null;
+    }
+
+    @Override
+    Future<HuaweiDataResult> futureResultHandler(HttpResponse<Buffer> responseFuture) {
+        return null;
+    }
+
+    @Override
+    Future<HttpResponse<Buffer>> sendAsyncRequest(String url, JsonObject data, MethodType methodType) {
         return null;
     }
 

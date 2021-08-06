@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api;
+package com.zf1976.ddns.api.impl;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
@@ -6,14 +6,11 @@ import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
-import com.zf1976.ddns.util.Assert;
-import com.zf1976.ddns.util.CollectionUtil;
-import com.zf1976.ddns.util.HttpUtil;
-import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.DecodeException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.http.HttpHeaders;
@@ -49,8 +46,8 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
         super(dnsApiCredentials, vertx);
     }
 
-    private void initZoneMap() {
-        if ((!CollectionUtil.isEmpty(this.zoneMap))) {
+    private void initZoneMap() throws Exception {
+        if (!CollectionUtil.isEmpty(this.zoneMap)) {
             return;
         }
         final var request = HttpRequest.newBuilder()
@@ -58,16 +55,12 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
                                        .uri(URI.create(api))
                                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + dnsApiCredentials.getAccessKeySecret())
                                        .build();
-        try {
-            final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                             .body();
-            final var result = this.extractZoneResult(body);
-            // 按域名分区映射区域id
-            for (Result res : result) {
-                this.zoneMap.put(res.getName(), res.getId());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getCause());
+        final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                         .body();
+        final var result = this.extractZoneResult(body);
+        // 按域名分区映射区域id
+        for (Result res : result) {
+            this.zoneMap.put(res.getName(), res.getId());
         }
     }
 
@@ -76,7 +69,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
             return Future.succeededFuture();
         }
         return this.webClient.getAbs(this.api)
-                             .putHeader(HttpHeaders.AUTHORIZATION, this.getBearerToken())
+                             .putHeader(HttpHeaders.AUTHORIZATION, this.bearerToken())
                              .send()
                              .compose(v -> {
                                  final var body = v.bodyAsString();
@@ -168,7 +161,10 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      */
     @Override
     public Future<CloudflareDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
-        return super.asyncFindDnsRecordList(domain, dnsRecordType);
+        final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
+        final var url = this.requestUrlBuild(domain, queryParam);
+        return this.sendAsyncRequest(url, MethodType.GET)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -181,7 +177,10 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      */
     @Override
     public Future<CloudflareDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
-        return super.asyncCreateDnsRecord(domain, ip, dnsRecordType);
+        final var data = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
+        final var url = this.requestUrlBuild(domain);
+        return this.sendAsyncRequest(url, JsonObject.mapFrom(data), MethodType.POST)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -198,7 +197,10 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
                                                              String domain,
                                                              String ip,
                                                              DNSRecordType dnsRecordType) {
-        return super.asyncModifyDnsRecord(id, domain, ip, dnsRecordType);
+        final var data = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
+        final var url = this.requestUrlBuild(id, domain);
+        return this.sendAsyncRequest(url, JsonObject.mapFrom(data), MethodType.PUT)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -210,7 +212,9 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      */
     @Override
     public Future<CloudflareDataResult> asyncDeleteDnsRecord(String id, String domain) {
-        return super.asyncDeleteDnsRecord(id, domain);
+        final var url = this.requestUrlBuild(id, domain);
+        return this.sendAsyncRequest(url, MethodType.DELETE)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -220,10 +224,8 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      * @return {@link boolean}
      */
     @Override
-    public boolean supports(DNSServiceType dnsServiceType) {
-        if (CollectionUtil.isEmpty(this.zoneMap)) {
-            this.initZoneMap();
-        }
+    public boolean supports(DNSServiceType dnsServiceType) throws Exception {
+        this.initZoneMap();
         return DNSServiceType.CLOUDFLARE.check(dnsServiceType);
     }
 
@@ -236,10 +238,10 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     @Override
     public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
         return this.asyncInitZoneMap()
-                   .compose(v -> Future.succeededFuture(!CollectionUtil.isEmpty(this.zoneMap) && this.supports(dnsServiceType)));
+                   .compose(v -> Future.succeededFuture(!CollectionUtil.isEmpty(this.zoneMap) && DNSServiceType.CLOUDFLARE.check(dnsServiceType)));
     }
 
-    private String getBearerToken() {
+    private String bearerToken() {
         final var token = super.dnsApiCredentials.getAccessKeySecret();
         return "Bearer " + token;
     }
@@ -248,19 +250,9 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
         try {
             final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                                        .body();
-            final var jsonObject = JsonObject.mapFrom(Json.decodeValue(body));
-            final var resultKey = "result";
-            final var result = jsonObject.getMap()
-                                         .get(resultKey);
-            if (result instanceof ArrayList) {
-                return this.mapperResult(body, CloudflareDataResult.class);
-            } else {
-                jsonObject.put(resultKey, Collections.singletonList(result));
-                return jsonObject.mapTo(CloudflareDataResult.class);
-            }
-        } catch (IOException | InterruptedException | DecodeException e) {
-            log.error(e.getMessage(), e.getCause());
-
+            return this.resultHandler(body);
+        } catch (IOException | InterruptedException e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
         }
         return null;
     }
@@ -278,9 +270,6 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     }
 
     private HttpRequest requestBuild(String id, String domain, Map<String, Object> queryParam, MethodType methodType) {
-        if (CollectionUtil.isEmpty(this.zoneMap)) {
-            this.initZoneMap();
-        }
         final String url;
         HttpRequest httpRequest;
         switch (methodType) {
@@ -289,11 +278,11 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
                 httpRequest = this.request(url, methodType);
             }
             case POST -> {
-                url = this.requestUrlBuild(domain, (Map<String, Object>) null);
+                url = this.requestUrlBuild(domain);
                 httpRequest = this.request(url, JsonObject.mapFrom(queryParam), methodType);
             }
             case PUT -> {
-                url = this.requestUrlBuild(id, domain, (Map<String, Object>) null);
+                url = this.requestUrlBuild(id, domain);
                 httpRequest = this.request(url, JsonObject.mapFrom(queryParam), methodType);
             }
             case DELETE -> {
@@ -312,24 +301,49 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     private HttpRequest request(String url, JsonObject data, MethodType methodType) {
         final var builder = HttpRequest.newBuilder();
         builder.uri(URI.create(url))
-               .header(HttpHeaders.AUTHORIZATION, this.getBearerToken())
-               .header(HttpHeaders.CONTENT_TYPE, "application/json");
+               .header(HttpHeaders.AUTHORIZATION, this.bearerToken());
         switch (methodType) {
-            case GET:
-                builder.GET();
-                break;
-            case PUT:
-                builder.PUT(HttpRequest.BodyPublishers.ofString(data.encode()));
-                break;
-            case POST:
-                builder.POST(HttpRequest.BodyPublishers.ofString(data.encode()));
-                break;
-            case DELETE:
-                builder.DELETE();
-                break;
-            default:
+            case GET -> builder.GET();
+            case PUT -> builder.PUT(HttpRequest.BodyPublishers.ofString(data.encode()))
+                               .header(HttpHeaders.CONTENT_TYPE, "application/json");
+            case POST -> builder.POST(HttpRequest.BodyPublishers.ofString(data.encode()))
+                                .header(HttpHeaders.CONTENT_TYPE, "application/json");
+            case DELETE -> builder.DELETE();
         }
         return builder.build();
+    }
+
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url, MethodType methodType) {
+        return this.sendAsyncRequest(url, null, methodType);
+    }
+
+
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url,
+                                                                                    JsonObject data,
+                                                                                    MethodType methodType) {
+        final Future<io.vertx.ext.web.client.HttpResponse<Buffer>> httpResponseFuture;
+        switch (methodType) {
+            case GET -> httpResponseFuture = this.webClient.getAbs(url)
+                                                           .putHeader(HttpHeaders.AUTHORIZATION, this.bearerToken())
+                                                           .send();
+            case POST -> httpResponseFuture = this.webClient.postAbs(url)
+                                                            .putHeader(HttpHeaders.AUTHORIZATION, this.bearerToken())
+                                                            .sendJsonObject(data);
+            case PUT -> httpResponseFuture = this.webClient.putAbs(url)
+                                                           .putHeader(HttpHeaders.AUTHORIZATION, this.bearerToken())
+                                                           .sendJsonObject(data);
+            case DELETE -> httpResponseFuture = this.webClient.deleteAbs(url)
+                                                              .putHeader(HttpHeaders.AUTHORIZATION, this.bearerToken())
+                                                              .send();
+            default -> {
+                return Future.failedFuture("Unexpected value:" + methodType);
+            }
+        }
+        return httpResponseFuture;
+    }
+
+    private String requestUrlBuild(String domain) {
+        return this.requestUrlBuild(domain, (Map<String, Object>) null);
     }
 
     private String requestUrlBuild(String identifier, String domain) {
@@ -379,6 +393,29 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
         return this.concatUrl(this.api, zoneId, "dns_records");
     }
 
+    protected Future<CloudflareDataResult> futureResultHandler(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
+        final var body = responseFuture.bodyAsString();
+        final var cloudflareDataResult = this.resultHandler(body);
+        return Future.succeededFuture(cloudflareDataResult);
+    }
+
+    protected CloudflareDataResult resultHandler(String body) {
+        try {
+            final var jsonObject = JsonObject.mapFrom(Json.decodeValue(body));
+            final var resultKey = "result";
+            final var result = jsonObject.getMap()
+                                         .get(resultKey);
+            if (result instanceof ArrayList) {
+                return this.mapperResult(body, CloudflareDataResult.class);
+            } else {
+                jsonObject.put(resultKey, Collections.singletonList(result));
+                return jsonObject.mapTo(CloudflareDataResult.class);
+            }
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            return null;
+        }
+    }
 
     private Map<String, Object> getCommonQueryParam(DNSRecordType dnsRecordType) {
         Map<String, Object> queryParam = new HashMap<>();

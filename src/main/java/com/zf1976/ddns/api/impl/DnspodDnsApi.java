@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api;
+package com.zf1976.ddns.api.impl;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
@@ -8,10 +8,12 @@ import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -102,11 +104,10 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
      */
     @Override
     public Future<DnspodDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
-        final var initQueryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
-        final var requestUrl = this.requestUrlBuild(initQueryParam);
-        return this.webClient.getAbs(requestUrl)
-                             .send()
-                             .compose(this::resultFuture);
+        final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
+        final var url = this.requestUrlBuild(queryParam);
+        return this.sendAsyncRequest(url, MethodType.GET)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -119,11 +120,10 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
      */
     @Override
     public Future<DnspodDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
-        final var initQueryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
-        final var requestUrl = this.requestUrlBuild(initQueryParam);
-        return this.webClient.getAbs(requestUrl)
-                             .send()
-                             .compose(this::resultFuture);
+        final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
+        final var url = this.requestUrlBuild(queryParam);
+        return this.sendAsyncRequest(url, MethodType.GET)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -140,11 +140,10 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
                                                          String domain,
                                                          String ip,
                                                          DNSRecordType dnsRecordType) {
-        final var initQueryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
-        final var requestUrl = this.requestUrlBuild(initQueryParam);
-        return this.webClient.getAbs(requestUrl)
-                             .send()
-                             .compose(this::resultFuture);
+        final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
+        final var url = this.requestUrlBuild(queryParam);
+        return this.sendAsyncRequest(url, MethodType.GET)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -156,11 +155,10 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
      */
     @Override
     public Future<DnspodDataResult> asyncDeleteDnsRecord(String id, String domain) {
-        final var initQueryParam = this.getQueryParam(id, domain, Action.DELETE);
-        final var requestUrl = this.requestUrlBuild(initQueryParam);
-        return this.webClient.getAbs(requestUrl)
-                             .send()
-                             .compose(this::resultFuture);
+        final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
+        final var url = this.requestUrlBuild(queryParam);
+        return this.sendAsyncRequest(url, MethodType.GET)
+                   .compose(this::futureResultHandler);
     }
 
     /**
@@ -176,7 +174,36 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
 
     @Override
     public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
-        return Future.succeededFuture(this.supports(dnsServiceType));
+        if (this.supports(dnsServiceType)) {
+            return Future.succeededFuture();
+        }
+        return Future.failedFuture("The DNS service provider is not supported");
+    }
+
+    @Override
+    Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url,
+                                                                          JsonObject data,
+                                                                          MethodType methodType) {
+        return this.webClient.getAbs(url)
+                             .send();
+    }
+
+    @Override
+    DnspodDataResult resultHandler(String body) {
+        return this.mapperResult(body, DnspodDataResult.class);
+    }
+
+    @Override
+    protected Future<DnspodDataResult> futureResultHandler(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
+        final var body = responseFuture.bodyAsString();
+        final DnspodDataResult aliyunDataResult;
+        try {
+            aliyunDataResult = this.mapperResult(body, DnspodDataResult.class);
+            return Future.succeededFuture(aliyunDataResult);
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            return Future.failedFuture(e);
+        }
     }
 
     private String requestUrlBuild(Map<String, Object> queryParam) {
@@ -192,23 +219,14 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
                           .build();
     }
 
-    private Future<DnspodDataResult> resultFuture(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
-        final var body = responseFuture.bodyAsString();
-        final DnspodDataResult aliyunDataResult;
-        try {
-            aliyunDataResult = this.mapperResult(body, DnspodDataResult.class);
-            return Future.succeededFuture(aliyunDataResult);
-        } catch (Exception e) {
-            return Future.failedFuture(e);
-        }
-    }
 
     private DnspodDataResult sendRequest(HttpRequest httpRequest) {
         try {
             final var body = this.httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
                                             .body();
-            return this.mapperResult(body, DnspodDataResult.class);
+            return this.resultHandler(body);
         } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage());
         }
     }

@@ -103,7 +103,7 @@ public interface DnsRecordApi<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link boolean}
      */
-    boolean supports(DNSServiceType dnsServiceType);
+    boolean supports(DNSServiceType dnsServiceType) throws Exception;
 
     /**
      * 异步版本

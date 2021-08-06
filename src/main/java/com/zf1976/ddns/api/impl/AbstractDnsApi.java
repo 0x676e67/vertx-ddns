@@ -1,15 +1,17 @@
-package com.zf1976.ddns.api;
+package com.zf1976.ddns.api.impl;
 
+import com.zf1976.ddns.api.DnsRecordApi;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
-import com.zf1976.ddns.util.Assert;
-import com.zf1976.ddns.util.HttpUtil;
-import com.zf1976.ddns.util.ObjectUtil;
-import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.util.*;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
@@ -66,7 +68,7 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
             }
             return Json.decodeValue(Buffer.buffer(bytes), tClass);
         } catch (DecodeException e) {
-            log.error(e.getMessage(), e.getCause());
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
             return null;
         }
     }
@@ -77,6 +79,16 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
         }
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
     }
+
+    abstract T resultHandler(String body);
+
+    abstract Future<T> futureResultHandler(HttpResponse<Buffer> responseFuture);
+
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url, MethodType methodType) {
+        return this.sendAsyncRequest(url, (JsonObject) null, methodType);
+    }
+
+    abstract Future<HttpResponse<Buffer>> sendAsyncRequest(String url, JsonObject data, MethodType methodType);
 
     protected String concatUrl(String first, String... more) {
         final var urlBuilder = new StringBuilder(first);
