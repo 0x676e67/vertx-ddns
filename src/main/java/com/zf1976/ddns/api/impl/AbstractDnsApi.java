@@ -2,7 +2,7 @@ package com.zf1976.ddns.api.impl;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.DnsRecordApi;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
@@ -11,6 +11,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -82,15 +83,41 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
     }
 
-    abstract T resultHandler(String body);
+    protected T resultHandler(String body) {
+        throw new UnsupportedOperationException();
+    }
 
-    abstract Future<T> futureResultHandler(HttpResponse<Buffer> responseFuture);
+    protected T resultHandler(String body, A a) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url, MethodType methodType) {
+    protected Future<T> futureResultHandler(HttpResponse<Buffer> responseFuture) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Future<T> futureResultHandler(HttpResponse<Buffer> responseFuture, A a) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest, JsonObject data) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url, HttpMethod methodType) {
         return this.sendAsyncRequest(url, (JsonObject) null, methodType);
     }
 
-    abstract Future<HttpResponse<Buffer>> sendAsyncRequest(String url, JsonObject data, MethodType methodType);
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url, JsonObject data, HttpMethod methodType) {
+        throw new UnsupportedOperationException();
+    }
 
     protected String concatUrl(String first, String... more) {
         final var urlBuilder = new StringBuilder(first);

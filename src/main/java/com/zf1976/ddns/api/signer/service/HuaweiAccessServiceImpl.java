@@ -1,7 +1,6 @@
 package com.zf1976.ddns.api.signer.service;
 
-import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.HuaweiSigner;
 import org.apache.http.Header;
@@ -17,6 +16,7 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
+@SuppressWarnings("DuplicatedCode")
 public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase> {
 
     public HuaweiAccessServiceImpl(String ak, String sk) {
@@ -24,10 +24,10 @@ public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static HttpRequestBase createRequest(String url, Header header, String content, MethodType httpMethod) {
+    private static HttpRequestBase createRequest(String url, Header header, String content, HttpMethod httpMethod) {
         HttpRequestBase httpRequest;
         StringEntity entity;
-        if (httpMethod == MethodType.POST) {
+        if (httpMethod == HttpMethod.POST) {
             HttpPost postMethod = new HttpPost(url);
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
@@ -35,28 +35,28 @@ public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase
             }
 
             httpRequest = postMethod;
-        } else if (httpMethod == MethodType.PUT) {
+        } else if (httpMethod == HttpMethod.PUT) {
             HttpPut putMethod = new HttpPut(url);
             httpRequest = putMethod;
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
                 putMethod.setEntity(entity);
             }
-        } else if (httpMethod == MethodType.PATCH) {
+        } else if (httpMethod == HttpMethod.PATCH) {
             HttpPatch patchMethod = new HttpPatch(url);
             httpRequest = patchMethod;
             if (content != null) {
                 entity = new StringEntity(content, StandardCharsets.UTF_8);
                 patchMethod.setEntity(entity);
             }
-        } else if (httpMethod == MethodType.GET) {
+        } else if (httpMethod == HttpMethod.GET) {
             httpRequest = new HttpGet(url);
-        } else if (httpMethod == MethodType.DELETE) {
+        } else if (httpMethod == HttpMethod.DELETE) {
             httpRequest = new HttpDelete(url);
-        } else if (httpMethod == MethodType.OPTIONS) {
+        } else if (httpMethod == HttpMethod.OPTIONS) {
             httpRequest = new HttpOptions(url);
         } else {
-            if (httpMethod != MethodType.HEAD) {
+            if (httpMethod != HttpMethod.HEAD) {
                 throw new RuntimeException("Unknown HTTP method name: " + httpMethod);
             }
 
@@ -70,10 +70,8 @@ public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase
     public HttpRequestBase access(String url,
                                   Map<String, String> headers,
                                   String content,
-                                  MethodType httpMethod) throws Exception {
-        HuaweiRequest request = HuaweiRequest.newBuilder(new BasicCredentials(this.ak, this.sk))
-                                             .setMethod(httpMethod)
-                                             .setUrl(url);
+                                  HttpMethod httpMethod) throws Exception {
+        HuaweiRequest request = this.newRequest(url, httpMethod);
 
         for (String k : headers.keySet()) {
             request.addHeader(k, headers.get(k));
@@ -99,7 +97,7 @@ public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase
                                   Map<String, String> headers,
                                   InputStream content,
                                   Long contentLength,
-                                  MethodType httpMethod) throws Exception {
+                                  HttpMethod httpMethod) throws Exception {
         String body = "";
         if (content != null) {
             ByteArrayOutputStream result = new ByteArrayOutputStream();

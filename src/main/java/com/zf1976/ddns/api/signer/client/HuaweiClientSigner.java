@@ -1,6 +1,7 @@
-package com.zf1976.ddns.api.signer;
+package com.zf1976.ddns.api.signer.client;
 
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.service.HuaweiAccessService;
 import com.zf1976.ddns.api.signer.service.HuaweiAccessServiceImpl;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -11,7 +12,9 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
+@SuppressWarnings("DuplicatedCode")
 public class HuaweiClientSigner {
+
     public HuaweiClientSigner() {
     }
 
@@ -38,7 +41,7 @@ public class HuaweiClientSigner {
                                       Map<String, String> headers,
                                       String putBody) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.PUT;
+        HttpMethod httpMethod = HttpMethod.PUT;
         if (putBody == null) {
             putBody = "";
         }
@@ -52,7 +55,7 @@ public class HuaweiClientSigner {
                                         Map<String, String> headers,
                                         String body) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.PATCH;
+        HttpMethod httpMethod = HttpMethod.PATCH;
         if (body == null) {
             body = "";
         }
@@ -65,7 +68,7 @@ public class HuaweiClientSigner {
                                          String requestUrl,
                                          Map<String, String> headers) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.DELETE;
+        HttpMethod httpMethod = HttpMethod.DELETE;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -74,7 +77,7 @@ public class HuaweiClientSigner {
                                       String requestUrl,
                                       Map<String, String> headers) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.GET;
+        HttpMethod httpMethod = HttpMethod.GET;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -88,7 +91,7 @@ public class HuaweiClientSigner {
             postbody = "";
         }
 
-        MethodType httpMethod = MethodType.POST;
+        HttpMethod httpMethod = HttpMethod.POST;
         return accessService.access(requestUrl, headers, postbody, httpMethod);
     }
 
@@ -97,7 +100,7 @@ public class HuaweiClientSigner {
                                        String requestUrl,
                                        Map<String, String> headers) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.HEAD;
+        HttpMethod httpMethod = HttpMethod.HEAD;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 
@@ -106,7 +109,7 @@ public class HuaweiClientSigner {
                                           String requestUrl,
                                           Map<String, String> headers) throws Exception {
         HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
-        MethodType httpMethod = MethodType.OPTIONS;
+        HttpMethod httpMethod = HttpMethod.OPTIONS;
         return accessService.access(requestUrl, headers, httpMethod);
     }
 

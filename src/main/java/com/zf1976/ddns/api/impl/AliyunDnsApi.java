@@ -3,7 +3,7 @@ package com.zf1976.ddns.api.impl;
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
@@ -15,7 +15,6 @@ import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -114,7 +113,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     public Future<AliyunDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url, MethodType.GET)
+        return this.sendAsyncRequest(url)
                    .compose(this::futureResultHandler);
     }
 
@@ -130,7 +129,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     public Future<AliyunDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url, MethodType.GET)
+        return this.sendAsyncRequest(url)
                    .compose(this::futureResultHandler);
     }
 
@@ -150,7 +149,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
                                                          DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url, MethodType.GET)
+        return this.sendAsyncRequest(url)
                    .compose(this::futureResultHandler);
     }
 
@@ -165,7 +164,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     public Future<AliyunDataResult> asyncDeleteDnsRecord(String id, String domain) {
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url, MethodType.GET)
+        return this.sendAsyncRequest(url, HttpMethod.GET)
                    .compose(this::futureResultHandler);
     }
 
@@ -184,28 +183,26 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
      * @return {@link boolean}
      */
     @Override
-    public boolean supports(DNSServiceType dnsServiceType) {
+    public boolean support(DNSServiceType dnsServiceType) {
         return DNSServiceType.ALIYUN.check(dnsServiceType);
     }
 
     @Override
-    public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
-        if (this.supports(dnsServiceType)) {
-            return Future.succeededFuture();
+    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+        if (this.support(dnsServiceType)) {
+            return Future.succeededFuture(true);
         }
         return Future.failedFuture("The DNS service provider is not supported");
     }
 
     @Override
-    Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url,
-                                                                          JsonObject data,
-                                                                          MethodType methodType) {
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url) {
         return this.webClient.getAbs(url)
                              .send();
     }
 
     @Override
-    AliyunDataResult resultHandler(String body) {
+    protected AliyunDataResult resultHandler(String body) {
         return this.mapperResult(body, AliyunDataResult.class);
     }
 
@@ -233,7 +230,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
 
     private String requestUrlBuild(Map<String, Object> queryParam) {
         final String api = "https://alidns.aliyuncs.com/";
-        return this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", api, MethodType.GET, queryParam);
+        return this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", api, HttpMethod.GET, queryParam);
     }
 
 

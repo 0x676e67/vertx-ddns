@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
 
 import java.net.URLEncoder;
@@ -29,7 +29,7 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
     }
 
     @Override
-    public String composeStringToSign(MethodType method, Map<String, Object> queries) {
+    public String composeStringToSign(HttpMethod method, Map<String, Object> queries) {
         String[] sortedKeys = queries.keySet()
                                      .toArray(new String[]{});
         Arrays.sort(sortedKeys);
@@ -48,7 +48,7 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
     @Override
     public String toSignatureUrl(String accessKeySecret,
                                  String urlPattern,
-                                 MethodType methodType,
+                                 HttpMethod methodType,
                                  Map<String, Object> queries) {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         final var signature = this.signer.signString(stringToSign, accessKeySecret);

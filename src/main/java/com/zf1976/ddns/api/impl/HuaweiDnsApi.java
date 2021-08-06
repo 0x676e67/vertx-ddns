@@ -3,19 +3,18 @@ package com.zf1976.ddns.api.impl;
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
+import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
-import com.zf1976.ddns.util.CollectionUtil;
-import com.zf1976.ddns.util.HttpUtil;
-import com.zf1976.ddns.util.LogUtil;
-import com.zf1976.ddns.util.StringUtil;
+import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -51,6 +50,8 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
 
     public HuaweiDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
+        // init web client
+        AsyncHuaweiClientSinger.initClient(super.webClient);
     }
 
     private void initZoneMap() {
@@ -60,19 +61,10 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
         try {
             final var httpRequestBase = HuaweiRequest.newBuilder(dnsApiCredentials)
                                                      .setUrl(this.api)
-                                                     .setMethod(MethodType.GET)
+                                                     .setMethod(HttpMethod.GET)
                                                      .build();
-            final var contentBytes = this.sendRequest(httpRequestBase);
-            final var huaweiDataResult = this.mapperResult(contentBytes, HuaweiDataResult.class);
-            final var zones = huaweiDataResult.getZones();
-            if (!CollectionUtil.isEmpty(zones)) {
-                // 按域名划分区域
-                for (HuaweiDataResult.Zones zone : zones) {
-                    var domain = zone.getName();
-                    domain = domain.substring(0, domain.length() - 1);
-                    this.zoneMap.put(domain, zone.getId());
-                }
-            }
+            final var huaweiDataResult = this.sendRequest(httpRequestBase, null);
+            this.initZone(huaweiDataResult);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -82,21 +74,45 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
         if (!CollectionUtil.isEmpty(this.zoneMap)) {
             return Future.succeededFuture();
         }
-        return Future.failedFuture(new RuntimeException());
+        final var httpRequest = HuaweiRequest.newBuilder(dnsApiCredentials)
+                                             .setUrl(this.api)
+                                             .setMethod(HttpMethod.GET)
+                                             .buildAsync();
+        return httpRequest.send()
+                          .compose(bufferHttpResponse -> {
+                              final var body = bufferHttpResponse.bodyAsString();
+                              this.initZone(this.mapperResult(body, HuaweiDataResult.class));
+                              return Future.succeededFuture();
+                          });
+    }
+
+    private void initZone(HuaweiDataResult huaweiDataResult) {
+        if (huaweiDataResult == null) {
+            return;
+        }
+        final var zones = huaweiDataResult.getZones();
+        if (!CollectionUtil.isEmpty(zones)) {
+            // 按域名划分区域
+            for (HuaweiDataResult.Zones zone : zones) {
+                var domain = zone.getName();
+                domain = domain.substring(0, domain.length() - 1);
+                this.zoneMap.put(domain, zone.getId());
+            }
+        }
     }
 
     /**
      * 查找记录列表
      *
-     * @param domain     域名/不区分顶级域名、多级域名
-     * @param recordType 记录类型
+     * @param domain        域名/不区分顶级域名、多级域名
+     * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult findDnsRecordList(String domain, DNSRecordType recordType) {
+    public HuaweiDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                  .setUrl(this.getZoneUrl(domain))
-                                                 .addQueryStringParam("type", recordType.name())
-                                                 .setMethod(MethodType.GET)
+                                                 .addQueryStringParam("type", dnsRecordType.name())
+                                                 .setMethod(HttpMethod.GET)
                                                  .build();
         return this.sendRequest(httpRequestBase, Action.DESCRIBE);
     }
@@ -104,18 +120,18 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
     /**
      * 新增记录
      *
-     * @param domain     域名/不区分顶级域名、多级域名
-     * @param ip         ip
-     * @param recordType 记录类型
+     * @param domain        域名/不区分顶级域名、多级域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult createDnsRecord(String domain, String ip, DNSRecordType recordType) {
+    public HuaweiDataResult createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
-                                               .put("type", recordType.name())
+                                               .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                  .setUrl(this.getZoneUrl(domain))
-                                                 .setMethod(MethodType.POST)
+                                                 .setMethod(HttpMethod.POST)
                                                  .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                                                  .setBody(jsonObject.encode())
                                                  .build();
@@ -125,19 +141,19 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
     /**
      * 更新记录
      *
-     * @param reocrdSetId 记录唯一id
-     * @param domain      域名/不区分顶级域名、多级域名
-     * @param ip          ip
-     * @param recordType  记录类型
+     * @param id            记录唯一id
+     * @param domain        域名/不区分顶级域名、多级域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult modifyDnsRecord(String reocrdSetId, String domain, String ip, DNSRecordType recordType) {
-        final var jsonObject = new JsonObject().put("type", recordType.name())
+    public HuaweiDataResult modifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+        final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
-                                                 .setUrl(this.getZoneUrl(domain, reocrdSetId))
-                                                 .setMethod(MethodType.PUT)
+                                                 .setUrl(this.getZoneUrl(domain, id))
+                                                 .setMethod(HttpMethod.PUT)
                                                  .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                                                  .setBody(jsonObject.encode())
                                                  .build();
@@ -147,16 +163,101 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
     /**
      * 删除记录
      *
-     * @param recordSetId 记录唯一id
+     * @param id     记录唯一id
      * @param domain 域名/不区分顶级域名、多级域名
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult deleteDnsRecord(String recordSetId, String domain) {
+    public HuaweiDataResult deleteDnsRecord(String id, String domain) {
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
-                                                 .setUrl(this.getZoneUrl(domain, recordSetId))
-                                                 .setMethod(MethodType.DELETE)
+                                                 .setUrl(this.getZoneUrl(domain, id))
+                                                 .setMethod(HttpMethod.DELETE)
                                                  .build();
         return this.sendRequest(httpRequestBase, Action.DELETE);
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<HuaweiDataResult>}
+     */
+    @Override
+    public Future<HuaweiDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+        final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                  .setUrl(this.getZoneUrl(domain))
+                                                  .addQueryStringParam("type", dnsRecordType.name())
+                                                  .setMethod(HttpMethod.GET)
+                                                  .buildAsync();
+        return this.sendAsyncRequest(asyncHttpRequest)
+                   .compose(v -> this.futureResultHandler(v, Action.DESCRIBE));
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<HuaweiDataResult>}
+     */
+    @Override
+    public Future<HuaweiDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+        final var jsonObject = new JsonObject().put("name", domain + ".")
+                                               .put("type", dnsRecordType.name())
+                                               .put("records", Collections.singletonList(ip));
+        final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                  .setUrl(this.getZoneUrl(domain))
+                                                  .setMethod(HttpMethod.POST)
+                                                  .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                                  .setBody(jsonObject.encode())
+                                                  .buildAsync();
+        return this.sendAsyncRequest(asyncHttpRequest, jsonObject)
+                   .compose(v -> this.futureResultHandler(v, Action.CREATE));
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id            id
+     * @param domain        域名
+     * @param ip            ip
+     * @param dnsRecordType 记录类型
+     * @return {@link Future<HuaweiDataResult>}
+     */
+    @Override
+    public Future<HuaweiDataResult> asyncModifyDnsRecord(String id,
+                                                         String domain,
+                                                         String ip,
+                                                         DNSRecordType dnsRecordType) {
+        final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
+                                               .put("name", domain + ".")
+                                               .put("records", Collections.singletonList(ip));
+        final var aysncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                  .setUrl(this.getZoneUrl(domain, id))
+                                                  .setMethod(HttpMethod.PUT)
+                                                  .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                                  .setBody(jsonObject.encode())
+                                                  .buildAsync();
+        return this.sendAsyncRequest(aysncHttpRequest, jsonObject)
+                   .compose(v -> this.futureResultHandler(v, Action.MODIFY));
+    }
+
+    /**
+     * 异步版本
+     *
+     * @param id     id
+     * @param domain 域名
+     * @return {@link Future<HuaweiDataResult>}
+     */
+    @Override
+    public Future<HuaweiDataResult> asyncDeleteDnsRecord(String id, String domain) {
+        final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                  .setUrl(this.getZoneUrl(domain, id))
+                                                  .setMethod(HttpMethod.DELETE)
+                                                  .buildAsync();
+        return this.sendAsyncRequest(asyncHttpRequest)
+                   .compose(v -> this.futureResultHandler(v, Action.DESCRIBE));
     }
 
     /**
@@ -166,7 +267,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @return {@link boolean}
      */
     @Override
-    public boolean supports(DNSServiceType dnsServiceType) {
+    public boolean support(DNSServiceType dnsServiceType) {
         this.initZoneMap();
         return DNSServiceType.HUAWEI.check(dnsServiceType);
     }
@@ -178,23 +279,57 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @return {@link Future <Boolean>}
      */
     @Override
-    public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+        return this.asyncInitZoneMap()
+                   .compose(v -> Future.succeededFuture(DNSServiceType.HUAWEI.check(dnsServiceType)));
+    }
+
+    private HuaweiDataResult sendRequest(HttpRequestBase httpRequestBase, Action action) {
+        byte[] bytes;
+        try (CloseableHttpResponse httpResponse = this.closeableHttpClient.execute(httpRequestBase)) {
+            if (httpResponse != null) {
+                bytes = this.getContentBytes(httpResponse);
+                if (!ObjectUtil.isEmpty(bytes)) {
+                    return this.resultHandler(new String(bytes), action);
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+        }
         return null;
     }
 
     @Override
-    HuaweiDataResult resultHandler(String body) {
-        return null;
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest) {
+        return this.sendAsyncRequest(httpRequest, null);
     }
 
     @Override
-    Future<HuaweiDataResult> futureResultHandler(HttpResponse<Buffer> responseFuture) {
-        return null;
+    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest, JsonObject data) {
+        if (data != null) {
+            return httpRequest.sendJsonObject(data);
+        }
+        return httpRequest.send();
     }
 
     @Override
-    Future<HttpResponse<Buffer>> sendAsyncRequest(String url, JsonObject data, MethodType methodType) {
-        return null;
+    protected HuaweiDataResult resultHandler(String body, Action action) {
+        final HuaweiDataResult huaweiDataResult;
+        switch (action) {
+            case CREATE, MODIFY, DELETE -> {
+                final var result = this.mapperResult(body, HuaweiDataResult.Recordsets.class);
+                huaweiDataResult = this.resultToList(result);
+            }
+            default -> huaweiDataResult = this.mapperResult(body, HuaweiDataResult.class);
+        }
+        return huaweiDataResult;
+    }
+
+    @Override
+    protected Future<HuaweiDataResult> futureResultHandler(HttpResponse<Buffer> responseFuture, Action action) {
+        final var body = responseFuture.bodyAsString();
+        final var huaweiDataResult = this.resultHandler(body, action);
+        return Future.succeededFuture(huaweiDataResult);
     }
 
     private HuaweiDataResult resultToList(HuaweiDataResult.Recordsets result) {
@@ -202,32 +337,6 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
             return new HuaweiDataResult().setRecordsets(Collections.singletonList(result));
         }
         return null;
-    }
-
-
-    private byte[] sendRequest(HttpRequestBase httpRequestBase) {
-        try (CloseableHttpResponse httpResponse = this.closeableHttpClient.execute(httpRequestBase)) {
-            if (httpResponse != null) {
-                return this.getContentBytes(httpResponse);
-            }
-        } catch (Exception e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-        }
-        return new byte[0];
-    }
-
-    private HuaweiDataResult sendRequest(HttpRequestBase httpRequestBase, Action action) {
-        final var bytes = this.sendRequest(httpRequestBase);
-        final HuaweiDataResult huaweiDataResult;
-        switch (action) {
-            case DESCRIBE -> huaweiDataResult = this.mapperResult(bytes, HuaweiDataResult.class);
-            case CREATE, MODIFY, DELETE -> {
-                final var result = this.mapperResult(bytes, HuaweiDataResult.Recordsets.class);
-                huaweiDataResult = this.resultToList(result);
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + action);
-        }
-        return huaweiDataResult;
     }
 
 
@@ -259,7 +368,6 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
         }
         return this.concatUrl(this.api, zoneId, "recordsets", recordSetId);
     }
-
 
     protected enum Action {
         DESCRIBE,

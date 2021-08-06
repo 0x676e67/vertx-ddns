@@ -103,7 +103,7 @@ public interface DnsRecordApi<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link boolean}
      */
-    boolean supports(DNSServiceType dnsServiceType) throws Exception;
+    boolean support(DNSServiceType dnsServiceType) throws Exception;
 
     /**
      * 异步版本
@@ -111,5 +111,5 @@ public interface DnsRecordApi<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link Future<Boolean>}
      */
-    Future<Boolean> asyncSupports(DNSServiceType dnsServiceType);
+    Future<Boolean> supportAsync(DNSServiceType dnsServiceType);
 }

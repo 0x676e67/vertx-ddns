@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 
 import java.util.Map;
 
@@ -16,7 +16,7 @@ public interface RpcAPISignatureComposer {
      * @param queries 请求参数
      * @return {@link String}
      */
-    String composeStringToSign(MethodType method, Map<String, Object> queries);
+    String composeStringToSign(HttpMethod method, Map<String, Object> queries);
 
     /**
      * 生成经过签名的URL
@@ -29,7 +29,7 @@ public interface RpcAPISignatureComposer {
      */
     String toSignatureUrl(String accessKeySecret,
                           String urlPattern,
-                          MethodType methodType,
+                          HttpMethod methodType,
                           Map<String, Object> queries);
 
     /**

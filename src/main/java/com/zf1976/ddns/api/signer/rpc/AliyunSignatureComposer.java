@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
 import com.zf1976.ddns.util.ApiURLEncoder;
 
@@ -29,7 +29,7 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
     }
 
     @Override
-    public String composeStringToSign(MethodType method, Map<String, Object> queryParamMap) {
+    public String composeStringToSign(HttpMethod method, Map<String, Object> queryParamMap) {
         String[] sortedKeys = queryParamMap.keySet()
                                            .toArray(new String[]{});
         Arrays.sort(sortedKeys);
@@ -37,9 +37,9 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         try {
             for (String key : sortedKeys) {
                 canonicalizeQueryString.append("&")
-                                        .append(ApiURLEncoder.aliyunPercentEncode(key))
-                                        .append("=")
-                                        .append(ApiURLEncoder.aliyunPercentEncode(queryParamMap.get(key)
+                                       .append(ApiURLEncoder.aliyunPercentEncode(key))
+                                       .append("=")
+                                       .append(ApiURLEncoder.aliyunPercentEncode(queryParamMap.get(key)
                                                                                                .toString()));
             }
 
@@ -58,7 +58,7 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
     @Override
     public String toSignatureUrl(String accessKeySecret,
                                  String urlPattern,
-                                 MethodType methodType,
+                                 HttpMethod methodType,
                                  Map<String, Object> queries) {
         // stringToSign
         final var stringToSign = this.composeStringToSign(methodType, queries);

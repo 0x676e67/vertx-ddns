@@ -1,9 +1,13 @@
 package com.zf1976.ddns.api.signer;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
+import com.zf1976.ddns.api.signer.client.HuaweiClientSigner;
 import com.zf1976.ddns.util.ApiURLEncoder;
 import com.zf1976.ddns.util.LogUtil;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpRequest;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.net.URLDecoder;
@@ -59,11 +63,11 @@ public class HuaweiRequest {
         }
     }
 
-    public MethodType getMethod() {
-        return MethodType.valueOf(this.method.toUpperCase());
+    public HttpMethod getMethod() {
+        return HttpMethod.valueOf(this.method.toUpperCase());
     }
 
-    public HuaweiRequest setMethod(MethodType methodType) {
+    public HuaweiRequest setMethod(HttpMethod methodType) {
         final var method = methodType.name();
         if (!method.equalsIgnoreCase("post") && !method.equalsIgnoreCase("put") && !method.equalsIgnoreCase("patch") && !method.equalsIgnoreCase("delete") && !method.equalsIgnoreCase("get") && !method.equalsIgnoreCase("options") && !method.equalsIgnoreCase("head")) {
             throw new RuntimeException("unsupported method");
@@ -219,6 +223,15 @@ public class HuaweiRequest {
     public HttpRequestBase build() {
         try {
             return HuaweiClientSigner.sign(this);
+        } catch (Exception e) {
+            LogUtil.printDebug(e.getMessage(), e.getCause());
+            throw new RuntimeException(e.getMessage(), e.getCause());
+        }
+    }
+
+    public HttpRequest<Buffer> buildAsync() {
+        try {
+            return AsyncHuaweiClientSinger.signAsync(this);
         } catch (Exception e) {
             LogUtil.printDebug(e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage(), e.getCause());

@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.enums;
 
-public enum MethodType {
+public enum HttpMethod {
     GET(false),
     PUT(true),
     POST(true),
@@ -11,7 +11,7 @@ public enum MethodType {
 
     private final boolean hasContent;
 
-    MethodType(boolean hasContent) {
+    HttpMethod(boolean hasContent) {
         this.hasContent = hasContent;
     }
 

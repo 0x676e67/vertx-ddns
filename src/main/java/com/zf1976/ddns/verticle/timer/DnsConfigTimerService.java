@@ -50,7 +50,7 @@ public class DnsConfigTimerService {
     public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DNSRecordType dnsRecordType) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         try {
-            if (api != null && api.supports(dnsServiceType)) {
+            if (api != null && api.support(dnsServiceType)) {
                 final var result = api.findDnsRecordList(domain, dnsRecordType);
                 return this.handlerGenericsResult(result, domain);
             }
@@ -70,7 +70,7 @@ public class DnsConfigTimerService {
                          if (api == null) {
                              return Future.failedFuture("No service provider");
                          }
-                         return api.asyncSupports(dnsServiceType)
+                         return api.supportAsync(dnsServiceType)
                                    .compose(v -> api.asyncFindDnsRecordList(domain, dnsRecordType));
                      })
                      .compose(result -> {
@@ -86,7 +86,7 @@ public class DnsConfigTimerService {
             throw new RuntimeException("No service provider");
         }
         try {
-            if (api.supports(dnsServiceType)) {
+            if (api.support(dnsServiceType)) {
                 if (api instanceof DnspodDnsApi) {
                     final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
                     return dnspodDataResult != null && dnspodDataResult.getResponse()
@@ -114,7 +114,7 @@ public class DnsConfigTimerService {
                          if (checkApi == null) {
                              return Future.failedFuture("No service provider");
                          }
-                         return checkApi.asyncSupports(dnsServiceType)
+                         return checkApi.supportAsync(dnsServiceType)
                                         .compose(v -> checkApi.asyncDeleteDnsRecord(recordId, domain));
                      })
                      .compose(result -> this.futureDeleteResultHandler(api, result));
