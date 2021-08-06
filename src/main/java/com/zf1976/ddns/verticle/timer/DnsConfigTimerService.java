@@ -1,11 +1,11 @@
 package com.zf1976.ddns.verticle.timer;
 
-import com.zf1976.ddns.api.DnsRecordApi;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.impl.AliyunDnsApi;
 import com.zf1976.ddns.api.impl.CloudflareDnsApi;
 import com.zf1976.ddns.api.impl.DnspodDnsApi;
-import com.zf1976.ddns.api.impl.HuaweiDnsAPI;
+import com.zf1976.ddns.api.impl.HuaweiDnsApi;
+import com.zf1976.ddns.api.signer.algorithm.DnsRecordApi;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
@@ -36,7 +36,7 @@ public class DnsConfigTimerService {
                 switch (config.getDnsServiceType()) {
                     case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsApi(config.getId(), config.getSecret(), vertx));
                     case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsApi(config.getId(), config.getSecret(), vertx));
-                    case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsAPI(config.getId(), config.getSecret(), vertx));
+                    case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsApi(config.getId(), config.getSecret(), vertx));
                     case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsApi(config.getSecret(), vertx));
                 }
             }
@@ -92,7 +92,7 @@ public class DnsConfigTimerService {
                     return dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                        .getError() == null;
                 }
-                if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
+                if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsApi) {
                     return api.deleteDnsRecord(recordId, domain) != null;
                 }
                 if (api instanceof CloudflareDnsApi) {
@@ -128,7 +128,7 @@ public class DnsConfigTimerService {
             complete = dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                    .getError() == null;
         }
-        if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsAPI) {
+        if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsApi) {
             complete = result != null;
         }
         if (api instanceof CloudflareDnsApi) {

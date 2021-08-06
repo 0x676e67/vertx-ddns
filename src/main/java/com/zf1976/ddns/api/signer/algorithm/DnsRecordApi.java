@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api;
+package com.zf1976.ddns.api.signer.algorithm;
 
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.verticle.DNSServiceType;
@@ -58,7 +58,7 @@ public interface DnsRecordApi<T> {
      * @return {@link T}
      */
     default Future<T> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -70,7 +70,7 @@ public interface DnsRecordApi<T> {
      * @return {@link Future<T>}
      */
     default Future<T> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -83,7 +83,7 @@ public interface DnsRecordApi<T> {
      * @return {@link Future<T>}
      */
     default Future<T> asyncModifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -94,7 +94,7 @@ public interface DnsRecordApi<T> {
      * @return {@link Future<T>}
      */
     default Future<T> asyncDeleteDnsRecord(String id, String domain) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**

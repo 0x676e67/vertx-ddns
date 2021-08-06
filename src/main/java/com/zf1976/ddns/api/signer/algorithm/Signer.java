@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.signer;
+package com.zf1976.ddns.api.signer.algorithm;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.util.DataTypeConverterUtil;

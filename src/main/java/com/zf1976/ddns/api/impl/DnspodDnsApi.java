@@ -175,7 +175,7 @@ public class DnspodDnsApi extends AbstractDnsApi<DnspodDataResult, DnspodDnsApi.
     @Override
     public Future<Boolean> asyncSupports(DNSServiceType dnsServiceType) {
         if (this.supports(dnsServiceType)) {
-            return Future.succeededFuture();
+            return Future.succeededFuture(true);
         }
         return Future.failedFuture("The DNS service provider is not supported");
     }

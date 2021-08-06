@@ -17,7 +17,7 @@ import java.util.Map;
  * @author mac
  * @date 2021/7/24
  */
-public class HuaweiAccessServiceImpl extends HuaweiAccessService {
+public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase> {
 
     public HuaweiAccessServiceImpl(String ak, String sk) {
         super(ak, sk);

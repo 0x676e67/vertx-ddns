@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signer.rpc;
 
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signer.Signer;
+import com.zf1976.ddns.api.signer.algorithm.Signer;
 import com.zf1976.ddns.util.ApiURLEncoder;
 
 import java.io.UnsupportedEncodingException;

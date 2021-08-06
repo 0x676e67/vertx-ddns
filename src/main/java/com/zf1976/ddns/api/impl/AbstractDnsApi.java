@@ -1,9 +1,9 @@
 package com.zf1976.ddns.api.impl;
 
-import com.zf1976.ddns.api.DnsRecordApi;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DNSRecordType;
 import com.zf1976.ddns.api.enums.MethodType;
+import com.zf1976.ddns.api.signer.algorithm.DnsRecordApi;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -40,7 +40,9 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
     protected final WebClient webClient;
 
     protected AbstractDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
-        vertx = vertx != null ? vertx : Vertx.vertx();
+        if (vertx == null) {
+            throw new RuntimeException("Vert.x instance cannot be null");
+        }
         Assert.notNull(dnsApiCredentials, "Credentials cannot been null!");
         this.dnsApiCredentials = dnsApiCredentials;
         final var webClientOptions = new WebClientOptions()
@@ -117,6 +119,6 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
                                                 DNSRecordType dnsRecordType,
                                                 A action) {
 
-        return null;
+        throw new UnsupportedOperationException();
     }
 }

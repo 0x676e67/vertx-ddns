@@ -8,6 +8,7 @@ import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.util.StringUtil;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
@@ -36,19 +37,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/7/17 1:25 上午
  */
 @SuppressWarnings({"SpellCheckingInspection"})
-public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
+public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.Action> {
 
-    private final Logger log = LogManager.getLogger("[HuaweiDnsAPI]");
+    private final Logger log = LogManager.getLogger("[HuaweiDnsApi]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
     private final CloseableHttpClient closeableHttpClient = HttpClients.custom()
                                                                        .build();
     private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 
-    public HuaweiDnsAPI(String id, String secret, Vertx vertx) {
+    public HuaweiDnsApi(String id, String secret, Vertx vertx) {
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public HuaweiDnsAPI(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public HuaweiDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -92,13 +93,12 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
      * @return {@link HuaweiDataResult}
      */
     public HuaweiDataResult findDnsRecordList(String domain, DNSRecordType recordType) {
-        final var httpRequestBase = this.getRequestBuilder()
-                                        .setUrl(this.getZoneUrl(domain))
-                                        .addQueryStringParam("type", recordType.name())
-                                        .setMethod(MethodType.GET)
-                                        .build();
-        byte[] contentBytes = this.sendRequest(httpRequestBase);
-        return this.mapperResult(contentBytes, HuaweiDataResult.class);
+        final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                 .setUrl(this.getZoneUrl(domain))
+                                                 .addQueryStringParam("type", recordType.name())
+                                                 .setMethod(MethodType.GET)
+                                                 .build();
+        return this.sendRequest(httpRequestBase, Action.DESCRIBE);
     }
 
     /**
@@ -113,15 +113,13 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", recordType.name())
                                                .put("records", Collections.singletonList(ip));
-        final var httpRequestBase = this.getRequestBuilder()
-                                        .setUrl(this.getZoneUrl(domain))
-                                        .setMethod(MethodType.POST)
-                                        .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                                        .setBody(jsonObject.encode())
-                                        .build();
-        final var contentBytes = this.sendRequest(httpRequestBase);
-        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
-        return this.resultToList(result);
+        final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                 .setUrl(this.getZoneUrl(domain))
+                                                 .setMethod(MethodType.POST)
+                                                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                                 .setBody(jsonObject.encode())
+                                                 .build();
+        return this.sendRequest(httpRequestBase, Action.CREATE);
     }
 
     /**
@@ -137,15 +135,13 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
         final var jsonObject = new JsonObject().put("type", recordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
-        final var httpRequestBase = this.getRequestBuilder()
-                                        .setUrl(this.getZoneUrl(domain, reocrdSetId))
-                                        .setMethod(MethodType.PUT)
-                                        .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                                        .setBody(jsonObject.encode())
-                                        .build();
-        final var contentBytes = this.sendRequest(httpRequestBase);
-        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
-        return this.resultToList(result);
+        final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                 .setUrl(this.getZoneUrl(domain, reocrdSetId))
+                                                 .setMethod(MethodType.PUT)
+                                                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                                 .setBody(jsonObject.encode())
+                                                 .build();
+        return this.sendRequest(httpRequestBase, Action.MODIFY);
     }
 
     /**
@@ -156,13 +152,11 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
      * @return {@link HuaweiDataResult}
      */
     public HuaweiDataResult deleteDnsRecord(String recordSetId, String domain) {
-        final var httpRequestBase = this.getRequestBuilder()
-                                        .setUrl(this.getZoneUrl(domain, recordSetId))
-                                        .setMethod(MethodType.DELETE)
-                                        .build();
-        final var contentBytes = this.sendRequest(httpRequestBase);
-        final var result = this.mapperResult(contentBytes, HuaweiDataResult.Recordsets.class);
-        return this.resultToList(result);
+        final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
+                                                 .setUrl(this.getZoneUrl(domain, recordSetId))
+                                                 .setMethod(MethodType.DELETE)
+                                                 .build();
+        return this.sendRequest(httpRequestBase, Action.DELETE);
     }
 
     /**
@@ -210,36 +204,44 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
         return null;
     }
 
+
     private byte[] sendRequest(HttpRequestBase httpRequestBase) {
-        try (CloseableHttpResponse httpResponse = this.executeRequest(httpRequestBase)) {
+        try (CloseableHttpResponse httpResponse = this.closeableHttpClient.execute(httpRequestBase)) {
             if (httpResponse != null) {
                 return this.getContentBytes(httpResponse);
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e.getCause());
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
         }
-        return null;
+        return new byte[0];
     }
 
-    private CloseableHttpResponse executeRequest(HttpRequestBase httpRequestBase) {
-        try {
-            return this.closeableHttpClient.execute(httpRequestBase);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e.getCause());
+    private HuaweiDataResult sendRequest(HttpRequestBase httpRequestBase, Action action) {
+        final var bytes = this.sendRequest(httpRequestBase);
+        final HuaweiDataResult huaweiDataResult;
+        switch (action) {
+            case DESCRIBE -> huaweiDataResult = this.mapperResult(bytes, HuaweiDataResult.class);
+            case CREATE, MODIFY, DELETE -> {
+                final var result = this.mapperResult(bytes, HuaweiDataResult.Recordsets.class);
+                huaweiDataResult = this.resultToList(result);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + action);
         }
-        return null;
+        return huaweiDataResult;
     }
+
 
     private byte[] getContentBytes(CloseableHttpResponse httpResponse) throws IOException {
-        final var content = httpResponse.getEntity().getContent();
+        final var content = httpResponse.getEntity()
+                                        .getContent();
         final var statusCode = httpResponse.getStatusLine()
                                            .getStatusCode();
-        if (statusCode == 200 || statusCode ==202 || statusCode == 204) {
+        if (statusCode == 200 || statusCode == 202 || statusCode == 204) {
             return content.readAllBytes();
         } else {
-            log.warn(Json.decodeValue(Buffer.buffer(content.readAllBytes())));
+            LogUtil.printDebug(log, Json.decodeValue(Buffer.buffer(content.readAllBytes())));
         }
-        return null;
+        return new byte[0];
     }
 
     private String getZoneUrl(String domain) {
@@ -258,7 +260,11 @@ public class HuaweiDnsAPI extends AbstractDnsApi<HuaweiDataResult, Object> {
         return this.concatUrl(this.api, zoneId, "recordsets", recordSetId);
     }
 
-    private HuaweiRequest getRequestBuilder() {
-        return HuaweiRequest.newBuilder(this.dnsApiCredentials);
+
+    protected enum Action {
+        DESCRIBE,
+        CREATE,
+        DELETE,
+        MODIFY
     }
 }

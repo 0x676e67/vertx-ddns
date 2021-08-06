@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signer.rpc;
 
 import com.zf1976.ddns.api.enums.MethodType;
-import com.zf1976.ddns.api.signer.Signer;
+import com.zf1976.ddns.api.signer.algorithm.Signer;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

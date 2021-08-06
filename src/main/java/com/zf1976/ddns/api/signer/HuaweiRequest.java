@@ -3,6 +3,7 @@ package com.zf1976.ddns.api.signer;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.MethodType;
 import com.zf1976.ddns.util.ApiURLEncoder;
+import com.zf1976.ddns.util.LogUtil;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.net.URLDecoder;
@@ -219,6 +220,7 @@ public class HuaweiRequest {
         try {
             return HuaweiClientSigner.sign(this);
         } catch (Exception e) {
+            LogUtil.printDebug(e.getMessage(), e.getCause());
             throw new RuntimeException(e.getMessage(), e.getCause());
         }
     }

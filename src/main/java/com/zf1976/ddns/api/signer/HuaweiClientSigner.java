@@ -37,7 +37,7 @@ public class HuaweiClientSigner {
                                       String requestUrl,
                                       Map<String, String> headers,
                                       String putBody) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.PUT;
         if (putBody == null) {
             putBody = "";
@@ -51,7 +51,7 @@ public class HuaweiClientSigner {
                                         String requestUrl,
                                         Map<String, String> headers,
                                         String body) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.PATCH;
         if (body == null) {
             body = "";
@@ -64,7 +64,7 @@ public class HuaweiClientSigner {
                                          String sk,
                                          String requestUrl,
                                          Map<String, String> headers) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.DELETE;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -73,7 +73,7 @@ public class HuaweiClientSigner {
                                       String sk,
                                       String requestUrl,
                                       Map<String, String> headers) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.GET;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -83,7 +83,7 @@ public class HuaweiClientSigner {
                                        String requestUrl,
                                        Map<String, String> headers,
                                        String postbody) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         if (postbody == null) {
             postbody = "";
         }
@@ -96,7 +96,7 @@ public class HuaweiClientSigner {
                                        String sk,
                                        String requestUrl,
                                        Map<String, String> headers) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.HEAD;
         return accessService.access(requestUrl, headers, httpMethod);
     }
@@ -105,7 +105,7 @@ public class HuaweiClientSigner {
                                           String sk,
                                           String requestUrl,
                                           Map<String, String> headers) throws Exception {
-        HuaweiAccessService accessService = new HuaweiAccessServiceImpl(ak, sk);
+        HuaweiAccessService<HttpRequestBase> accessService = new HuaweiAccessServiceImpl(ak, sk);
         MethodType httpMethod = MethodType.OPTIONS;
         return accessService.access(requestUrl, headers, httpMethod);
     }
