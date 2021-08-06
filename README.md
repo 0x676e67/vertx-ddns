@@ -10,7 +10,7 @@
 
 <!-- TOC -->
 
-- [ddns-vertx](#ddns-vertx)
+- [vertx-ddns](#vertx-ddns)
   - [功能](#功能)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#docker中使用)
