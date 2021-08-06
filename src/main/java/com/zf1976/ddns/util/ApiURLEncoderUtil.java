@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * @author mac
  * @date 2021/7/14
  */
-public class ApiURLEncoder {
+public class ApiURLEncoderUtil {
     public final static String URL_ENCODING = "UTF-8";
     private static final Pattern ENCODED_CHARACTERS_PATTERN;
 

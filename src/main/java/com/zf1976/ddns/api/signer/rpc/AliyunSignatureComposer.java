@@ -2,7 +2,7 @@ package com.zf1976.ddns.api.signer.rpc;
 
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
-import com.zf1976.ddns.util.ApiURLEncoder;
+import com.zf1976.ddns.util.ApiURLEncoderUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -37,17 +37,17 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         try {
             for (String key : sortedKeys) {
                 canonicalizeQueryString.append("&")
-                                       .append(ApiURLEncoder.aliyunPercentEncode(key))
+                                       .append(ApiURLEncoderUtil.aliyunPercentEncode(key))
                                        .append("=")
-                                       .append(ApiURLEncoder.aliyunPercentEncode(queryParamMap.get(key)
-                                                                                               .toString()));
+                                       .append(ApiURLEncoderUtil.aliyunPercentEncode(queryParamMap.get(key)
+                                                                                                  .toString()));
             }
 
             return method.name() +
                     SEPARATOR +
-                    ApiURLEncoder.aliyunPercentEncode("/") +
+                    ApiURLEncoderUtil.aliyunPercentEncode("/") +
                     SEPARATOR +
-                    ApiURLEncoder.aliyunPercentEncode(canonicalizeQueryString.substring(1));
+                    ApiURLEncoderUtil.aliyunPercentEncode(canonicalizeQueryString.substring(1));
         } catch (UnsupportedEncodingException exp) {
             throw new RuntimeException("UTF-8 encoding is not supported.");
         }

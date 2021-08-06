@@ -6,8 +6,8 @@ import java.util.Locale;
  * @author mac
  * @date 2021/7/24
  */
-public class BinaryUtils {
-    public BinaryUtils() {
+public class BinaryUtil {
+    public BinaryUtil() {
     }
 
     public static String toHex(byte[] data) {

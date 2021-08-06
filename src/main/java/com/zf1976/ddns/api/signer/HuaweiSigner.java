@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signer;
 
-import com.zf1976.ddns.util.ApiURLEncoder;
-import com.zf1976.ddns.util.BinaryUtils;
+import com.zf1976.ddns.util.ApiURLEncoderUtil;
+import com.zf1976.ddns.util.BinaryUtil;
 import org.apache.http.HttpHeaders;
 
 import javax.crypto.Mac;
@@ -59,7 +59,7 @@ public class HuaweiSigner {
                 return resourcePath;
             }
 
-            String value = ApiURLEncoder.huaweiPercentEncode(resourcePath, true);
+            String value = ApiURLEncoderUtil.huaweiPercentEncode(resourcePath, true);
             if (!value.startsWith("/")) {
                 value = "/".concat(value);
             }
@@ -78,12 +78,12 @@ public class HuaweiSigner {
         SortedMap<String, List<String>> sorted = new TreeMap<>();
 
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
-            String encodedParamName = ApiURLEncoder.huaweiPercentEncode(entry.getKey(), false);
+            String encodedParamName = ApiURLEncoderUtil.huaweiPercentEncode(entry.getKey(), false);
             List<String> paramValues = entry.getValue();
             List<String> encodedValues = new ArrayList<>(paramValues.size());
 
             for (String value : paramValues) {
-                encodedValues.add(ApiURLEncoder.huaweiPercentEncode(value, false));
+                encodedValues.add(ApiURLEncoderUtil.huaweiPercentEncode(value, false));
             }
 
             Collections.sort(encodedValues);
@@ -127,7 +127,7 @@ public class HuaweiSigner {
                 "\n" +
                 singerDate +
                 "\n" +
-                BinaryUtils.toHex(this.hash(canonicalRequest));
+                BinaryUtil.toHex(this.hash(canonicalRequest));
     }
 
     private byte[] deriveSigningKey(String secret) {
@@ -151,7 +151,7 @@ public class HuaweiSigner {
     private String buildAuthorizationHeader(String[] signedHeaders, byte[] signature, String accessKey) {
         String credential = "Access=" + accessKey;
         String signerHeaders = "SignedHeaders=" + this.getSignedHeadersString(signedHeaders);
-        String signatureHeader = "Signature=" + BinaryUtils.toHex(signature);
+        String signatureHeader = "Signature=" + BinaryUtil.toHex(signature);
         return "SDK-HMAC-SHA256" +
                 " " +
                 credential +
@@ -261,7 +261,7 @@ public class HuaweiSigner {
 
     protected String calculateContentHash(HuaweiRequest request) {
         String content_sha256 = this.getHeader(request, "x-sdk-content-sha256");
-        return content_sha256 != null ? content_sha256 : BinaryUtils.toHex(this.hash(request.getBody()));
+        return content_sha256 != null ? content_sha256 : BinaryUtil.toHex(this.hash(request.getBody()));
     }
 
     public byte[] hash(String text) {
