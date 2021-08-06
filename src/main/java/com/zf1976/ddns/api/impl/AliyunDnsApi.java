@@ -113,7 +113,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     public Future<AliyunDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url)
+        return this.sendAsyncRequest(url, HttpMethod.GET)
                    .compose(this::futureResultHandler);
     }
 
@@ -129,7 +129,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     public Future<AliyunDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url)
+        return this.sendAsyncRequest(url, HttpMethod.GET)
                    .compose(this::futureResultHandler);
     }
 
@@ -149,7 +149,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
                                                          DNSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendAsyncRequest(url)
+        return this.sendAsyncRequest(url, HttpMethod.GET)
                    .compose(this::futureResultHandler);
     }
 
@@ -196,7 +196,7 @@ public class AliyunDnsApi extends AbstractDnsApi<AliyunDataResult, AliyunDnsApi.
     }
 
     @Override
-    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url) {
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url, HttpMethod httpMethod) {
         return this.webClient.getAbs(url)
                              .send();
     }

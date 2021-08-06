@@ -107,9 +107,6 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
         throw new UnsupportedOperationException();
     }
 
-    protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url) {
-        throw new UnsupportedOperationException();
-    }
 
     protected Future<HttpResponse<Buffer>> sendAsyncRequest(String url, HttpMethod methodType) {
         return this.sendAsyncRequest(url, (JsonObject) null, methodType);
