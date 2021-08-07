@@ -16,6 +16,7 @@ import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -27,6 +28,7 @@ import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.sound.midi.Track;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -339,10 +341,17 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         }
         final var failure = routingContext.failure();
         final var result = DataResult.fail(errorCode, failure.getCause() != null? failure.getCause().getMessage() : failure.getMessage());
-        this.setCommonHeader(routingContext.response()
-                                           .setStatusCode(errorCode)
-                                           .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
-            .end(Json.encodePrettily(result));
+        try {
+            this.setCommonHeader(routingContext.response()
+                                               .setStatusCode(errorCode)
+                                               .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
+                .end(Json.encodePrettily(result));
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            routingContext.response()
+                          .setStatusCode(500)
+                          .end();
+        }
     }
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {

@@ -46,13 +46,16 @@ public class ApiVerticle extends TemplateVerticle {
                                                  // Same site strategy using strict mode
                                                  .setCookieSameSite(CookieSameSite.STRICT);
         final var formLoginHandler = FormLoginHandler.create(new UsernamePasswordAuthenticationProvider(this))
-                                                     .setDirectLoggedInOKURL(ApiConstants.INDEX_PATH);
+                                                     .setDirectLoggedInOKURL(ApiConstants.INDEX_PATH)
+                                                     .setReturnURLParam(ApiConstants.INDEX_PATH);
         // All routes use session
         router.route()
               .handler(this::notAllowWanAccessHandler)
               .handler(sessionHandler)
               .failureHandler(this::routeErrorHandler);
-        final var redirectAuthHandler = RedirectAuthHandler.create(new RedirectAuthenticationProvider(), ApiConstants.LOGIN_PATH);
+        final var redirectAuthHandler = RedirectAuthHandler.create(new RedirectAuthenticationProvider(),
+                ApiConstants.LOGIN_PATH,
+                ApiConstants.INDEX_PATH);
         // Redirect authentication
         router.route("/api/*")
               .handler(redirectAuthHandler);
