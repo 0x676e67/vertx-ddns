@@ -243,7 +243,7 @@
             <div class="card-body">
 
                 <div class="input-group mb-1" style="margin-top: 5px;width: auto">
-                    <span class="input-group-text" id="basic-addon8">domain</span>
+                    <span class="input-group-text" id="basic-addon8">域名解析记录查询</span>
                     <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
                     <div class="input-group-append">
                         <button class="btn btn-primary submit_btn" onclick="clearTable()">清空</button>
@@ -269,45 +269,44 @@
                 <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeDDNSConfig()">保存配置</button>
             </div>
           </div>
+
+          <div class="card" style="margin-top: 50px">
+              <div class="card-header">安全配置</div>
+              <div class="card-body">
+                  <form>
+                      <fieldset class="row mb-1">
+                          <legend class="col-form-label col-sm-2 pt-0">禁止公网访问</legend>
+                          <div class="col-sm-10">
+                              <div class="form-check form-check-inline">
+                                  <label for="ipv4Enable"></label>
+                                  <input class="form-check-input" type="checkbox" checked id="notAllowWanAccess" >
+                                  <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可禁止从公网访问本页面</small>
+                              </div>
+                          </div>
+                      </fieldset>
+                      <fieldset class="row mb" style="margin-top: 15px">
+                          <legend class="col-form-label col-sm-2 pt-0">登录用户名</legend>
+                          <div class="col-sm-10">
+                              <input class="form-control" name="username" id="username" style="width: 90%" aria-describedby="Username_help">
+                              <small id="Username_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                          </div>
+                      </fieldset>
+                      <fieldset class="row mb">
+                          <legend class="col-form-label col-sm-2 pt-0">登录密码</legend>
+                          <div class="col-sm-10">
+                              <input class="form-control" type="password" style="width: 90%" name="password" id="password" aria-describedby="password_help">
+                              <small id="password_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                          </div>
+                      </fieldset>
+                  </form>
+              </div>
+              <div class="card-footer">
+                  <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeSecureConfig()">保存</button>
+              </div>
+          </div>
       </div>
         <div class="col-md-3">
             <p class="font-weight-light text-break" style="margin-top: auto;font-size: 13px;" id="logs"></p>
-        </div>
-      <div class="col-md-6 offset-md-3" style="margin-top: 50px">
-            <div class="card">
-                <div class="card-header">安全配置</div>
-                <div class="card-body">
-                    <form>
-                        <fieldset class="row mb-1">
-                            <legend class="col-form-label col-sm-2 pt-0">禁止公网访问</legend>
-                            <div class="col-sm-10">
-                                <div class="form-check form-check-inline">
-                                    <label for="ipv4Enable"></label>
-                                    <input class="form-check-input" type="checkbox" checked id="notAllowWanAccess" >
-                                    <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可禁止从公网访问本页面</small>
-                                </div>
-                            </div>
-                        </fieldset>
-                        <fieldset class="row mb" style="margin-top: 15px">
-                            <legend class="col-form-label col-sm-2 pt-0">登录用户名</legend>
-                            <div class="col-sm-10">
-                                <input class="form-control" name="username" id="username" style="width: 90%" aria-describedby="Username_help">
-                                <small id="Username_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
-                            </div>
-                        </fieldset>
-                        <fieldset class="row mb">
-                            <legend class="col-form-label col-sm-2 pt-0">登录密码</legend>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="password" style="width: 90%" name="password" id="password" aria-describedby="password_help">
-                                <small id="password_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
-                            </div>
-                        </fieldset>
-                    </form>
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeSecureConfig()">保存</button>
-                </div>
-            </div>
         </div>
 
     </div>
