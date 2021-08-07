@@ -1,8 +1,36 @@
 //file:noinspection GroovyAssignabilityCheck
+
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'org.mikeneck.graalvm-native-image' version 'v1.4.0'
 }
+
+import org.mikeneck.graalvm.BuildTypeSelector
+
+
+nativeImage {
+    graalVmHome = "/Users/ant/Desktop/graalvm-ce-java16-21.1.0/Contents/Home"
+    buildType { BuildTypeSelector build ->
+        build.executable {
+            main = 'com.zf1976.ddns.Application'
+        }
+    }
+    executableName = 'my-native-application'
+    outputDirectory = file("$buildDir/bin")
+    arguments {
+        add '--no-fallback'
+        add '--enable-all-security-services'
+        add '--initialize-at-run-time=com.example.runtime'
+        add '--report-unsupported-elements-at-runtime'
+        add  '-H:IncludeResources=.*.xml|.*.conf'
+        add '-H:+ReportExceptionStackTraces'
+        add '-H:+ReportUnsupportedElementsAtRuntime'
+//        add '--initialize-at-build-time=org.apache.logging.log4j.core.config.properties.PropertiesConfiguration,org.apache.logging.log4j.LogManager,org.apache.logging.log4j.util.StackLocatorUtil,io.netty.util.internal.logging.Log4J2Logger,org.apache.logging.log4j.status.StatusLogger,org.apache.logging.log4j.util.ProviderUtil,org.apache.logging.log4j.util.StackLocator,org.apache.logging.log4j.util.LoaderUtil,org.apache.logging.log4j.message.ReusableMessageFactory,org.apache.logging.log4j.spi.AbstractLogger,org.apache.logging.log4j.spi.ExtendedLoggerWrapper,org.apache.logging.log4j.util.PropertiesUtil,org.slf4j.LoggerFactory,org.apache.logging.log4j.Level,org.apache.logging.log4j.spi.Provider,org.apache.logging.log4j.util.Constants,org.apache.logging.log4j.spi.LoggerRegistry,org.apache.logging.log4j.util.Strings,org.apache.logging.log4j.ThreadContext,rg.apache.logging.log4j.core.LoggerContext,org.apache.logging.log4j.core.config.LoggerConfig,org.apache.logging.log4j.message.ParameterFormatter'
+        add '--verbose'
+    }
+}
+
 
 group 'com.zf1976'
 version '1.0'
@@ -22,9 +50,9 @@ repositories {
 }
 
 ext{
-    jacksonVersion = "2.10.3"
+    jacksonVersion = '2.12.4'
     vertxVersion = "4.1.2"
-    junitVersion = "5.7.0"
+    junitVersion = '5.7.2'
     log4jVersion = "2.14.1"
 }
 
@@ -41,9 +69,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 }
 
-test {
-    useJUnitPlatform()
-}
 
 jar {
     // MANIFEST.MF specifies the main class
