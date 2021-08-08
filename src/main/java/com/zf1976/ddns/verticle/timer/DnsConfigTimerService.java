@@ -24,27 +24,12 @@ import java.util.*;
  * Create by Ant on 2021/7/28 10:01 下午
  */
 @SuppressWarnings("rawtypes")
-public class DnsConfigTimerService {
+public class DnsConfigTimerService extends AbstractDnsRecordHandler{
 
     private final Logger log = LogManager.getLogger("[DnsConfigTimerService]");
-    private final Map<DNSServiceType, DnsRecordApi> dnsApiMap;
 
     public DnsConfigTimerService(List<DDNSConfig> ddnsConfigList, Vertx vertx) {
-        this(new HashMap<>(4));
-        for (DDNSConfig config : ddnsConfigList) {
-            if (config.getId() != null && config.getSecret() != null) {
-                switch (config.getDnsServiceType()) {
-                    case ALIYUN -> dnsApiMap.put(DNSServiceType.ALIYUN, new AliyunDnsApi(config.getId(), config.getSecret(), vertx));
-                    case DNSPOD -> dnsApiMap.put(DNSServiceType.DNSPOD, new DnspodDnsApi(config.getId(), config.getSecret(), vertx));
-                    case HUAWEI -> dnsApiMap.put(DNSServiceType.HUAWEI, new HuaweiDnsApi(config.getId(), config.getSecret(), vertx));
-                    case CLOUDFLARE -> dnsApiMap.put(DNSServiceType.CLOUDFLARE, new CloudflareDnsApi(config.getSecret(), vertx));
-                }
-            }
-        }
-    }
-
-    public DnsConfigTimerService(Map<DNSServiceType, DnsRecordApi> dnsApiMap) {
-        this.dnsApiMap = dnsApiMap;
+        super(ddnsConfigList, vertx);
     }
 
     public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DNSRecordType dnsRecordType) {
