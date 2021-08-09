@@ -3,6 +3,7 @@ package com.zf1976.ddns.verticle.auth;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
+import com.zf1976.ddns.verticle.SecureProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -16,7 +17,7 @@ import io.vertx.ext.auth.impl.UserImpl;
  * Create by Ant on 2021/8/4 1:13 AM
  */
 public record UsernamePasswordAuthenticationProvider(
-        SecureHandler secureHandler) implements AuthenticationProvider {
+        SecureProvider secureHandler) implements AuthenticationProvider {
 
     /**
      * Authenticate a user.

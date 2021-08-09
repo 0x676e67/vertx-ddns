@@ -188,7 +188,7 @@ public final class HttpUtil {
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.remoteAddress().hostAddress();
             if (LOG.isDebugEnabled()) {
-                LOG.info("getRemoteAddr ip: " + ip);
+                LOG.info("getRemoteAddress ip: " + ip);
             }
         }
         if (LOG.isDebugEnabled()) {

@@ -5,7 +5,6 @@ import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.auth.SecureHandler;
 import com.zf1976.ddns.verticle.timer.DnsConfigTimerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -16,7 +15,6 @@ import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -28,7 +26,6 @@ import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.sound.midi.Track;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -38,7 +35,7 @@ import java.util.List;
  * @author mac
  * @date 2021/7/7
  */
-public abstract class TemplateVerticle extends AbstractVerticle implements SecureHandler {
+public abstract class TemplateVerticle extends AbstractVerticle implements SecureProvider {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
@@ -83,23 +80,23 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         final var ddnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DDNS_CONFIG_FILENAME);
         final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
         final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
-         return fileSystem.mkdirs(projectWorkPath)
-                          .compose(v -> fileSystem.exists(ddnsConfigFilePath))
-                          .compose(bool -> createFile(fileSystem, bool, ddnsConfigFilePath))
-                          .compose(v -> fileSystem.exists(secureFilePath))
-                          .compose(bool -> createFile(fileSystem, bool, secureFilePath))
-                          .compose(v -> fileSystem.exists(rsaKeyPath))
-                          .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
-                          .compose(v -> {
-                              log.info("Initialize project working directory：" + projectWorkPath);
-                              log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
-                              log.info("Initialize secure configuration file：" + secureFilePath);
-                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
-                              log.info("RSA key has been initialized");
-                              TemplateVerticle.workDir = projectWorkPath;
-                              this.routeTemplateHandler(router, vertx);
-                              return this.initDDNSServiceConfig(vertx.fileSystem());
-                          });
+        return fileSystem.mkdirs(projectWorkPath)
+                         .compose(v -> fileSystem.exists(ddnsConfigFilePath))
+                         .compose(bool -> createFile(fileSystem, bool, ddnsConfigFilePath))
+                         .compose(v -> fileSystem.exists(secureFilePath))
+                         .compose(bool -> createFile(fileSystem, bool, secureFilePath))
+                         .compose(v -> fileSystem.exists(rsaKeyPath))
+                         .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
+                         .compose(v -> {
+                             log.info("Initialize project working directory：" + projectWorkPath);
+                             log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
+                             log.info("Initialize secure configuration file：" + secureFilePath);
+                             log.info("Initialize rsa key configuration file：" + rsaKeyPath);
+                             log.info("RSA key has been initialized");
+                             TemplateVerticle.workDir = projectWorkPath;
+                             this.routeTemplateHandler(router, vertx);
+                             return this.initDDNSServiceConfig(vertx.fileSystem());
+                         });
      }
 
     private void routeTemplateHandler(Router router, Vertx vertx) {
