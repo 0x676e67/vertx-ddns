@@ -4,10 +4,12 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
 import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
+import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -46,7 +48,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
         super(dnsApiCredentials, vertx);
     }
 
-    private void initZoneMap() throws Exception {
+    private void initZoneMap(){
         if (!CollectionUtil.isEmpty(this.zoneMap)) {
             return;
         }
@@ -55,8 +57,12 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
                                        .uri(URI.create(api))
                                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + dnsApiCredentials.getAccessKeySecret())
                                        .build();
-        final var body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                         .body();
+        final String body;
+        try {
+            body = super.httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        } catch (IOException | InterruptedException e) {
+            throw new InvalidDnsCredentialException(e.getMessage(), e.getCause());
+        }
         final var result = this.extractZoneResult(body);
         // 按域名分区映射区域id
         for (Result res : result) {
@@ -224,9 +230,13 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link boolean}
      */
     @Override
-    public boolean support(DNSServiceType dnsServiceType) throws Exception {
-        this.initZoneMap();
-        return DNSServiceType.CLOUDFLARE.check(dnsServiceType);
+    public boolean support(DnsServiceType dnsServiceType) {
+        try {
+            this.initZoneMap();
+        } catch (Exception e) {
+            throw new InvalidDnsCredentialException(e.getMessage(), e.getCause());
+        }
+        return DnsServiceType.CLOUDFLARE.check(dnsServiceType);
     }
 
     /**
@@ -236,9 +246,14 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link Future<Boolean>}
      */
     @Override
-    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DnsServiceType dnsServiceType) {
         return this.initZoneMapAsync()
-                   .compose(v -> Future.succeededFuture(!CollectionUtil.isEmpty(this.zoneMap) && DNSServiceType.CLOUDFLARE.check(dnsServiceType)));
+                   .compose(v -> {
+                       if (DnsServiceType.CLOUDFLARE.check(dnsServiceType)) {
+                           return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
+                       }
+                       return Future.succeededFuture(true);
+                   });
     }
 
     private String bearerToken() {
@@ -304,13 +319,12 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
 
     private CloudflareDataResult sendRequest(HttpRequest request) {
         try {
-            final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                       .body();
+            final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
             return this.resultHandler(body);
         } catch (IOException | InterruptedException e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
         }
-        return null;
     }
 
     protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendAsyncRequest(String url, HttpMethod methodType) {
@@ -413,7 +427,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
             }
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            return null;
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
         }
     }
 

@@ -4,6 +4,7 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
@@ -11,7 +12,7 @@ import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.util.ParameterHelper;
 import com.zf1976.ddns.util.StringUtil;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -183,16 +184,16 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
      * @return {@link boolean}
      */
     @Override
-    public boolean support(DNSServiceType dnsServiceType) {
-        return DNSServiceType.ALIYUN.check(dnsServiceType);
+    public boolean support(DnsServiceType dnsServiceType) {
+        return DnsServiceType.ALIYUN.check(dnsServiceType);
     }
 
     @Override
-    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DnsServiceType dnsServiceType) {
         if (this.support(dnsServiceType)) {
             return Future.succeededFuture(true);
         }
-        return Future.failedFuture("The DNS service provider is not supported");
+        return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
     }
 
     @Override
@@ -224,7 +225,7 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
             return this.resultHandler(body);
         } catch (IOException | InterruptedException e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new RuntimeException(e.getMessage());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
         }
     }
 

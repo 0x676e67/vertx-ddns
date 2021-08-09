@@ -4,11 +4,13 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
+import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -66,7 +68,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
             final var huaweiDataResult = this.sendRequest(httpRequestBase, null);
             this.initZone(huaweiDataResult);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InvalidDnsCredentialException(e.getMessage(), e.getCause());
         }
     }
 
@@ -267,9 +269,9 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link boolean}
      */
     @Override
-    public boolean support(DNSServiceType dnsServiceType) {
+    public boolean support(DnsServiceType dnsServiceType) {
         this.initZoneMap();
-        return DNSServiceType.HUAWEI.check(dnsServiceType);
+        return DnsServiceType.HUAWEI.check(dnsServiceType);
     }
 
     /**
@@ -279,9 +281,14 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future <Boolean>}
      */
     @Override
-    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DnsServiceType dnsServiceType) {
         return this.initZoneMapAsync()
-                   .compose(v -> Future.succeededFuture(DNSServiceType.HUAWEI.check(dnsServiceType)));
+                   .compose(v -> {
+                       if (DnsServiceType.CLOUDFLARE.check(dnsServiceType)) {
+                           return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
+                       }
+                       return Future.succeededFuture(true);
+                   });
     }
 
     private HuaweiDataResult sendRequest(HttpRequestBase httpRequestBase, Action action) {
@@ -293,10 +300,11 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
                     return this.resultHandler(new String(bytes), action);
                 }
             }
+            return null;
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
         }
-        return null;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.config.ConfigProperty;
-import com.zf1976.ddns.pojo.DDNSConfig;
+import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
@@ -119,7 +119,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         readDDNSConfig(vertx.fileSystem())
                 .compose(ddnsConfigList -> {
                     if (!CollectionUtil.isEmpty(ddnsConfigList)) {
-                        for (DDNSConfig ddnsConfig : ddnsConfigList) {
+                        for (DnsConfig ddnsConfig : ddnsConfigList) {
                             ddnsConfig.setId(this.hideHandler(ddnsConfig.getId()))
                                       .setSecret(this.hideHandler(ddnsConfig.getSecret()));
                         }
@@ -151,7 +151,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                    .compose(this::newDnsConfigTimerService);
     }
 
-    protected Future<Void> newDnsConfigTimerService(List<DDNSConfig> configList) {
+    protected Future<Void> newDnsConfigTimerService(List<DnsConfig> configList) {
         try {
             this.dnsConfigTimerService = new DnsConfigTimerService(configList, this.vertx);
             return Future.succeededFuture();
@@ -215,12 +215,12 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 });
     }
 
-    protected Future<List<DDNSConfig>> readDDNSConfig(FileSystem fileSystem) {
+    protected Future<List<DnsConfig>> readDDNSConfig(FileSystem fileSystem) {
         String absolutePath = toAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
         return fileSystem.readFile(absolutePath)
                          .compose(buffer -> {
                              try {
-                                 List<DDNSConfig> configArrayList = new ArrayList<>();
+                                 List<DnsConfig> configArrayList = new ArrayList<>();
                                  // config is empty
                                  if (StringUtil.isEmpty(buffer.toString())) {
                                      return Future.succeededFuture(configArrayList);
@@ -230,7 +230,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                                      return Future.succeededFuture(configArrayList);
                                  }
                                  for (Object o : list) {
-                                     configArrayList.add(JsonObject.mapFrom(o).mapTo(DDNSConfig.class));
+                                     configArrayList.add(JsonObject.mapFrom(o).mapTo(DnsConfig.class));
                                  }
                                  return Future.succeededFuture(configArrayList);
                              } catch (Exception e) {
@@ -246,7 +246,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                     .getAbsolutePath();
     }
 
-    protected Future<DDNSConfig> ddnsConfigDecryptHandler(DDNSConfig ddnsConfig) {
+    protected Future<DnsConfig> ddnsConfigDecryptHandler(DnsConfig ddnsConfig) {
         return this.readRsaKeyPair()
                    .compose(keyPair -> this.ddnsConfigDecrypt(keyPair, ddnsConfig));
     }
@@ -275,13 +275,13 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 });
     }
 
-    protected Future<DDNSConfig> ddnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DDNSConfig ddnsConfig) {
+    protected Future<DnsConfig> ddnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DnsConfig ddnsConfig) {
         if (keyPair == null) {
             return Future.failedFuture("RSA keyless");
         }
         try {
             // cloudflare 只有token作为访问密钥
-            if (!ddnsConfig.getDnsServiceType().equals(DNSServiceType.CLOUDFLARE)) {
+            if (!ddnsConfig.getDnsServiceType().equals(DnsServiceType.CLOUDFLARE)) {
                 String id = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getId());
                 ddnsConfig.setId(id);
             }
@@ -291,10 +291,10 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
         } catch (Exception e) {
             return readDDNSConfig(vertx.fileSystem())
                     .compose(ddnsConfigList -> {
-                        for (DDNSConfig rawConfig : ddnsConfigList) {
+                        for (DnsConfig rawConfig : ddnsConfigList) {
                             if (ddnsConfig.getDnsServiceType().equals(rawConfig.getDnsServiceType())) {
                                 // cloudflare 只有token作为访问密钥
-                                if (!ddnsConfig.getDnsServiceType().equals(DNSServiceType.CLOUDFLARE)) {
+                                if (!ddnsConfig.getDnsServiceType().equals(DnsServiceType.CLOUDFLARE)) {
                                     if (this.isHide(rawConfig.getId(), ddnsConfig.getId()) && this.isHide(rawConfig.getSecret(), ddnsConfig.getSecret())) {
                                         ddnsConfig.setId(rawConfig.getId())
                                                 .setSecret(rawConfig.getSecret());

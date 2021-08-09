@@ -6,12 +6,15 @@ import com.zf1976.ddns.api.provider.CloudflareDnsRecordProvider;
 import com.zf1976.ddns.api.provider.DnspodDnsRecordProvider;
 import com.zf1976.ddns.api.provider.HuaweiDnsProvider;
 import com.zf1976.ddns.api.provider.DnsRecordProvider;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
+import com.zf1976.ddns.api.provider.exception.FoundDnsProviderException;
+import com.zf1976.ddns.api.provider.exception.NotSupportDnsProviderException;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -28,26 +31,23 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
 
     private final Logger log = LogManager.getLogger("[DnsConfigTimerService]");
 
-    public DnsConfigTimerService(List<DDNSConfig> ddnsConfigList, Vertx vertx) {
+    public DnsConfigTimerService(List<DnsConfig> ddnsConfigList, Vertx vertx) {
         super(ddnsConfigList, vertx);
     }
 
-    public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DnsSRecordType dnsRecordType) {
+    public List<DnsRecordVo> findDnsRecords(DnsServiceType dnsServiceType, String domain, DnsSRecordType dnsRecordType) {
         final var api = this.dnsApiMap.get(dnsServiceType);
-        try {
-            if (api != null && api.support(dnsServiceType)) {
-                final var result = api.findDnsRecordList(domain, dnsRecordType);
-                return this.handlerGenericsResult(result, domain);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e.getCause());
-            throw new RuntimeException(e.getMessage(), e.getCause());
+        if (api == null) {
+            throw new FoundDnsProviderException("No service provider");
+        } else if (!api.support(dnsServiceType)) {
+            throw new NotSupportDnsProviderException("The :" + dnsServiceType.name() + "DNS service provider is not supported");
         }
-        throw new RuntimeException("No service provider key configured");
+        final var result = api.findDnsRecordList(domain, dnsRecordType);
+        return this.handlerGenericsResult(result, domain);
     }
 
     @SuppressWarnings("unchecked")
-    public Future<List<DnsRecordVo>> findDnsRecordListAsync(DNSServiceType dnsServiceType,
+    public Future<List<DnsRecordVo>> findDnsRecordListAsync(DnsServiceType dnsServiceType,
                                                             String domain,
                                                             DnsSRecordType dnsRecordType) {
         return Future.succeededFuture(this.dnsApiMap.get(dnsServiceType))
@@ -65,34 +65,29 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
 
     }
 
-    public Boolean deleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
+    public Boolean deleteRecord(DnsServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         if (api == null) {
-            throw new RuntimeException("No service provider");
+            throw new FoundDnsProviderException("No service provider");
+        } else if (!api.support(dnsServiceType)) {
+            throw new NotSupportDnsProviderException("The :" + dnsServiceType.name() + "DNS service provider is not supported");
         }
-        try {
-            if (api.support(dnsServiceType)) {
-                if (api instanceof DnspodDnsRecordProvider) {
-                    final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
-                    return dnspodDataResult != null && dnspodDataResult.getResponse()
-                                                                       .getError() == null;
-                }
-                if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
-                    return api.deleteDnsRecord(recordId, domain) != null;
-                }
-                if (api instanceof CloudflareDnsRecordProvider) {
-                    return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
-                }
-            }
-        } catch (Exception e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new RuntimeException(e);
+
+        if (api instanceof DnspodDnsRecordProvider) {
+            final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
+            return dnspodDataResult != null && dnspodDataResult.getResponse()
+                                                               .getError() == null;
+        } else if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
+            return api.deleteDnsRecord(recordId, domain) != null;
+        } else if (api instanceof CloudflareDnsRecordProvider) {
+            return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
         }
+
         return Boolean.FALSE;
     }
 
     @SuppressWarnings("unchecked")
-    public Future<Boolean> deleteRecordAsync(DNSServiceType dnsServiceType, String recordId, String domain) {
+    public Future<Boolean> deleteRecordAsync(DnsServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         return Future.succeededFuture(api)
                      .compose(checkApi -> {
@@ -112,11 +107,9 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
             final var dnspodDataResult = (DnspodDataResult) result;
             complete = dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                    .getError() == null;
-        }
-        if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
+        } else if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
             complete = result != null;
-        }
-        if (api instanceof CloudflareDnsRecordProvider) {
+        } else if (api instanceof CloudflareDnsRecordProvider) {
             complete = ((CloudflareDataResult) result).getSuccess();
         }
         return Future.succeededFuture(complete);

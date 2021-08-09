@@ -1,7 +1,7 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.api.enums.DnsSRecordType;
-import com.zf1976.ddns.pojo.DDNSConfig;
+import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.auth.RedirectAuthenticationProvider;
@@ -69,23 +69,23 @@ public class ApiVerticle extends TemplateVerticle {
         router.post("/logout")
               .handler(this::logoutHandler);
         // Store DNS service provider key
-        router.post("/api/storeConfig")
+        router.post("/api/store/dns/config")
               .consumes("application/json")
               .handler(BodyHandler.create())
-              .blockingHandler(this::storeDDNSConfigHandle);
+              .blockingHandler(this::storeDnsConfigHandle);
         // sava secure config
-        router.post("/api/storeSecureConfig")
+        router.post("/api/store/secure/config")
               .consumes("application/json")
               .handler(BodyHandler.create())
               .handler(this::storeSecureConfigHandler);
         // Query DNS service provider's domain name resolution record
-        router.post("/api/ddnsRecord")
-              .handler(this::findDDNSRecordsHandler);
+        router.post("/api/dns/record/list")
+              .handler(this::findDnsRecordsHandler);
         // DELETE analysis record
-        router.delete("/api/ddnsRecord")
-              .blockingHandler(this::deleteDDNSRecordHandler);
+        router.delete("/api/dns/record")
+              .blockingHandler(this::deleteDnsRecordHandler);
         // Obtain the RSA public key
-        router.get("/common/rsa/publicKey")
+        router.get("/common/rsa/public_key")
               .handler(this::getRsaPublicKeyHandler);
         // Initial configuration
         this.initConfig(vertx)
@@ -171,17 +171,17 @@ public class ApiVerticle extends TemplateVerticle {
      *
      * @param ctx routing context
      */
-    protected void findDDNSRecordsHandler(RoutingContext ctx) {
+    protected void findDnsRecordsHandler(RoutingContext ctx) {
         try {
             final var request = ctx.request();
             final var ipRecordType = DnsSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
-            final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
+            final var dnsServiceType = DnsServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             this.dnsConfigTimerService.findDnsRecordListAsync(dnsServiceType, domain, ipRecordType)
-                                      .onSuccess(v -> this.routeResultJson(ctx, v))
+                                      .onSuccess(bool -> this.routeResultJson(ctx, bool))
                                       .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
-            this.routeErrorHandler(ctx, e.getMessage());
+            this.routeErrorHandler(ctx, "Parameter error");
         }
     }
 
@@ -190,16 +190,17 @@ public class ApiVerticle extends TemplateVerticle {
      *
      * @param ctx routing context
      */
-    protected void deleteDDNSRecordHandler(RoutingContext ctx) {
+    protected void deleteDnsRecordHandler(RoutingContext ctx) {
         try {
             final var request = ctx.request();
             final var recordId = request.getParam(ApiConstants.RECORD_ID);
-            final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
+            final var dnsServiceType = DnsServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            final var success = this.dnsConfigTimerService.deleteRecord(dnsServiceType, recordId, domain);
-            this.routeResultJson(ctx, success);
+            this.dnsConfigTimerService.deleteRecordAsync(dnsServiceType, recordId, domain)
+                    .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                    .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
-            this.routeBadRequestHandler(ctx, e.getMessage());
+            this.routeBadRequestHandler(ctx, "Parameter error");
         }
     }
 
@@ -229,9 +230,9 @@ public class ApiVerticle extends TemplateVerticle {
      *
      * @param ctx routing context
      */
-    protected void storeDDNSConfigHandle(RoutingContext ctx) {
+    protected void storeDnsConfigHandle(RoutingContext ctx) {
         try {
-            final var ddnsConfig = ctx.getBodyAsJson().mapTo(DDNSConfig.class);
+            final var ddnsConfig = ctx.getBodyAsJson().mapTo(DnsConfig.class);
             switch (ddnsConfig.getDnsServiceType()) {
                 case ALIYUN:
                 case HUAWEI:
@@ -260,7 +261,7 @@ public class ApiVerticle extends TemplateVerticle {
      * @param config DDNS config
      * @return {@link Future<Void>}
      */
-    private Future<Void> storeDDNSConfig(DDNSConfig config) {
+    private Future<Void> storeDDNSConfig(DnsConfig config) {
         final var fileSystem = vertx.fileSystem();
         final String absolutePath = this.toAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
         return this.readDDNSConfig(fileSystem)
@@ -291,10 +292,10 @@ public class ApiVerticle extends TemplateVerticle {
      * @param absolutePath file absolute path
      * @return {@link Future<Void>}
      */
-    private Future<Void> writeDDNSConfig(List<DDNSConfig> ddnsConfigList, DDNSConfig ddnsConfig, String absolutePath) {
+    private Future<Void> writeDDNSConfig(List<DnsConfig> ddnsConfigList, DnsConfig ddnsConfig, String absolutePath) {
         // 读取配置为空
         if (CollectionUtil.isEmpty(ddnsConfigList)) {
-            List<DDNSConfig> accountList = new ArrayList<>();
+            List<DnsConfig> accountList = new ArrayList<>();
             accountList.add(ddnsConfig);
             return this.writeConfig(absolutePath, Json.encodePrettily(accountList));
         } else {

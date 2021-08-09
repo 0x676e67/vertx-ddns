@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.enums.DnsSRecordType;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 
 /**
@@ -103,7 +103,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link boolean}
      */
-    boolean support(DNSServiceType dnsServiceType) throws Exception;
+    boolean support(DnsServiceType dnsServiceType);
 
     /**
      * 异步版本
@@ -111,5 +111,5 @@ public interface DnsRecordProvider<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link Future<Boolean>}
      */
-    Future<Boolean> supportAsync(DNSServiceType dnsServiceType);
+    Future<Boolean> supportAsync(DnsServiceType dnsServiceType);
 }

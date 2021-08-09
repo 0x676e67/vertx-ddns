@@ -1,6 +1,6 @@
 package com.zf1976.ddns.pojo;
 
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
  * @author mac
  * @date 2021/7/8
  */
-public class DDNSConfig implements Serializable {
+public class DnsConfig implements Serializable {
 
     /**
      * id 可能为空，某些DNS服务商只使用token
@@ -22,7 +22,7 @@ public class DDNSConfig implements Serializable {
     /**
      * 服务商类型
      */
-    private DNSServiceType dnsServiceType;
+    private DnsServiceType dnsServiceType;
     /**
      * ipv4配置
      */
@@ -36,7 +36,7 @@ public class DDNSConfig implements Serializable {
         return ipv6Config;
     }
 
-    public DDNSConfig setIpv6Config(Ipv6Config ipv6Config) {
+    public DnsConfig setIpv6Config(Ipv6Config ipv6Config) {
         this.ipv6Config = ipv6Config;
         return this;
     }
@@ -45,7 +45,7 @@ public class DDNSConfig implements Serializable {
         return ipv4Config;
     }
 
-    public DDNSConfig setIpv4Config(Ipv4Config ipv4Config) {
+    public DnsConfig setIpv4Config(Ipv4Config ipv4Config) {
         this.ipv4Config = ipv4Config;
         return this;
     }
@@ -54,7 +54,7 @@ public class DDNSConfig implements Serializable {
         return id;
     }
 
-    public DDNSConfig setId(String id) {
+    public DnsConfig setId(String id) {
         this.id = id;
         return this;
     }
@@ -63,16 +63,16 @@ public class DDNSConfig implements Serializable {
         return secret;
     }
 
-    public DDNSConfig setSecret(String secret) {
+    public DnsConfig setSecret(String secret) {
         this.secret = secret;
         return this;
     }
 
-    public DNSServiceType getDnsServiceType() {
+    public DnsServiceType getDnsServiceType() {
         return dnsServiceType;
     }
 
-    public DDNSConfig setDnsServiceType(DNSServiceType dnsServiceType) {
+    public DnsConfig setDnsServiceType(DnsServiceType dnsServiceType) {
         this.dnsServiceType = dnsServiceType;
         return this;
     }

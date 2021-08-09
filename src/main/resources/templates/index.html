@@ -446,7 +446,7 @@
             "username" : encrypt(username),
             "password" : passwordIsHide(password)? password : encrypt(password)
         }
-        axiosInstance.post("/api/storeSecureConfig", secureConfig)
+        axiosInstance.post("/api/store/secure/config", secureConfig)
                     .then(res => {
                         confirm.show("Successfully saved!")
                     })
@@ -519,7 +519,7 @@
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
         }
-        axiosInstance.post("/api/storeConfig",data)
+        axiosInstance.post("/api/store/dns/config",data)
             .then(res => {
             confirm.show("Successfully saved!")
             })
@@ -619,7 +619,7 @@
 
     function findDDNSRecordsRequest(param) {
         if (param !== undefined && param !== "") {
-            axiosInstance.post('/api/ddnsRecord?' + param)
+            axiosInstance.post('/api/dns/record/list?' + param)
                 .then(function (response) {
                     setTable(response.data.data)
                 })
@@ -677,7 +677,7 @@
             let id = tr.childNodes[0].innerHTML
             let domain = tr.childNodes[1].innerHTML
             const TR = tr
-            axiosInstance.delete("/api/ddnsRecord?recordId=" + id + "&domain=" + domain + "&ddnsServiceType=" + selectDDNSType)
+            axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&ddnsServiceType=" + selectDDNSType)
                 .then(res => {
                     confirm.show("删除成功")
                     document.getElementById("tbMain").removeChild(TR)

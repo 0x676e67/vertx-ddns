@@ -4,12 +4,13 @@ import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
-import com.zf1976.ddns.verticle.DNSServiceType;
+import com.zf1976.ddns.verticle.DnsServiceType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -167,16 +168,27 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
      * @return {@link boolean}
      */
     @Override
-    public boolean support(DNSServiceType dnsServiceType) {
-        return DNSServiceType.DNSPOD.check(dnsServiceType);
+    public boolean support(DnsServiceType dnsServiceType) {
+        return DnsServiceType.DNSPOD.check(dnsServiceType);
     }
 
     @Override
-    public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DnsServiceType dnsServiceType) {
         if (this.support(dnsServiceType)) {
             return Future.succeededFuture(true);
         }
-        return Future.failedFuture("The DNS service provider is not supported");
+        return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
+    }
+
+    private DnspodDataResult sendRequest(HttpRequest httpRequest) {
+        try {
+            final var body = this.httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
+                                            .body();
+            return this.resultHandler(body);
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
+        }
     }
 
     @Override
@@ -214,18 +226,6 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
                           .GET()
                           .uri(URI.create(requestUrl))
                           .build();
-    }
-
-
-    private DnspodDataResult sendRequest(HttpRequest httpRequest) {
-        try {
-            final var body = this.httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString())
-                                            .body();
-            return this.resultHandler(body);
-        } catch (Exception e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new RuntimeException(e.getMessage());
-        }
     }
 
     private Map<String, Object> getCommonQueryParam(Action action) {
