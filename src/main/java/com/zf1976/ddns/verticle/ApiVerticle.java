@@ -1,6 +1,6 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.pojo.DDNSConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
@@ -174,7 +174,7 @@ public class ApiVerticle extends TemplateVerticle {
     protected void findDDNSRecordsHandler(RoutingContext ctx) {
         try {
             final var request = ctx.request();
-            final var ipRecordType = DNSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
+            final var ipRecordType = DnsSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             this.dnsConfigTimerService.asyncFindDnsRecords(dnsServiceType, domain, ipRecordType)

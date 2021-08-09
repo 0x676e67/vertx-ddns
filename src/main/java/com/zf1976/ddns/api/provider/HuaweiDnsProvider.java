@@ -1,8 +1,8 @@
-package com.zf1976.ddns.api.impl;
+package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/7/17 1:25 上午
  */
 @SuppressWarnings({"SpellCheckingInspection"})
-public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.Action> {
+public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResult, HuaweiDnsProvider.Action> {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsApi]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
@@ -44,11 +44,11 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
                                                                        .build();
     private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 
-    public HuaweiDnsApi(String id, String secret, Vertx vertx) {
+    public HuaweiDnsProvider(String id, String secret, Vertx vertx) {
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public HuaweiDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public HuaweiDnsProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
         // init web client
         AsyncHuaweiClientSinger.initClient(super.webClient);
@@ -108,7 +108,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+    public HuaweiDataResult findDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                  .setUrl(this.getZoneUrl(domain))
                                                  .addQueryStringParam("type", dnsRecordType.name())
@@ -125,7 +125,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    public HuaweiDataResult createDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -147,7 +147,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult modifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+    public HuaweiDataResult modifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
@@ -183,7 +183,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
         final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                   .setUrl(this.getZoneUrl(domain))
                                                   .addQueryStringParam("type", dnsRecordType.name())
@@ -202,7 +202,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -229,7 +229,7 @@ public class HuaweiDnsApi extends AbstractDnsApi<HuaweiDataResult, HuaweiDnsApi.
     public Future<HuaweiDataResult> asyncModifyDnsRecord(String id,
                                                          String domain,
                                                          String ip,
-                                                         DNSRecordType dnsRecordType) {
+                                                         DnsSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));

@@ -1,9 +1,8 @@
-package com.zf1976.ddns.api.impl;
+package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
-import com.zf1976.ddns.api.signer.algorithm.DnsRecordApi;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -29,7 +28,7 @@ import java.util.concurrent.Executors;
  * @date 2021/7/18
  */
 @SuppressWarnings({"RedundantCast"})
-public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
+public abstract class AbstractDnsRecordProvider<T, A> implements DnsRecordProvider<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsApi]");
     public static final int DEFAULT_CONNECT_TIMEOUT = 100000;
@@ -40,7 +39,7 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
                                                       .build();
     protected final WebClient webClient;
 
-    protected AbstractDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    protected AbstractDnsRecordProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         if (vertx == null) {
             throw new RuntimeException("Vert.x instance cannot be null");
         }
@@ -126,21 +125,21 @@ public abstract class AbstractDnsApi<T, A> implements DnsRecordApi<T> {
     }
 
     protected Map<String, Object> getQueryParam(String recordId, String domain, A action) {
-        return this.getQueryParam(recordId, domain, (String) null, (DNSRecordType) null, action);
+        return this.getQueryParam(recordId, domain, (String) null, (DnsSRecordType) null, action);
     }
 
-    protected Map<String, Object> getQueryParam(String domain, DNSRecordType dnsRecordType, A action) {
+    protected Map<String, Object> getQueryParam(String domain, DnsSRecordType dnsRecordType, A action) {
         return this.getQueryParam((String) null, domain, (String) null, dnsRecordType, action);
     }
 
-    protected Map<String, Object> getQueryParam(String domain, String ip, DNSRecordType dnsRecordType, A action) {
+    protected Map<String, Object> getQueryParam(String domain, String ip, DnsSRecordType dnsRecordType, A action) {
         return this.getQueryParam((String) null, domain, ip, dnsRecordType, action);
     }
 
     protected Map<String, Object> getQueryParam(String recordId,
                                                 String domain,
                                                 String ip,
-                                                DNSRecordType dnsRecordType,
+                                                DnsSRecordType dnsRecordType,
                                                 A action) {
 
         throw new UnsupportedOperationException();

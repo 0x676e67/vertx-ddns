@@ -1,11 +1,11 @@
 package com.zf1976.ddns.verticle.timer;
 
-import com.zf1976.ddns.api.enums.DNSRecordType;
-import com.zf1976.ddns.api.impl.AliyunDnsApi;
-import com.zf1976.ddns.api.impl.CloudflareDnsApi;
-import com.zf1976.ddns.api.impl.DnspodDnsApi;
-import com.zf1976.ddns.api.impl.HuaweiDnsApi;
-import com.zf1976.ddns.api.signer.algorithm.DnsRecordApi;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
+import com.zf1976.ddns.api.provider.AliyunDnsRecordProvider;
+import com.zf1976.ddns.api.provider.CloudflareDnsRecordProvider;
+import com.zf1976.ddns.api.provider.DnspodDnsRecordProvider;
+import com.zf1976.ddns.api.provider.HuaweiDnsProvider;
+import com.zf1976.ddns.api.provider.DnsRecordProvider;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
@@ -32,7 +32,7 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
         super(ddnsConfigList, vertx);
     }
 
-    public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DNSRecordType dnsRecordType) {
+    public List<DnsRecordVo> findDnsRecords(DNSServiceType dnsServiceType, String domain, DnsSRecordType dnsRecordType) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         try {
             if (api != null && api.support(dnsServiceType)) {
@@ -49,7 +49,7 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
     @SuppressWarnings("unchecked")
     public Future<List<DnsRecordVo>> asyncFindDnsRecords(DNSServiceType dnsServiceType,
                                                          String domain,
-                                                         DNSRecordType dnsRecordType) {
+                                                         DnsSRecordType dnsRecordType) {
         return Future.succeededFuture(this.dnsApiMap.get(dnsServiceType))
                      .compose(api -> {
                          if (api == null) {
@@ -72,15 +72,15 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
         }
         try {
             if (api.support(dnsServiceType)) {
-                if (api instanceof DnspodDnsApi) {
+                if (api instanceof DnspodDnsRecordProvider) {
                     final var dnspodDataResult = (DnspodDataResult) api.deleteDnsRecord(recordId, domain);
                     return dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                        .getError() == null;
                 }
-                if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsApi) {
+                if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
                     return api.deleteDnsRecord(recordId, domain) != null;
                 }
-                if (api instanceof CloudflareDnsApi) {
+                if (api instanceof CloudflareDnsRecordProvider) {
                     return ((CloudflareDataResult) api.deleteDnsRecord(recordId, domain)).getSuccess();
                 }
             }
@@ -106,17 +106,17 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
 
     }
 
-    private Future<Boolean> futureDeleteResultHandler(DnsRecordApi api, Object result) {
+    private Future<Boolean> futureDeleteResultHandler(DnsRecordProvider api, Object result) {
         boolean complete = Boolean.FALSE;
-        if (api instanceof DnspodDnsApi) {
+        if (api instanceof DnspodDnsRecordProvider) {
             final var dnspodDataResult = (DnspodDataResult) result;
             complete = dnspodDataResult != null && dnspodDataResult.getResponse()
                                                                    .getError() == null;
         }
-        if (api instanceof AliyunDnsApi || api instanceof HuaweiDnsApi) {
+        if (api instanceof AliyunDnsRecordProvider || api instanceof HuaweiDnsProvider) {
             complete = result != null;
         }
-        if (api instanceof CloudflareDnsApi) {
+        if (api instanceof CloudflareDnsRecordProvider) {
             complete = ((CloudflareDataResult) result).getSuccess();
         }
         return Future.succeededFuture(complete);

@@ -1,8 +1,8 @@
-package com.zf1976.ddns.api.impl;
+package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
-import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
@@ -31,18 +31,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/7/17 1:24 上午
  */
 @SuppressWarnings("RedundantCast")
-public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, CloudflareDnsApi.Action> {
+public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<CloudflareDataResult, CloudflareDnsRecordProvider.Action> {
 
     private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
     private final String api = "https://api.cloudflare.com/client/v4/zones";
     private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 
-    public CloudflareDnsApi(String token, Vertx vertx) {
+    public CloudflareDnsRecordProvider(String token, Vertx vertx) {
         this(new TokenCredentials(token), vertx);
     }
 
 
-    public CloudflareDnsApi(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public CloudflareDnsRecordProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -102,7 +102,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult findDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+    public CloudflareDataResult findDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var request = this.requestBuild(domain, queryParam, HttpMethod.GET);
         return this.sendRequest(request);
@@ -116,7 +116,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      * @param dnsRecordType 记录类型
      * @return {@link CloudflareDataResult}
      */
-    public CloudflareDataResult createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    public CloudflareDataResult createDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var data = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var httpRequest = this.requestBuild(domain, data, HttpMethod.POST);
         return this.sendRequest(httpRequest);
@@ -134,7 +134,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     public CloudflareDataResult modifyDnsRecord(String id,
                                                 String domain,
                                                 String ip,
-                                                DNSRecordType dnsRecordType) {
+                                                DnsSRecordType dnsRecordType) {
         final var data = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var httpRequest = this.requestBuild(id, domain, data, HttpMethod.PUT);
         return this.sendRequest(httpRequest);
@@ -160,7 +160,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+    public Future<CloudflareDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(domain, queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -176,7 +176,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    public Future<CloudflareDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var data = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(domain);
         return this.sendAsyncRequest(url, JsonObject.mapFrom(data), HttpMethod.POST)
@@ -196,7 +196,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     public Future<CloudflareDataResult> asyncModifyDnsRecord(String id,
                                                              String domain,
                                                              String ip,
-                                                             DNSRecordType dnsRecordType) {
+                                                             DnsSRecordType dnsRecordType) {
         final var data = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(id, domain);
         return this.sendAsyncRequest(url, JsonObject.mapFrom(data), HttpMethod.PUT)
@@ -417,7 +417,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
         }
     }
 
-    private Map<String, Object> getCommonQueryParam(DNSRecordType dnsRecordType) {
+    private Map<String, Object> getCommonQueryParam(DnsSRecordType dnsRecordType) {
         Map<String, Object> queryParam = new HashMap<>();
         queryParam.put("match", "all");
         queryParam.put("type", dnsRecordType.name());
@@ -429,7 +429,7 @@ public class CloudflareDnsApi extends AbstractDnsApi<CloudflareDataResult, Cloud
     protected Map<String, Object> getQueryParam(String recordId,
                                                 String domain,
                                                 String ip,
-                                                DNSRecordType dnsRecordType,
+                                                DnsSRecordType dnsRecordType,
                                                 Action action) {
         final var queryParam = this.getCommonQueryParam(dnsRecordType);
         switch (action) {

@@ -1,4 +1,4 @@
-package com.zf1976.ddns.property;
+package com.zf1976.ddns.config.property;
 
 import com.zf1976.ddns.annotation.YamlPrefix;
 

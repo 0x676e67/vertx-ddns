@@ -1,6 +1,6 @@
-package com.zf1976.ddns.api.signer.algorithm;
+package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.enums.DNSRecordType;
+import com.zf1976.ddns.api.enums.DnsSRecordType;
 import com.zf1976.ddns.verticle.DNSServiceType;
 import io.vertx.core.Future;
 
@@ -8,7 +8,7 @@ import io.vertx.core.Future;
  * @author ant
  * Create by Ant on 2021/7/29 1:46 上午
  */
-public interface DnsRecordApi<T> {
+public interface DnsRecordProvider<T> {
 
     /**
      * 具体参数作用请看实现类注释
@@ -17,7 +17,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T findDnsRecordList(String domain, DNSRecordType dnsRecordType);
+    T findDnsRecordList(String domain, DnsSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -27,7 +27,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T createDnsRecord(String domain, String ip, DNSRecordType dnsRecordType);
+    T createDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -38,7 +38,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T modifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType);
+    T modifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -57,7 +57,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    default Future<T> asyncFindDnsRecordList(String domain, DNSRecordType dnsRecordType) {
+    default Future<T> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -69,7 +69,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncCreateDnsRecord(String domain, String ip, DNSRecordType dnsRecordType) {
+    default Future<T> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -82,7 +82,7 @@ public interface DnsRecordApi<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncModifyDnsRecord(String id, String domain, String ip, DNSRecordType dnsRecordType) {
+    default Future<T> asyncModifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
