@@ -28,6 +28,7 @@ ext{
     vertxVersion = "4.1.2"
     junitVersion = '5.7.2'
     log4jVersion = "2.14.1"
+    nettyVersion = "4.1.58.Final"
 }
 
 dependencies {
@@ -35,6 +36,7 @@ dependencies {
     implementation "io.vertx:vertx-web:${vertxVersion}"
     implementation "io.vertx:vertx-web-client:${vertxVersion}"
     implementation "io.vertx:vertx-web-templ-thymeleaf:${vertxVersion}"
+    implementation group: 'io.netty', name: 'netty-resolver-dns-native-macos', version: "${nettyVersion}", classifier:'osx-x86_64'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.6'
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
