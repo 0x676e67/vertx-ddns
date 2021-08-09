@@ -70,7 +70,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
         }
     }
 
-    private Future<Void> asyncInitZoneMap() {
+    private Future<Void> initZoneMapAsync() {
         if (!CollectionUtil.isEmpty(this.zoneMap)) {
             return Future.succeededFuture();
         }
@@ -280,7 +280,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      */
     @Override
     public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
-        return this.asyncInitZoneMap()
+        return this.initZoneMapAsync()
                    .compose(v -> Future.succeededFuture(DNSServiceType.HUAWEI.check(dnsServiceType)));
     }
 

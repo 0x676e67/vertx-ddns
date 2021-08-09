@@ -64,7 +64,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
         }
     }
 
-    private Future<Void> asyncInitZoneMap() {
+    private Future<Void> initZoneMapAsync() {
         if (!CollectionUtil.isEmpty(this.zoneMap)) {
             return Future.succeededFuture();
         }
@@ -237,7 +237,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      */
     @Override
     public Future<Boolean> supportAsync(DNSServiceType dnsServiceType) {
-        return this.asyncInitZoneMap()
+        return this.initZoneMapAsync()
                    .compose(v -> Future.succeededFuture(!CollectionUtil.isEmpty(this.zoneMap) && DNSServiceType.CLOUDFLARE.check(dnsServiceType)));
     }
 

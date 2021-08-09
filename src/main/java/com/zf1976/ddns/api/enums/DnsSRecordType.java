@@ -1,8 +1,9 @@
 package com.zf1976.ddns.api.enums;
 
 /**
+ * Represents a DNS record type.
  * @author mac
- * @date 2021/7/18
+ * 2021/7/18
  */
 public enum DnsSRecordType {
     /**
