@@ -1,11 +1,13 @@
 package com.zf1976.ddns.verticle;
 
+import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.timer.DnsConfigTimerService;
+import com.zf1976.ddns.verticle.timer.SecureProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -40,8 +42,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
     protected static String workDir = null;
-    protected static final String WORK_DIR_NAME = ".ddns";
-    protected static final String DDNS_CONFIG_FILENAME = "ddns_config.json";
+    protected static final String WORK_DIR_NAME = ".vertx_ddns";
+    protected static final String DNS_CONFIG_FILENAME = "dns_config.json";
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
@@ -77,25 +79,25 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
      protected Future<Void> initConfig(Vertx vertx) {
         final var fileSystem = vertx.fileSystem();
         final var projectWorkPath = this.toAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
-        final var ddnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DDNS_CONFIG_FILENAME);
+        final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
         final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
         final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
         return fileSystem.mkdirs(projectWorkPath)
-                         .compose(v -> fileSystem.exists(ddnsConfigFilePath))
-                         .compose(bool -> createFile(fileSystem, bool, ddnsConfigFilePath))
+                         .compose(v -> fileSystem.exists(dnsConfigFilePath))
+                         .compose(bool -> createFile(fileSystem, bool, dnsConfigFilePath))
                          .compose(v -> fileSystem.exists(secureFilePath))
                          .compose(bool -> createFile(fileSystem, bool, secureFilePath))
                          .compose(v -> fileSystem.exists(rsaKeyPath))
                          .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
                          .compose(v -> {
                              log.info("Initialize project working directory：" + projectWorkPath);
-                             log.info("Initialize DDNS configuration file：" + ddnsConfigFilePath);
+                             log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
                              log.info("Initialize secure configuration file：" + secureFilePath);
                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
                              log.info("RSA key has been initialized");
                              TemplateVerticle.workDir = projectWorkPath;
                              this.routeTemplateHandler(router, vertx);
-                             return this.initDDNSServiceConfig(vertx.fileSystem());
+                             return this.initDnsServiceConfig(vertx.fileSystem());
                          });
      }
 
@@ -116,15 +118,15 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     }
 
     protected void customTemplateHandler(RoutingContext ctx, TemplateHandler templateHandler) {
-        readDDNSConfig(vertx.fileSystem())
-                .compose(ddnsConfigList -> {
-                    if (!CollectionUtil.isEmpty(ddnsConfigList)) {
-                        for (DnsConfig ddnsConfig : ddnsConfigList) {
-                            ddnsConfig.setId(this.hideHandler(ddnsConfig.getId()))
-                                      .setSecret(this.hideHandler(ddnsConfig.getSecret()));
+        readDnsConfig(vertx.fileSystem())
+                .compose(dnsConfigList -> {
+                    if (!CollectionUtil.isEmpty(dnsConfigList)) {
+                        for (DnsConfig dnsConfig : dnsConfigList) {
+                            dnsConfig.setId(this.hideHandler(dnsConfig.getId()))
+                                      .setSecret(this.hideHandler(dnsConfig.getSecret()));
                         }
                     }
-                    ctx.put("ddnsConfigList", ddnsConfigList);
+                    ctx.put("dnsConfigList", dnsConfigList);
                     return this.readRsaKeyPair();
                 })
                 .compose(rsaKeyPair -> {
@@ -146,8 +148,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 .onFailure(err -> this.routeErrorHandler(ctx, err));
     }
 
-    protected Future<Void> initDDNSServiceConfig(FileSystem fileSystem) {
-        return this.readDDNSConfig(fileSystem)
+    protected Future<Void> initDnsServiceConfig(FileSystem fileSystem) {
+        return this.readDnsConfig(fileSystem)
                    .compose(this::newDnsConfigTimerService);
     }
 
@@ -215,8 +217,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 });
     }
 
-    protected Future<List<DnsConfig>> readDDNSConfig(FileSystem fileSystem) {
-        String absolutePath = toAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
+    protected Future<List<DnsConfig>> readDnsConfig(FileSystem fileSystem) {
+        String absolutePath = toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
         return fileSystem.readFile(absolutePath)
                          .compose(buffer -> {
                              try {
@@ -246,9 +248,9 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                     .getAbsolutePath();
     }
 
-    protected Future<DnsConfig> ddnsConfigDecryptHandler(DnsConfig ddnsConfig) {
+    protected Future<DnsConfig> dnsConfigDecryptHandler(DnsConfig dnsConfig) {
         return this.readRsaKeyPair()
-                   .compose(keyPair -> this.ddnsConfigDecrypt(keyPair, ddnsConfig));
+                   .compose(keyPair -> this.dnsConfigDecrypt(keyPair, dnsConfig));
     }
 
     protected Future<SecureConfig> secureConfigDecryptHandler(SecureConfig secureConfig) {
@@ -275,34 +277,34 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 });
     }
 
-    protected Future<DnsConfig> ddnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DnsConfig ddnsConfig) {
+    protected Future<DnsConfig> dnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DnsConfig dnsConfig) {
         if (keyPair == null) {
             return Future.failedFuture("RSA keyless");
         }
         try {
-            // cloudflare 只有token作为访问密钥
-            if (!ddnsConfig.getDnsServiceType().equals(DnsServiceType.CLOUDFLARE)) {
-                String id = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getId());
-                ddnsConfig.setId(id);
+            // cloudflare only token is used as access key
+            if (!dnsConfig.getDnsProviderType().equals(DnsProviderType.CLOUDFLARE)) {
+                String id = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), dnsConfig.getId());
+                dnsConfig.setId(id);
             }
-            String secret = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), ddnsConfig.getSecret());
-            ddnsConfig.setSecret(secret);
-            return Future.succeededFuture(ddnsConfig);
+            String secret = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), dnsConfig.getSecret());
+            dnsConfig.setSecret(secret);
+            return Future.succeededFuture(dnsConfig);
         } catch (Exception e) {
-            return readDDNSConfig(vertx.fileSystem())
+            return readDnsConfig(vertx.fileSystem())
                     .compose(ddnsConfigList -> {
                         for (DnsConfig rawConfig : ddnsConfigList) {
-                            if (ddnsConfig.getDnsServiceType().equals(rawConfig.getDnsServiceType())) {
-                                // cloudflare 只有token作为访问密钥
-                                if (!ddnsConfig.getDnsServiceType().equals(DnsServiceType.CLOUDFLARE)) {
-                                    if (this.isHide(rawConfig.getId(), ddnsConfig.getId()) && this.isHide(rawConfig.getSecret(), ddnsConfig.getSecret())) {
-                                        ddnsConfig.setId(rawConfig.getId())
+                            if (dnsConfig.getDnsProviderType().equals(rawConfig.getDnsProviderType())) {
+                                // cloudflare only token is used as access key
+                                if (!dnsConfig.getDnsProviderType().equals(DnsProviderType.CLOUDFLARE)) {
+                                    if (this.isHide(rawConfig.getId(), dnsConfig.getId()) && this.isHide(rawConfig.getSecret(), dnsConfig.getSecret())) {
+                                        dnsConfig.setId(rawConfig.getId())
                                                 .setSecret(rawConfig.getSecret());
-                                        return Future.succeededFuture(ddnsConfig);
+                                        return Future.succeededFuture(dnsConfig);
                                     }
                                 } else {
-                                    if (this.isHide(rawConfig.getSecret(), ddnsConfig.getSecret())) {
-                                        return Future.succeededFuture(ddnsConfig.setSecret(rawConfig.getSecret()));
+                                    if (this.isHide(rawConfig.getSecret(), dnsConfig.getSecret())) {
+                                        return Future.succeededFuture(dnsConfig.setSecret(rawConfig.getSecret()));
                                     }
                                 }
                             }
@@ -318,7 +320,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
 
     protected String hideHandler(String rawStr) {
         if (StringUtil.isEmpty(rawStr)) {
-            return "";
+            return StringUtil.EMPTY;
         }
         int beginHideIndex = 3;
         final var rawStrLength = rawStr.length();

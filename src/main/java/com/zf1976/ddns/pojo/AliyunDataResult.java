@@ -18,6 +18,7 @@ public class AliyunDataResult {
     @JsonProperty(value = "RecordId")
     private String recordId;
 
+    @JsonProperty(value = "Message")
     private Object message;
 
     @JsonProperty(value = "TotalCount")

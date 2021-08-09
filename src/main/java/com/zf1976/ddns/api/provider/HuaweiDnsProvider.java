@@ -2,7 +2,7 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsApiCredentials;
-import com.zf1976.ddns.api.enums.DnsSRecordType;
+import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
@@ -10,7 +10,7 @@ import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.DnsServiceType;
+import com.zf1976.ddns.api.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/7/17 1:25 上午
  */
 @SuppressWarnings({"SpellCheckingInspection"})
-public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResult, HuaweiDnsProvider.Action> {
+public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, HuaweiDnsProvider.Action> {
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsApi]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
@@ -110,7 +110,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult findDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    public HuaweiDataResult findDnsRecordList(String domain, DnsRecordType dnsRecordType) {
         final var httpRequestBase = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                  .setUrl(this.getZoneUrl(domain))
                                                  .addQueryStringParam("type", dnsRecordType.name())
@@ -127,7 +127,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult createDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public HuaweiDataResult createDnsRecord(String domain, String ip, DnsRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -149,7 +149,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @param dnsRecordType 记录类型
      * @return {@link HuaweiDataResult}
      */
-    public HuaweiDataResult modifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
+    public HuaweiDataResult modifyDnsRecord(String id, String domain, String ip, DnsRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
@@ -185,14 +185,14 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> findDnsRecordListAsync(String domain, DnsRecordType dnsRecordType) {
         final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                   .setUrl(this.getZoneUrl(domain))
                                                   .addQueryStringParam("type", dnsRecordType.name())
                                                   .setMethod(HttpMethod.GET)
                                                   .buildAsync();
-        return this.sendAsyncRequest(asyncHttpRequest)
-                   .compose(v -> this.futureResultHandler(v, Action.DESCRIBE));
+        return this.sendRequestAsync(asyncHttpRequest)
+                   .compose(v -> this.resultHandlerAsync(v, Action.DESCRIBE));
     }
 
     /**
@@ -204,7 +204,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> createDnsRecordAsync(String domain, String ip, DnsRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -214,8 +214,8 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
                                                   .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                                                   .setBody(jsonObject.encode())
                                                   .buildAsync();
-        return this.sendAsyncRequest(asyncHttpRequest, jsonObject)
-                   .compose(v -> this.futureResultHandler(v, Action.CREATE));
+        return this.sendRequestAsync(asyncHttpRequest, jsonObject)
+                   .compose(v -> this.resultHandlerAsync(v, Action.CREATE));
     }
 
     /**
@@ -231,7 +231,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
     public Future<HuaweiDataResult> modifyDnsRecordAsync(String id,
                                                          String domain,
                                                          String ip,
-                                                         DnsSRecordType dnsRecordType) {
+                                                         DnsRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("type", dnsRecordType.name())
                                                .put("name", domain + ".")
                                                .put("records", Collections.singletonList(ip));
@@ -241,8 +241,8 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
                                                   .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                                                   .setBody(jsonObject.encode())
                                                   .buildAsync();
-        return this.sendAsyncRequest(aysncHttpRequest, jsonObject)
-                   .compose(v -> this.futureResultHandler(v, Action.MODIFY));
+        return this.sendRequestAsync(aysncHttpRequest, jsonObject)
+                   .compose(v -> this.resultHandlerAsync(v, Action.MODIFY));
     }
 
     /**
@@ -258,8 +258,8 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
                                                   .setUrl(this.getZoneUrl(domain, id))
                                                   .setMethod(HttpMethod.DELETE)
                                                   .buildAsync();
-        return this.sendAsyncRequest(asyncHttpRequest)
-                   .compose(v -> this.futureResultHandler(v, Action.DESCRIBE));
+        return this.sendRequestAsync(asyncHttpRequest)
+                   .compose(v -> this.resultHandlerAsync(v, Action.DESCRIBE));
     }
 
     /**
@@ -269,9 +269,9 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link boolean}
      */
     @Override
-    public boolean support(DnsServiceType dnsServiceType) {
+    public boolean support(DnsProviderType dnsServiceType) {
         this.initZoneMap();
-        return DnsServiceType.HUAWEI.check(dnsServiceType);
+        return DnsProviderType.HUAWEI.check(dnsServiceType);
     }
 
     /**
@@ -281,11 +281,11 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future <Boolean>}
      */
     @Override
-    public Future<Boolean> supportAsync(DnsServiceType dnsServiceType) {
+    public Future<Boolean> supportAsync(DnsProviderType dnsServiceType) {
         return this.initZoneMapAsync()
                    .compose(v -> {
-                       if (DnsServiceType.CLOUDFLARE.check(dnsServiceType)) {
-                           return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
+                       if (!DnsProviderType.CLOUDFLARE.check(dnsServiceType)) {
+                           return Future.failedFuture("The :" + dnsServiceType.name() + " DNS service provider is not supported");
                        }
                        return Future.succeededFuture(true);
                    });
@@ -308,12 +308,12 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
     }
 
     @Override
-    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest) {
-        return this.sendAsyncRequest(httpRequest, null);
+    protected Future<HttpResponse<Buffer>> sendRequestAsync(HttpRequest<Buffer> httpRequest) {
+        return this.sendRequestAsync(httpRequest, null);
     }
 
     @Override
-    protected Future<HttpResponse<Buffer>> sendAsyncRequest(HttpRequest<Buffer> httpRequest, JsonObject data) {
+    protected Future<HttpResponse<Buffer>> sendRequestAsync(HttpRequest<Buffer> httpRequest, JsonObject data) {
         if (data != null) {
             return httpRequest.sendJsonObject(data);
         }
@@ -334,7 +334,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
     }
 
     @Override
-    protected Future<HuaweiDataResult> futureResultHandler(HttpResponse<Buffer> responseFuture, Action action) {
+    protected Future<HuaweiDataResult> resultHandlerAsync(HttpResponse<Buffer> responseFuture, Action action) {
         final var body = responseFuture.bodyAsString();
         final var huaweiDataResult = this.resultHandler(body, action);
         return Future.succeededFuture(huaweiDataResult);

@@ -1,10 +1,10 @@
-package com.zf1976.ddns.verticle;
+package com.zf1976.ddns.api.enums;
 
 /**
  * @author mac
  * @date 2021/7/8
  */
-public enum DnsServiceType {
+public enum DnsProviderType {
 
     /**
      * 阿里云
@@ -23,8 +23,8 @@ public enum DnsServiceType {
      */
     HUAWEI;
 
-    public static DnsServiceType checkType(String value) {
-        for (DnsServiceType type : values()) {
+    public static DnsProviderType checkType(String value) {
+        for (DnsProviderType type : values()) {
             if (type.toString()
                     .equals(value)) {
                 return type;
@@ -33,7 +33,7 @@ public enum DnsServiceType {
         throw new RuntimeException("The DDNS api provider does not exist");
     }
 
-    public boolean check(DnsServiceType dnsServiceType) {
+    public boolean check(DnsProviderType dnsServiceType) {
         return this == dnsServiceType;
     }
 }

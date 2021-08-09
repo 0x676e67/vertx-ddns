@@ -244,7 +244,7 @@
 
                 <div class="input-group mb-1" style="margin-top: 5px;width: auto">
                     <span class="input-group-text" id="basic-addon8">域名解析记录查询</span>
-                    <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
+                    <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findDnsRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
                     <div class="input-group-append">
                         <button class="btn btn-primary submit_btn" onclick="clearTable()">清空</button>
                     </div>
@@ -336,7 +336,7 @@
         return Promise.reject(error);
     });
     // 保存的配置
-    const ddnsConfigList = [[${ddnsConfigList}]]
+    const dnsConfigList = [[${dnsConfigList}]]
     const secureConfig = [[${secureConfig}]]
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
@@ -345,8 +345,8 @@
     const ipv4RecordType = "A"
     const ipv6RecordType = "AAAA"
     // 默认类型
-    let selectDDNSType = aliyunType
-    let selectIpRecordType = ipv4RecordType
+    let selectDnsProviderType = aliyunType
+    let selectDnsRecordType = ipv4RecordType
 
     // 初始化调用
     setAliyunType()
@@ -365,23 +365,23 @@
     }
 
     function setIpv4RecordType() {
-        selectIpRecordType = ipv4RecordType
+        selectDnsRecordType = ipv4RecordType
     }
 
     function setIpv6RecordType() {
-        selectIpRecordType = ipv6RecordType
+        selectDnsRecordType = ipv6RecordType
     }
 
-    function setDDNSConfig() {
+    function setDnsConfig() {
         // 设置服务商Account
         let targetConfig
-        if (ddnsConfigList != undefined) {
-            for (let i = 0; i < ddnsConfigList.length; i++) {
-                ddnsConfig = ddnsConfigList[i]
-                if (selectDDNSType == ddnsConfig.dnsServiceType) {
-                    targetConfig = ddnsConfig
-                    document.getElementById("ipv4Enable").checked = ddnsConfig.ipv4Config.enable
-                    if (ddnsConfig.ipv4Config.selectIpMethod) {
+        if (dnsConfigList != undefined) {
+            for (let i = 0; i < dnsConfigList.length; i++) {
+                let dnsConfig = dnsConfigList[i]
+                if (selectDnsProviderType == dnsConfig.dnsProviderType) {
+                    targetConfig = dnsConfig
+                    document.getElementById("ipv4Enable").checked = dnsConfig.ipv4Config.enable
+                    if (dnsConfig.ipv4Config.selectIpMethod) {
                         document.getElementById("ipv4Radios1").checked = true
                         document.getElementById("ipv4Radios2").checked = false
                         document.getElementById("ipv4Radios1").onclick()
@@ -391,7 +391,7 @@
                         document.getElementById("ipv4Radios2").checked = true
                         document.getElementById("ipv4Radios2").onclick()
                     }
-                    if (ddnsConfig.ipv6Config.selectIpMethod) {
+                    if (dnsConfig.ipv6Config.selectIpMethod) {
                         document.getElementById("ipv6Radios1").checked = true
                         document.getElementById("ipv6Radios2").checked = false
                         document.getElementById("ipv6Radios1").onclick()
@@ -401,12 +401,12 @@
                         document.getElementById("ipv6Radios2").checked = true
                         document.getElementById("ipv6Radios2").onclick()
                     }
-                    document.getElementById("ipv4ApiInput").value = ddnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv4_domains").value = ddnsConfig.ipv4Config.domainList
-                    document.getElementById("ipv6ApiInput").value = ddnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv6_domains").value = ddnsConfig.ipv4Config.domainList
+                    document.getElementById("ipv4ApiInput").value = dnsConfig.ipv4Config.inputIpApi
+                    document.getElementById("ipv4_domains").value = dnsConfig.ipv4Config.domainList
+                    document.getElementById("ipv6ApiInput").value = dnsConfig.ipv4Config.inputIpApi
+                    document.getElementById("ipv6_domains").value = dnsConfig.ipv4Config.domainList
                 }
-                switch (selectDDNSType) {
+                switch (selectDnsProviderType) {
                     case aliyunType:
                         document.getElementById("aliyunAccount").value = targetConfig ? targetConfig.id : ""
                         document.getElementById("aliyunSecret").value = targetConfig ? targetConfig.secret : ""
@@ -494,7 +494,7 @@
 
         let id
         let secret
-        switch (selectDDNSType) {
+        switch (selectDnsProviderType) {
             case aliyunType:
                 id = document.getElementById("aliyunAccount").value;
                 secret = document.getElementById("aliyunSecret").value;
@@ -513,9 +513,9 @@
                 break
         }
         let data = {
-            "id": id ? (idIsHide(id, selectDDNSType)? id : encrypt(id)): encrypt("") ,
-            "secret": secret ? (secretIsHide(secret, selectDDNSType)? secret : encrypt(secret)) : encrypt(""),
-            "dnsServiceType" : selectDDNSType,
+            "id": id ? (idIsHide(id, selectDnsProviderType)? id : encrypt(id)): encrypt("") ,
+            "secret": secret ? (secretIsHide(secret, selectDnsProviderType)? secret : encrypt(secret)) : encrypt(""),
+            "dnsProviderType" : selectDnsProviderType,
             "ipv4Config": ipv4Config,
             "ipv6Config": ipv6Config
         }
@@ -525,21 +525,17 @@
             })
     }
 
-    function findRecords(e) {
+    function findDnsRecords(e) {
         let evt = window.event || e;
         if (evt.keyCode === 13) {
-            this.findRecord();
-        }
-    }
-
-    function findRecord() {
-        let inputDomain = document.getElementById("inputDomain");
-        if (inputDomain.value !== "") {
-            //回车事件
-            let param = "ddnsServiceType=" + selectDDNSType + "&domain=" + inputDomain.value + "&ipRecordType=" + selectIpRecordType
-            findDDNSRecordsRequest(param)
-        } else {
-            confirm.show("输入域名不能为空")
+            let inputDomain = document.getElementById("inputDomain");
+            if (inputDomain.value !== "") {
+                //回车事件
+                let param = "dnsProviderType=" + selectDnsProviderType + "&domain=" + inputDomain.value + "&dnsRecordType=" + selectDnsRecordType
+                findDnsRecordsRequest(param)
+            } else {
+                confirm.show("输入域名不能为空")
+            }
         }
     }
 
@@ -571,9 +567,9 @@
             document.getElementById("selectIpv4Value").options.length = 0
             for (let i = 0; i < networkIpv4List.length; i++) {
                 let selected
-                for (let j = 0; j < ddnsConfigList.length; j++) {
-                    if (ddnsConfigList[j].dnsServiceType == selectDDNSType) {
-                        selected = ddnsConfigList[j].ipv4Config.networkIp
+                for (let j = 0; j < dnsConfigList.length; j++) {
+                    if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
+                        selected = dnsConfigList[j].ipv4Config.networkIp
                     }
                 }
                 if (selected == networkIpv4List[i].substring(networkIpv4List[i].indexOf('(') + 1, networkIpv4List[i].lastIndexOf(')'))) {
@@ -601,9 +597,9 @@
             document.getElementById("selectIpv6Value").options.length = 0
             for (let i = 0; i < networkIpv6List.length; i++) {
                 let selected
-                for (let j = 0; j < ddnsConfigList.length; j++) {
-                    if (ddnsConfigList[j].dnsServiceType == selectDDNSType) {
-                        selected = ddnsConfigList[j].ipv6Config.networkIp
+                for (let j = 0; j < dnsConfigList.length; j++) {
+                    if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
+                        selected = dnsConfigList[j].ipv6Config.networkIp
                     }
                 }
                 if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
@@ -617,7 +613,7 @@
         }
     }
 
-    function findDDNSRecordsRequest(param) {
+    function findDnsRecordsRequest(param) {
         if (param !== undefined && param !== "") {
             axiosInstance.post('/api/dns/record/list?' + param)
                 .then(function (response) {
@@ -677,7 +673,7 @@
             let id = tr.childNodes[0].innerHTML
             let domain = tr.childNodes[1].innerHTML
             const TR = tr
-            axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&ddnsServiceType=" + selectDDNSType)
+            axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&dnsProviderType=" + selectDnsProviderType)
                 .then(res => {
                     confirm.show("删除成功")
                     document.getElementById("tbMain").removeChild(TR)
@@ -696,34 +692,34 @@
     }
 
     function setAliyunType() {
-        selectDDNSType = aliyunType;
+        selectDnsProviderType = aliyunType;
         document.getElementById("aliyunAccount").value = ""
         document.getElementById("aliyunSecret").value = ""
         clearForm()
-        setDDNSConfig()
+        setDnsConfig()
     }
 
     function setDnspodType() {
-        selectDDNSType = dnspodType
+        selectDnsProviderType = dnspodType
         document.getElementById("dnspodAccount").value = ""
         document.getElementById("dnspodSecret").value = ""
         clearForm()
-        setDDNSConfig()
+        setDnsConfig()
     }
 
     function setCloudflareType() {
-        selectDDNSType = cloudflareType
+        selectDnsProviderType = cloudflareType
         document.getElementById("cloudflareSecret").value = ""
         clearForm()
-        setDDNSConfig()
+        setDnsConfig()
     }
 
     function setHuaweiType() {
-        selectDDNSType = huaweiType
+        selectDnsProviderType = huaweiType
         document.getElementById("huaweiAccount").value = ""
         document.getElementById("huaweiSecret").value = ""
         clearForm()
-        setDDNSConfig()
+        setDnsConfig()
     }
 
     function clearForm() {
@@ -740,10 +736,10 @@
         this.clearTable()
     }
 
-    function isHide(str, ddnsType) {
-        for (let i = 0; i < ddnsConfigList.length; i++) {
-            var config = ddnsConfigList[i];
-            if (config.dnsServiceType == ddnsType) {
+    function isHide(str, provider) {
+        for (let i = 0; i < dnsConfigList.length; i++) {
+            var config = dnsConfigList[i];
+            if (config.dnsProviderType == provider) {
                 console.log(config)
                 return true
             }
@@ -751,20 +747,20 @@
         return false
     }
 
-    function idIsHide(id, ddnsType) {
-        for (let i = 0; i < ddnsConfigList.length; i++) {
-            var config = ddnsConfigList[i];
-            if (config.dnsServiceType == ddnsType) {
+    function idIsHide(id, provider) {
+        for (let i = 0; i < dnsConfigList.length; i++) {
+            var config = dnsConfigList[i];
+            if (config.dnsProviderType == provider) {
                 return config.id == id;
             }
         }
         return false
     }
 
-    function secretIsHide(secret, ddnsType) {
-        for (let i = 0; i < ddnsConfigList.length; i++) {
-            var config = ddnsConfigList[i];
-            if (config.dnsServiceType == ddnsType) {
+    function secretIsHide(secret, provider) {
+        for (let i = 0; i < dnsConfigList.length; i++) {
+            var config = dnsConfigList[i];
+            if (config.dnsProviderType == provider) {
                 return config.secret == secret;
             }
         }

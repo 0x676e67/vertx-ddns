@@ -1,6 +1,7 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.api.enums.DnsSRecordType;
+import com.zf1976.ddns.api.enums.DnsRecordType;
+import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
@@ -174,10 +175,10 @@ public class ApiVerticle extends TemplateVerticle {
     protected void findDnsRecordsHandler(RoutingContext ctx) {
         try {
             final var request = ctx.request();
-            final var ipRecordType = DnsSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
-            final var dnsServiceType = DnsServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
+            final var dnsRecordType = DnsRecordType.checkType(request.getParam(ApiConstants.DNS_RECORD_TYPE));
+            final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            this.dnsConfigTimerService.findDnsRecordListAsync(dnsServiceType, domain, ipRecordType)
+            this.dnsConfigTimerService.findDnsRecordListAsync(dnsProviderType, domain, dnsRecordType)
                                       .onSuccess(bool -> this.routeResultJson(ctx, bool))
                                       .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
@@ -194,9 +195,9 @@ public class ApiVerticle extends TemplateVerticle {
         try {
             final var request = ctx.request();
             final var recordId = request.getParam(ApiConstants.RECORD_ID);
-            final var dnsServiceType = DnsServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
+            final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            this.dnsConfigTimerService.deleteRecordAsync(dnsServiceType, recordId, domain)
+            this.dnsConfigTimerService.deleteRecordAsync(dnsProviderType, recordId, domain)
                     .onSuccess(bool -> this.routeResultJson(ctx, bool))
                     .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
@@ -232,22 +233,22 @@ public class ApiVerticle extends TemplateVerticle {
      */
     protected void storeDnsConfigHandle(RoutingContext ctx) {
         try {
-            final var ddnsConfig = ctx.getBodyAsJson().mapTo(DnsConfig.class);
-            switch (ddnsConfig.getDnsServiceType()) {
+            final var dnsConfig = ctx.getBodyAsJson().mapTo(DnsConfig.class);
+            switch (dnsConfig.getDnsProviderType()) {
                 case ALIYUN:
                 case HUAWEI:
                 case DNSPOD:
-                    Validator.of(ddnsConfig)
+                    Validator.of(dnsConfig)
                              .withValidated(v -> !StringUtil.isEmpty(v.getId()) && !v.getId().isBlank(), "ID cannot be empty")
                              .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(), "The Secret cannot be empty");
                     break;
                 case CLOUDFLARE:
-                    Validator.of(ddnsConfig)
+                    Validator.of(dnsConfig)
                              .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(), "The Secret cannot be empty");
                 default:
             }
-            this.ddnsConfigDecryptHandler(ddnsConfig)
-                    .compose(this::storeDDNSConfig)
+            this.dnsConfigDecryptHandler(dnsConfig)
+                    .compose(this::storeDnsConfig)
                     .onSuccess(success -> this.routeResultJson(ctx))
                     .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception exception) {
@@ -258,14 +259,14 @@ public class ApiVerticle extends TemplateVerticle {
     /**
      * store DDNS config to file
      *
-     * @param config DDNS config
+     * @param dnsConfig DDNS config
      * @return {@link Future<Void>}
      */
-    private Future<Void> storeDDNSConfig(DnsConfig config) {
+    private Future<Void> storeDnsConfig(DnsConfig dnsConfig) {
         final var fileSystem = vertx.fileSystem();
-        final String absolutePath = this.toAbsolutePath(workDir, DDNS_CONFIG_FILENAME);
-        return this.readDDNSConfig(fileSystem)
-                   .compose(configList -> this.writeDDNSConfig(configList, config, absolutePath)
+        final String absolutePath = this.toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
+        return this.readDnsConfig(fileSystem)
+                   .compose(configList -> this.writeDnsConfig(configList, dnsConfig, absolutePath)
                                               .compose(v -> newDnsConfigTimerService(configList)));
     }
 
@@ -277,7 +278,7 @@ public class ApiVerticle extends TemplateVerticle {
      */
     private Future<Void> storeSecureConfig(SecureConfig secureConfig) {
         String absolutePath = this.toAbsolutePath(workDir, SECURE_CONFIG_FILENAME);
-        return this.writeConfig(absolutePath, Json.encodePrettily(secureConfig))
+        return this.writeJsonToFile(absolutePath, Json.encodePrettily(secureConfig))
                 .compose(v -> {
                     this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
                     return Future.succeededFuture();
@@ -287,22 +288,22 @@ public class ApiVerticle extends TemplateVerticle {
     /**
      * write DDNS config
      *
-     * @param ddnsConfigList DDNS config list
-     * @param ddnsConfig new DDNS config
+     * @param dnsConfigList DDNS config list
+     * @param dnsConfig new DDNS config
      * @param absolutePath file absolute path
      * @return {@link Future<Void>}
      */
-    private Future<Void> writeDDNSConfig(List<DnsConfig> ddnsConfigList, DnsConfig ddnsConfig, String absolutePath) {
+    private Future<Void> writeDnsConfig(List<DnsConfig> dnsConfigList, DnsConfig dnsConfig, String absolutePath) {
         // 读取配置为空
-        if (CollectionUtil.isEmpty(ddnsConfigList)) {
-            List<DnsConfig> accountList = new ArrayList<>();
-            accountList.add(ddnsConfig);
-            return this.writeConfig(absolutePath, Json.encodePrettily(accountList));
+        if (CollectionUtil.isEmpty(dnsConfigList)) {
+            List<DnsConfig> newDnsConfigList = new ArrayList<>();
+            newDnsConfigList.add(dnsConfig);
+            return this.writeJsonToFile(absolutePath, Json.encodePrettily(newDnsConfigList));
         } else {
             try {
-                ddnsConfigList.removeIf(config -> ddnsConfig.getDnsServiceType().equals(config.getDnsServiceType()));
-                ddnsConfigList.add(ddnsConfig);
-                return this.writeConfig(absolutePath, Json.encodePrettily(ddnsConfigList));
+                dnsConfigList.removeIf(config -> dnsConfig.getDnsProviderType().equals(config.getDnsProviderType()));
+                dnsConfigList.add(dnsConfig);
+                return this.writeJsonToFile(absolutePath, Json.encodePrettily(dnsConfigList));
             } catch (Exception e) {
                 return Future.failedFuture(new RuntimeException("Server Error"));
             }
@@ -316,7 +317,7 @@ public class ApiVerticle extends TemplateVerticle {
      * @param json JSON
      * @return {@link Future< Void>
      */
-    private Future<Void> writeConfig(String absolutePath, String json) {
+    private Future<Void> writeJsonToFile(String absolutePath, String json) {
         return vertx.fileSystem()
                     .writeFile(absolutePath, Buffer.buffer(json));
     }

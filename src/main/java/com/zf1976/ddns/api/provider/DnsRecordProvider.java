@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.enums.DnsSRecordType;
-import com.zf1976.ddns.verticle.DnsServiceType;
+import com.zf1976.ddns.api.enums.DnsRecordType;
+import com.zf1976.ddns.api.enums.DnsProviderType;
 import io.vertx.core.Future;
 
 /**
@@ -17,7 +17,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T findDnsRecordList(String domain, DnsSRecordType dnsRecordType);
+    T findDnsRecordList(String domain, DnsRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -27,7 +27,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T createDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType);
+    T createDnsRecord(String domain, String ip, DnsRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -38,7 +38,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    T modifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType);
+    T modifyDnsRecord(String id, String domain, String ip, DnsRecordType dnsRecordType);
 
     /**
      * 具体参数作用请看实现类注释
@@ -57,7 +57,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    default Future<T> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
+    default Future<T> findDnsRecordListAsync(String domain, DnsRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -69,7 +69,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
+    default Future<T> createDnsRecordAsync(String domain, String ip, DnsRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -82,7 +82,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> modifyDnsRecordAsync(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
+    default Future<T> modifyDnsRecordAsync(String id, String domain, String ip, DnsRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -103,7 +103,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link boolean}
      */
-    boolean support(DnsServiceType dnsServiceType);
+    boolean support(DnsProviderType dnsServiceType);
 
     /**
      * 异步版本
@@ -111,5 +111,5 @@ public interface DnsRecordProvider<T> {
      * @param dnsServiceType DNS服务商类型
      * @return {@link Future<Boolean>}
      */
-    Future<Boolean> supportAsync(DnsServiceType dnsServiceType);
+    Future<Boolean> supportAsync(DnsProviderType dnsServiceType);
 }

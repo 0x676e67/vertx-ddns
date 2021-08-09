@@ -3,7 +3,7 @@ package com.zf1976.ddns.verticle.auth;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
-import com.zf1976.ddns.verticle.SecureProvider;
+import com.zf1976.ddns.verticle.timer.SecureProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

@@ -19,6 +19,7 @@ public abstract class StringUtil {
     public static final String TOP_PATH = "..";
     public static final String CURRENT_PATH = ".";
     public static final char EXTENSION_SEPARATOR = '.';
+    public static final String EMPTY = "";
 
     public StringUtil() {
     }

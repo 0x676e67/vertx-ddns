@@ -1,6 +1,6 @@
 package com.zf1976.ddns.pojo;
 
-import com.zf1976.ddns.verticle.DnsServiceType;
+import com.zf1976.ddns.api.enums.DnsProviderType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,7 +22,7 @@ public class DnsConfig implements Serializable {
     /**
      * 服务商类型
      */
-    private DnsServiceType dnsServiceType;
+    private DnsProviderType dnsProviderType;
     /**
      * ipv4配置
      */
@@ -68,21 +68,21 @@ public class DnsConfig implements Serializable {
         return this;
     }
 
-    public DnsServiceType getDnsServiceType() {
-        return dnsServiceType;
+    public DnsProviderType getDnsProviderType() {
+        return dnsProviderType;
     }
 
-    public DnsConfig setDnsServiceType(DnsServiceType dnsServiceType) {
-        this.dnsServiceType = dnsServiceType;
+    public DnsConfig setDnsProviderType(DnsProviderType dnsProviderType) {
+        this.dnsProviderType = dnsProviderType;
         return this;
     }
 
     @Override
     public String toString() {
-        return "DDNSConfig{" +
+        return "DnsConfig{" +
                 "id='" + id + '\'' +
                 ", secret='" + secret + '\'' +
-                ", dnsServiceType=" + dnsServiceType +
+                ", dnsProviderType=" + dnsProviderType +
                 ", ipv4Config=" + ipv4Config +
                 ", ipv6Config=" + ipv6Config +
                 '}';

@@ -5,7 +5,7 @@ package com.zf1976.ddns.api.enums;
  * @author mac
  * 2021/7/18
  */
-public enum DnsSRecordType {
+public enum DnsRecordType {
     /**
      * ipv4
      */
@@ -15,8 +15,8 @@ public enum DnsSRecordType {
      */
     AAAA;
 
-    public static DnsSRecordType checkType(String value) {
-        for (DnsSRecordType type : values()) {
+    public static DnsRecordType checkType(String value) {
+        for (DnsRecordType type : values()) {
             if (type.toString()
                     .equals(value)) {
                 return type;

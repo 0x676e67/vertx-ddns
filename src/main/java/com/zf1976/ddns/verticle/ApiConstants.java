@@ -12,13 +12,13 @@ public interface ApiConstants {
 
     String INDEX_PATH = "/index.html";
 
-    String DDNS_SERVICE_TYPE = "ddnsServiceType";
+    String DDNS_PROVIDER_TYPE = "dnsProviderType";
 
     String DOMAIN = "domain";
 
     String RECORD_ID = "recordId";
 
-    String IP_RECORD_TYPE = "ipRecordType";
+    String DNS_RECORD_TYPE = "dnsRecordType";
 
     String SERVER_PORT = "serverPort";
 
