@@ -110,7 +110,7 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
      * @return {@link Future<AliyunDataResult>}
      */
     @Override
-    public Future<AliyunDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    public Future<AliyunDataResult> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -126,7 +126,7 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
      * @return {@link Future<AliyunDataResult>}
      */
     @Override
-    public Future<AliyunDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public Future<AliyunDataResult> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -143,7 +143,7 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
      * @return {@link Future<AliyunDataResult>}
      */
     @Override
-    public Future<AliyunDataResult> asyncModifyDnsRecord(String id,
+    public Future<AliyunDataResult> modifyDnsRecordAsync(String id,
                                                          String domain,
                                                          String ip,
                                                          DnsSRecordType dnsRecordType) {
@@ -161,7 +161,7 @@ public class AliyunDnsRecordProvider extends AbstractDnsRecordProvider<AliyunDat
      * @return {@link Future<AliyunDataResult>}
      */
     @Override
-    public Future<AliyunDataResult> asyncDeleteDnsRecord(String id, String domain) {
+    public Future<AliyunDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)

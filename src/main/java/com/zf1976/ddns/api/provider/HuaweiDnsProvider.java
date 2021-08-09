@@ -183,7 +183,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
         final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                   .setUrl(this.getZoneUrl(domain))
                                                   .addQueryStringParam("type", dnsRecordType.name())
@@ -202,7 +202,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public Future<HuaweiDataResult> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var jsonObject = new JsonObject().put("name", domain + ".")
                                                .put("type", dnsRecordType.name())
                                                .put("records", Collections.singletonList(ip));
@@ -226,7 +226,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncModifyDnsRecord(String id,
+    public Future<HuaweiDataResult> modifyDnsRecordAsync(String id,
                                                          String domain,
                                                          String ip,
                                                          DnsSRecordType dnsRecordType) {
@@ -251,7 +251,7 @@ public class HuaweiDnsProvider extends AbstractDnsRecordProvider<HuaweiDataResul
      * @return {@link Future<HuaweiDataResult>}
      */
     @Override
-    public Future<HuaweiDataResult> asyncDeleteDnsRecord(String id, String domain) {
+    public Future<HuaweiDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var asyncHttpRequest = HuaweiRequest.newBuilder(this.dnsApiCredentials)
                                                   .setUrl(this.getZoneUrl(domain, id))
                                                   .setMethod(HttpMethod.DELETE)

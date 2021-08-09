@@ -102,7 +102,7 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
      * @return {@link Future<DnspodDataResult>}
      */
     @Override
-    public Future<DnspodDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    public Future<DnspodDataResult> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -118,7 +118,7 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
      * @return {@link Future<DnspodDataResult>}
      */
     @Override
-    public Future<DnspodDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public Future<DnspodDataResult> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -135,7 +135,7 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
      * @return {@link Future<DnspodDataResult>}
      */
     @Override
-    public Future<DnspodDataResult> asyncModifyDnsRecord(String id,
+    public Future<DnspodDataResult> modifyDnsRecordAsync(String id,
                                                          String domain,
                                                          String ip,
                                                          DnsSRecordType dnsRecordType) {
@@ -153,7 +153,7 @@ public class DnspodDnsRecordProvider extends AbstractDnsRecordProvider<DnspodDat
      * @return {@link Future<DnspodDataResult>}
      */
     @Override
-    public Future<DnspodDataResult> asyncDeleteDnsRecord(String id, String domain) {
+    public Future<DnspodDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)

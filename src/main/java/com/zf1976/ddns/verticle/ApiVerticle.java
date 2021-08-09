@@ -177,7 +177,7 @@ public class ApiVerticle extends TemplateVerticle {
             final var ipRecordType = DnsSRecordType.checkType(request.getParam(ApiConstants.IP_RECORD_TYPE));
             final var dnsServiceType = DNSServiceType.checkType(request.getParam(ApiConstants.DDNS_SERVICE_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            this.dnsConfigTimerService.asyncFindDnsRecords(dnsServiceType, domain, ipRecordType)
+            this.dnsConfigTimerService.findDnsRecordListAsync(dnsServiceType, domain, ipRecordType)
                                       .onSuccess(v -> this.routeResultJson(ctx, v))
                                       .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {

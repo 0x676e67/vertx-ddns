@@ -160,7 +160,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    public Future<CloudflareDataResult> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(domain, queryParam);
         return this.sendAsyncRequest(url, HttpMethod.GET)
@@ -176,7 +176,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    public Future<CloudflareDataResult> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
         final var data = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(domain);
         return this.sendAsyncRequest(url, JsonObject.mapFrom(data), HttpMethod.POST)
@@ -193,7 +193,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncModifyDnsRecord(String id,
+    public Future<CloudflareDataResult> modifyDnsRecordAsync(String id,
                                                              String domain,
                                                              String ip,
                                                              DnsSRecordType dnsRecordType) {
@@ -211,7 +211,7 @@ public class CloudflareDnsRecordProvider extends AbstractDnsRecordProvider<Cloud
      * @return {@link Future<CloudflareDataResult>}
      */
     @Override
-    public Future<CloudflareDataResult> asyncDeleteDnsRecord(String id, String domain) {
+    public Future<CloudflareDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var url = this.requestUrlBuild(id, domain);
         return this.sendAsyncRequest(url, HttpMethod.DELETE)
                    .compose(this::futureResultHandler);

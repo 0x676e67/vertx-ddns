@@ -57,7 +57,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link T}
      */
-    default Future<T> asyncFindDnsRecordList(String domain, DnsSRecordType dnsRecordType) {
+    default Future<T> findDnsRecordListAsync(String domain, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -69,7 +69,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncCreateDnsRecord(String domain, String ip, DnsSRecordType dnsRecordType) {
+    default Future<T> createDnsRecordAsync(String domain, String ip, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -82,7 +82,7 @@ public interface DnsRecordProvider<T> {
      * @param dnsRecordType 记录类型
      * @return {@link Future<T>}
      */
-    default Future<T> asyncModifyDnsRecord(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
+    default Future<T> modifyDnsRecordAsync(String id, String domain, String ip, DnsSRecordType dnsRecordType) {
         throw new UnsupportedOperationException();
     }
 
@@ -93,7 +93,7 @@ public interface DnsRecordProvider<T> {
      * @param domain 域名
      * @return {@link Future<T>}
      */
-    default Future<T> asyncDeleteDnsRecord(String id, String domain) {
+    default Future<T> deleteDnsRecordAsync(String id, String domain) {
         throw new UnsupportedOperationException();
     }
 

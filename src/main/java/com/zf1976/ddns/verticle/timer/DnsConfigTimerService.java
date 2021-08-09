@@ -47,16 +47,16 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
     }
 
     @SuppressWarnings("unchecked")
-    public Future<List<DnsRecordVo>> asyncFindDnsRecords(DNSServiceType dnsServiceType,
-                                                         String domain,
-                                                         DnsSRecordType dnsRecordType) {
+    public Future<List<DnsRecordVo>> findDnsRecordListAsync(DNSServiceType dnsServiceType,
+                                                            String domain,
+                                                            DnsSRecordType dnsRecordType) {
         return Future.succeededFuture(this.dnsApiMap.get(dnsServiceType))
                      .compose(api -> {
                          if (api == null) {
                              return Future.failedFuture("No service provider");
                          }
                          return api.supportAsync(dnsServiceType)
-                                   .compose(v -> api.asyncFindDnsRecordList(domain, dnsRecordType));
+                                   .compose(v -> api.findDnsRecordListAsync(domain, dnsRecordType));
                      })
                      .compose(result -> {
                          final var dnsRecordVoList = this.handlerGenericsResult(result, domain);
@@ -92,7 +92,7 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
     }
 
     @SuppressWarnings("unchecked")
-    public Future<Boolean> asyncDeleteRecord(DNSServiceType dnsServiceType, String recordId, String domain) {
+    public Future<Boolean> deleteRecordAsync(DNSServiceType dnsServiceType, String recordId, String domain) {
         final var api = this.dnsApiMap.get(dnsServiceType);
         return Future.succeededFuture(api)
                      .compose(checkApi -> {
@@ -100,7 +100,7 @@ public class DnsConfigTimerService extends AbstractDnsRecordHandler{
                              return Future.failedFuture("No service provider");
                          }
                          return checkApi.supportAsync(dnsServiceType)
-                                        .compose(v -> checkApi.asyncDeleteDnsRecord(recordId, domain));
+                                        .compose(v -> checkApi.deleteDnsRecordAsync(recordId, domain));
                      })
                      .compose(result -> this.futureDeleteResultHandler(api, result));
 
