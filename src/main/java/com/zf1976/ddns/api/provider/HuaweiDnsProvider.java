@@ -284,7 +284,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
     public Future<Boolean> supportAsync(DnsProviderType dnsServiceType) {
         return this.initZoneMapAsync()
                    .compose(v -> {
-                       if (!DnsProviderType.CLOUDFLARE.check(dnsServiceType)) {
+                       if (!DnsProviderType.HUAWEI.check(dnsServiceType)) {
                            return Future.failedFuture("The :" + dnsServiceType.name() + " DNS service provider is not supported");
                        }
                        return Future.succeededFuture(true);
