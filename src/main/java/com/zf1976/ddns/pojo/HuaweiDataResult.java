@@ -14,11 +14,30 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HuaweiDataResult {
 
-
     private List<Recordsets> recordsets;
     private List<HuaweiDataResult.Zones> zones;
     private HuaweiDataResult.Links links;
     private HuaweiDataResult.Metadata metadata;
+    private String code;
+    private String message;
+
+    public String getCode() {
+        return code;
+    }
+
+    public HuaweiDataResult setCode(String code) {
+        this.code = code;
+        return this;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public HuaweiDataResult setMessage(String message) {
+        this.message = message;
+        return this;
+    }
 
     public List<Zones> getZones() {
         return zones;
@@ -60,6 +79,8 @@ public class HuaweiDataResult {
                 ", zones=" + zones +
                 ", links=" + links +
                 ", metadata=" + metadata +
+                ", code='" + code + '\'' +
+                ", message='" + message + '\'' +
                 '}';
     }
 

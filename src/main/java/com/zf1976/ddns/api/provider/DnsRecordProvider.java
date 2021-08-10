@@ -8,6 +8,7 @@ import io.vertx.core.Future;
  * @author ant
  * Create by Ant on 2021/7/29 1:46 上午
  */
+@SuppressWarnings("unused")
 public interface DnsRecordProvider<T> {
 
     /**

@@ -19,7 +19,10 @@ public class AliyunDataResult {
     private String recordId;
 
     @JsonProperty(value = "Message")
-    private Object message;
+    private String message;
+
+    @JsonProperty(value = "Code")
+    private String code;
 
     @JsonProperty(value = "TotalCount")
     private int totalCount;
@@ -32,6 +35,15 @@ public class AliyunDataResult {
 
     @JsonProperty(value = "DomainRecords")
     private DomainRecords domainRecords;
+
+    public String getCode() {
+        return code;
+    }
+
+    public AliyunDataResult setCode(String code) {
+        this.code = code;
+        return this;
+    }
 
     public void setRequestId(String RequestId) {
         this.requestId = RequestId;
@@ -53,11 +65,11 @@ public class AliyunDataResult {
         return recordId;
     }
 
-    public Object getMessage() {
+    public String getMessage() {
         return message;
     }
 
-    public AliyunDataResult setMessage(Object message) {
+    public AliyunDataResult setMessage(String message) {
         this.message = message;
         return this;
     }
@@ -96,7 +108,8 @@ public class AliyunDataResult {
         return "AliyunDataResult{" +
                 "requestId='" + requestId + '\'' +
                 ", recordId='" + recordId + '\'' +
-                ", message=" + message +
+                ", message='" + message + '\'' +
+                ", code='" + code + '\'' +
                 ", totalCount=" + totalCount +
                 ", pageNumber=" + pageNumber +
                 ", pageSize=" + pageSize +

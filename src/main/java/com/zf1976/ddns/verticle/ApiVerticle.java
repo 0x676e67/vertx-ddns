@@ -198,8 +198,8 @@ public class ApiVerticle extends TemplateVerticle {
             final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             this.dnsConfigTimerService.deleteRecordAsync(dnsProviderType, recordId, domain)
-                    .onSuccess(bool -> this.routeResultJson(ctx, bool))
-                    .onFailure(err -> this.routeBadRequestHandler(ctx, err));
+                                      .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                                      .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, "Parameter error");
         }

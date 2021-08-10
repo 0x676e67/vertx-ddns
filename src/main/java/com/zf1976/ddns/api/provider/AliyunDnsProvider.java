@@ -197,6 +197,17 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
     }
 
+    private AliyunDataResult sendRequest(HttpRequest request) {
+        try {
+            final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+                                            .body();
+            return this.resultHandler(body);
+        } catch (IOException | InterruptedException e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
+        }
+    }
+
     @Override
     protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url, HttpMethod httpMethod) {
         return this.webClient.getAbs(url)
@@ -207,30 +218,20 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     protected AliyunDataResult resultHandler(String body) {
         final var aliyunDataResult = this.mapperResult(body, AliyunDataResult.class);
         if (aliyunDataResult != null && aliyunDataResult.getMessage() != null) {
-            throw new InvalidDnsCredentialException("Invalid credential");
+            throw new DnsServiceResponseException(aliyunDataResult.getMessage());
         }
         return aliyunDataResult;
     }
 
     @Override
-    protected Future<AliyunDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
-        final var body = responseFuture.bodyAsString();
+    protected Future<AliyunDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
         try {
-            return Future.succeededFuture(this.resultHandler(body));
+            final var body = httpResponse.bodyAsString();
+            final var aliyunDataResult = this.resultHandler(body);
+            return Future.succeededFuture(aliyunDataResult);
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
             return Future.failedFuture(e);
-        }
-    }
-
-    private AliyunDataResult sendRequest(HttpRequest request) {
-        try {
-            final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                            .body();
-            return this.resultHandler(body);
-        } catch (IOException | InterruptedException e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
         }
     }
 

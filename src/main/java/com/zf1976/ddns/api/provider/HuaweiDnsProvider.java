@@ -83,7 +83,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         return httpRequest.send()
                           .compose(bufferHttpResponse -> {
                               final var body = bufferHttpResponse.bodyAsString();
-                              this.initZone(this.mapperResult(body, HuaweiDataResult.class));
+                              this.initZone(this.resultHandler(body, Action.DESCRIBE));
                               return Future.succeededFuture();
                           });
     }
@@ -322,13 +322,16 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
 
     @Override
     protected HuaweiDataResult resultHandler(String body, Action action) {
-        final HuaweiDataResult huaweiDataResult;
+        HuaweiDataResult huaweiDataResult = this.mapperResult(body, HuaweiDataResult.class);
         switch (action) {
             case CREATE, MODIFY, DELETE -> {
                 final var result = this.mapperResult(body, HuaweiDataResult.Recordsets.class);
-                huaweiDataResult = this.resultToList(result);
+                huaweiDataResult = this.resultToList(huaweiDataResult, result);
             }
             default -> huaweiDataResult = this.mapperResult(body, HuaweiDataResult.class);
+        }
+        if (huaweiDataResult != null && huaweiDataResult.getMessage() != null) {
+            throw new DnsServiceResponseException(huaweiDataResult.getMessage());
         }
         return huaweiDataResult;
     }
@@ -336,13 +339,18 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
     @Override
     protected Future<HuaweiDataResult> resultHandlerAsync(HttpResponse<Buffer> responseFuture, Action action) {
         final var body = responseFuture.bodyAsString();
-        final var huaweiDataResult = this.resultHandler(body, action);
-        return Future.succeededFuture(huaweiDataResult);
+        try {
+            final var huaweiDataResult = this.resultHandler(body, action);
+            return Future.succeededFuture(huaweiDataResult);
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            return Future.failedFuture(e);
+        }
     }
 
-    private HuaweiDataResult resultToList(HuaweiDataResult.Recordsets result) {
-        if (result != null) {
-            return new HuaweiDataResult().setRecordsets(Collections.singletonList(result));
+    private HuaweiDataResult resultToList(final HuaweiDataResult huaweiDataResult, HuaweiDataResult.Recordsets result) {
+        if (huaweiDataResult != null && result != null) {
+            return huaweiDataResult.setRecordsets(Collections.singletonList(result));
         }
         return null;
     }
@@ -369,7 +377,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         final var extractDomain = HttpUtil.extractDomain(domain);
         String zoneId = this.zoneMap.get(extractDomain[0]);
         if (StringUtil.isEmpty(zoneId)) {
-            throw new RuntimeException("Resolved primary domain name:" + domain + "does not exist");
+            throw new RuntimeException("Resolved primary domain name:" + domain + " does not exist");
         }
         if (StringUtil.isEmpty(recordSetId)) {
             return this.concatUrl(this.api, zoneId, "recordsets");

@@ -675,8 +675,12 @@
             const TR = tr
             axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&dnsProviderType=" + selectDnsProviderType)
                 .then(res => {
-                    confirm.show("删除成功")
-                    document.getElementById("tbMain").removeChild(TR)
+                    if (res.data.data == true) {
+                        confirm.show("successfully deleted")
+                        document.getElementById("tbMain").removeChild(TR)
+                    } else {
+                        confirm.show("failed to delete")
+                    }
                 })
         }
         //把删除按钮加入td，别忘了

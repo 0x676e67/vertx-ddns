@@ -25,6 +25,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * cloudflare DNS
@@ -402,33 +403,41 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         // 如果域名属于二级及以上域名，则根据cloudflare查询策略，按主域名查询
         final var zoneId = this.zoneMap.get(extractDomain[0]);
         if (StringUtil.isEmpty(zoneId)) {
-            throw new RuntimeException("Resolved primary domain name:" + domain + "does not exist");
+            throw new RuntimeException("Resolved primary domain name:" + domain + " does not exist");
         }
         return this.concatUrl(this.api, zoneId, "dns_records");
     }
 
-    protected Future<CloudflareDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
-        final var body = responseFuture.bodyAsString();
-        final var cloudflareDataResult = this.resultHandler(body);
-        return Future.succeededFuture(cloudflareDataResult);
+    protected Future<CloudflareDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
+        final String body = httpResponse.bodyAsString();
+        try {
+            final var cloudflareDataResult = this.resultHandler(body);
+            return Future.succeededFuture(cloudflareDataResult);
+        } catch (Exception e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            return Future.failedFuture(e);
+        }
     }
 
     protected CloudflareDataResult resultHandler(String body) {
-        try {
-            final var jsonObject = JsonObject.mapFrom(Json.decodeValue(body));
-            final var resultKey = "result";
-            final var result = jsonObject.getMap()
-                                         .get(resultKey);
-            if (result instanceof ArrayList) {
-                return this.mapperResult(body, CloudflareDataResult.class);
-            } else {
-                jsonObject.put(resultKey, Collections.singletonList(result));
-                return jsonObject.mapTo(CloudflareDataResult.class);
-            }
-        } catch (Exception e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
+        final CloudflareDataResult cloudflareDataResult;
+        final var jsonObject = JsonObject.mapFrom(Json.decodeValue(body));
+        final var resultKey = "result";
+        final var result = jsonObject.getMap().get(resultKey);
+        if (result instanceof ArrayList) {
+            cloudflareDataResult = this.mapperResult(body, CloudflareDataResult.class);
+        } else {
+            jsonObject.put(resultKey, Collections.singletonList(result));
+            cloudflareDataResult = jsonObject.mapTo(CloudflareDataResult.class);
         }
+        final var errors = cloudflareDataResult.getErrors();
+        if (!CollectionUtil.isEmpty(errors)) {
+            final var messages = errors.stream()
+                                      .map(CloudflareDataResult.Error::getMessage)
+                                      .collect(Collectors.joining(","));
+            throw new DnsServiceResponseException(messages);
+        }
+        return cloudflareDataResult;
     }
 
     private Map<String, Object> getCommonQueryParam(DnsRecordType dnsRecordType) {

@@ -229,6 +229,41 @@ public class DnspodDataResult {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Error {
+        @JsonProperty(value = "Code")
+        private String code;
+
+        @JsonProperty(value = "Message")
+        private String message;
+
+        public String getCode() {
+            return code;
+        }
+
+        public Error setCode(String code) {
+            this.code = code;
+            return this;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Error setMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" +
+                    "code='" + code + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Response {
 
         @JsonProperty("RequestId")
@@ -240,13 +275,13 @@ public class DnspodDataResult {
         @JsonProperty("RecordList")
         private List<RecordList> recordList;
         @JsonProperty("Error")
-        private Object error;
+        private Error error;
 
-        public Object getError() {
+        public Error getError() {
             return error;
         }
 
-        public Response setError(Object error) {
+        public Response setError(Error error) {
             this.error = error;
             return this;
         }

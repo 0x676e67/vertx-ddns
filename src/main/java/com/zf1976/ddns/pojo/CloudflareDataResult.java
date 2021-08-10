@@ -11,7 +11,7 @@ public class CloudflareDataResult {
 
     private List<CloudflareDataResult.Result> result;
     private boolean success;
-    private List<Object> errors;
+    private List<Error> errors;
     private List<Object> messages;
     @JsonProperty("result_info")
     private ResultInfo resultInfo;
@@ -28,28 +28,32 @@ public class CloudflareDataResult {
     public void setSuccess(boolean success) {
          this.success = success;
      }
-     public boolean getSuccess() {
+
+    public boolean getSuccess() {
          return success;
      }
 
-    public void setErrors(List<Object> errors) {
+    public void setErrors(List<Error> errors) {
          this.errors = errors;
      }
-     public List<Object> getErrors() {
+
+    public List<Error> getErrors() {
          return errors;
      }
 
     public void setMessages(List<Object> messages) {
          this.messages = messages;
-     }
-     public List<Object> getMessages() {
+    }
+
+    public List<Object> getMessages() {
          return messages;
      }
 
     public void setResultInfo(ResultInfo resultInfo) {
-         this.resultInfo = resultInfo;
-     }
-     public ResultInfo getResultInfo() {
+        this.resultInfo = resultInfo;
+    }
+
+    public ResultInfo getResultInfo() {
          return resultInfo;
      }
 
@@ -62,6 +66,40 @@ public class CloudflareDataResult {
                 ", messages=" + messages +
                 ", resultInfo=" + resultInfo +
                 '}';
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Error {
+
+        private String code;
+
+        private String message;
+
+        public String getCode() {
+            return code;
+        }
+
+        public Error setCode(String code) {
+            this.code = code;
+            return this;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Error setMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" +
+                    "code='" + code + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

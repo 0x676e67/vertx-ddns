@@ -51,17 +51,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
         this.webClient = WebClient.create(vertx, webClientOptions);
     }
 
-    protected void checkIp(String ip) {
-        if (!HttpUtil.isIp(ip)) {
-            throw new RuntimeException("ip：" + ip + " unqualified");
-        }
-    }
 
-    protected void checkDomain(String domain) {
-        if (HttpUtil.isDomain(domain)) {
-            throw new RuntimeException("domain：" + domain + " unqualified");
-        }
-    }
 
     protected <E> E mapperResult(byte[] bytes, Class<E> tClass) {
         try {
@@ -90,7 +80,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
         throw new UnsupportedOperationException();
     }
 
-    protected Future<T> resultHandlerAsync(HttpResponse<Buffer> responseFuture) {
+    protected Future<T> resultHandlerAsync(HttpResponse<Buffer> httpResponse) {
         throw new UnsupportedOperationException();
     }
 
@@ -104,6 +94,10 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(HttpRequest<Buffer> httpRequest, JsonObject data) {
         throw new UnsupportedOperationException();
+    }
+
+    protected Future<HttpResponse<Buffer>> sendRequestAsync(String url) {
+        return this.sendRequestAsync(url, HttpMethod.GET);
     }
 
 

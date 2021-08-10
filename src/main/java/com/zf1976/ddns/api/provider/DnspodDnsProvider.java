@@ -5,7 +5,6 @@ import com.zf1976.ddns.api.auth.DnsApiCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
-import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
@@ -107,7 +106,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
     public Future<DnspodDataResult> findDnsRecordListAsync(String domain, DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -123,7 +122,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
     public Future<DnspodDataResult> createDnsRecordAsync(String domain, String ip, DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -143,7 +142,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
                                                          DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -158,7 +157,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
     public Future<DnspodDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -193,26 +192,27 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
     }
 
     @Override
-    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url, HttpMethod httpMethod) {
-        return this.webClient.getAbs(url)
-                             .send();
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url) {
+        return this.webClient.getAbs(url).send();
     }
 
     @Override
     protected DnspodDataResult resultHandler(String body) {
         final var dnspodDataResult = this.mapperResult(body, DnspodDataResult.class);
-        if (dnspodDataResult != null && dnspodDataResult.getResponse().getError() != null) {
-            throw new InvalidDnsCredentialException("Invalid credential");
+        if (dnspodDataResult != null && dnspodDataResult.getResponse() != null) {
+            final var error = dnspodDataResult.getResponse().getError();
+            if (error != null) {
+                throw new DnsServiceResponseException(error.getMessage());
+            }
         }
         return dnspodDataResult;
     }
 
     @Override
-    protected Future<DnspodDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> responseFuture) {
-        final var body = responseFuture.bodyAsString();
-        final DnspodDataResult aliyunDataResult;
+    protected Future<DnspodDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
         try {
-            aliyunDataResult = this.resultHandler(body);
+            final var body = httpResponse.bodyAsString();
+            final DnspodDataResult aliyunDataResult = this.resultHandler(body);
             return Future.succeededFuture(aliyunDataResult);
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
