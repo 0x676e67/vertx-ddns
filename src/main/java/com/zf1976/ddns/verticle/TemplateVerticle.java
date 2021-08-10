@@ -6,7 +6,7 @@ import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.timer.DnsConfigTimerService;
+import com.zf1976.ddns.verticle.timer.DnsRecordService;
 import com.zf1976.ddns.verticle.timer.SecureProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -47,7 +47,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
-    protected DnsConfigTimerService dnsConfigTimerService;
+    protected DnsRecordService dnsConfigTimerService;
     protected Boolean notAllowWanAccess = Boolean.TRUE;
 
 
@@ -155,7 +155,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
 
     protected Future<Void> newDnsConfigTimerService(List<DnsConfig> configList) {
         try {
-            this.dnsConfigTimerService = new DnsConfigTimerService(configList, this.vertx);
+            this.dnsConfigTimerService = new DnsRecordService(configList, this.vertx);
             return Future.succeededFuture();
         } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());
@@ -390,6 +390,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
         final Throwable cause = throwable.getCause();
         final String message = cause == null? throwable.getMessage() : cause.getMessage();
-        this.setCommonHeader(response).end(Json.encodePrettily(DataResult.fail(message)));
+        final var fail = DataResult.fail(message);
+        fail.setErrCode(statusCode);
+        this.setCommonHeader(response).end(Json.encodePrettily(fail));
     }
 }

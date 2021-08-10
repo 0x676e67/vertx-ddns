@@ -73,40 +73,40 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
     }
 
     protected T resultHandler(String body) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected T resultHandler(String body, A a) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<T> resultHandlerAsync(HttpResponse<Buffer> httpResponse) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<T> resultHandlerAsync(HttpResponse<Buffer> responseFuture, A a) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(HttpRequest<Buffer> httpRequest) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(HttpRequest<Buffer> httpRequest, JsonObject data) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(String url) {
-        return this.sendRequestAsync(url, HttpMethod.GET);
+        throw new UnsupportedOperationException("unrealized");
     }
 
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(String url, HttpMethod methodType) {
-        return this.sendRequestAsync(url, (JsonObject) null, methodType);
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected Future<HttpResponse<Buffer>> sendRequestAsync(String url, JsonObject data, HttpMethod methodType) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("unrealized");
     }
 
     protected String concatUrl(String first, String... more) {

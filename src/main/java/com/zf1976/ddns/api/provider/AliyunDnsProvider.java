@@ -115,7 +115,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     public Future<AliyunDataResult> findDnsRecordListAsync(String domain, DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -131,7 +131,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     public Future<AliyunDataResult> createDnsRecordAsync(String domain, String ip, DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -151,7 +151,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
                                                          DnsRecordType dnsRecordType) {
         final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -166,7 +166,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     public Future<AliyunDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
-        return this.sendRequestAsync(url, HttpMethod.GET)
+        return this.sendRequestAsync(url)
                    .compose(this::resultHandlerAsync);
     }
 
@@ -209,9 +209,8 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     }
 
     @Override
-    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url, HttpMethod httpMethod) {
-        return this.webClient.getAbs(url)
-                             .send();
+    protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url) {
+        return this.webClient.getAbs(url).send();
     }
 
     @Override
