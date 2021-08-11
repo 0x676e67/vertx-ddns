@@ -14,6 +14,8 @@ import com.zf1976.ddns.api.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -30,6 +32,7 @@ import java.util.Random;
  */
 public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, DnspodDnsProvider.Action> {
 
+    private final Logger log = LogManager.getLogger("[DnspodDnsProvider]");
     private final RpcAPISignatureComposer composer = DnspodSignatureComposer.getComposer();
 
     public DnspodDnsProvider(String id, String secret, Vertx vertx) {

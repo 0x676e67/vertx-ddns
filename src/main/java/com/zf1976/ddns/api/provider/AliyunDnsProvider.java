@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, AliyunDnsProvider.Action> {
 
-    private final Logger log = LogManager.getLogger("[AliyunDnsApi]");
+    private final Logger log = LogManager.getLogger("[AliyunDnsProvider]");
     private final RpcAPISignatureComposer rpcSignatureComposer = AliyunSignatureComposer.getComposer();
 
     public AliyunDnsProvider(String accessKeyId, String accessKeySecret, Vertx vertx) {

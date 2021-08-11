@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("RedundantCast")
 public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataResult, CloudflareDnsProvider.Action> {
 
-    private final Logger log = LogManager.getLogger("[CloudflareDnsApi]");
+    private final Logger log = LogManager.getLogger("[CloudflareDnsProvider]");
     private final String api = "https://api.cloudflare.com/client/v4/zones";
     private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 

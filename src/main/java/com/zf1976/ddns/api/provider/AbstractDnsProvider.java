@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"RedundantCast"})
 public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> {
 
-    protected final Logger log = LogManager.getLogger("[AbstractDnsApi]");
+    protected final Logger log = LogManager.getLogger("[AbstractDnsProvider]");
     public static final int DEFAULT_CONNECT_TIMEOUT = 100000;
     protected final DnsApiCredentials dnsApiCredentials;
     protected final HttpClient httpClient = HttpClient.newBuilder()
