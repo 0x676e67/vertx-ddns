@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.timer;
+package com.zf1976.ddns.verticle.auth;
 
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.RsaUtil;

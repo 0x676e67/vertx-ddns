@@ -6,6 +6,7 @@ import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
+import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
@@ -377,7 +378,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         final var extractDomain = HttpUtil.extractDomain(domain);
         String zoneId = this.zoneMap.get(extractDomain[0]);
         if (StringUtil.isEmpty(zoneId)) {
-            throw new RuntimeException("Resolved primary domain name:" + domain + " does not exist");
+            throw new ResolvedDomainException("Resolved primary domain name:" + domain + " does not exist");
         }
         if (StringUtil.isEmpty(recordSetId)) {
             return this.concatUrl(this.api, zoneId, "recordsets");

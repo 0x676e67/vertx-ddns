@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class ApiVerticle extends TemplateVerticle {
 
-    private final Logger log = LogManager.getLogger(ApiVerticle.class);
+    private final Logger log = LogManager.getLogger("[ApiVerticle]");
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -94,8 +94,8 @@ public class ApiVerticle extends TemplateVerticle {
             .compose(v -> httpServer.requestHandler(router)
                                     .listen(serverPort))
             .onSuccess(event -> {
-                log.info("Vertx web server initialized with port(s): " + serverPort + " (http)");
-                log.info("DDNS-Vertx is running at http://localhost:" + serverPort);
+                log.info("Vertx web server initialized with port(s): {}(http)", serverPort);
+                log.info("DDNS-Vertx is running at http://localhost:{}",serverPort);
                 try {
                     super.start(startPromise);
                 } catch (Exception e) {
@@ -179,9 +179,9 @@ public class ApiVerticle extends TemplateVerticle {
             final var dnsRecordType = DnsRecordType.checkType(request.getParam(ApiConstants.DNS_RECORD_TYPE));
             final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            this.dnsConfigTimerService.findRecordListAsync(dnsProviderType, domain, dnsRecordType)
-                                      .onSuccess(bool -> this.routeResultJson(ctx, bool))
-                                      .onFailure(err -> this.routeBadRequestHandler(ctx, err));
+            this.dnsRecordService.findRecordListAsync(dnsProviderType, domain, dnsRecordType)
+                                 .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                                 .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
             this.routeErrorHandler(ctx, "Parameter error");
         }
@@ -198,9 +198,9 @@ public class ApiVerticle extends TemplateVerticle {
             final var recordId = request.getParam(ApiConstants.RECORD_ID);
             final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
-            this.dnsConfigTimerService.deleteRecordAsync(dnsProviderType, recordId, domain)
-                                      .onSuccess(bool -> this.routeResultJson(ctx, bool))
-                                      .onFailure(err -> this.routeBadRequestHandler(ctx, err));
+            this.dnsRecordService.deleteRecordAsync(dnsProviderType, recordId, domain)
+                                 .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                                 .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, "Parameter error");
         }
@@ -268,7 +268,7 @@ public class ApiVerticle extends TemplateVerticle {
         final String absolutePath = this.toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
         return this.readDnsConfig(fileSystem)
                    .compose(configList -> this.writeDnsConfig(configList, dnsConfig, absolutePath)
-                                              .compose(v -> newDnsConfigTimerService(configList)));
+                                              .compose(v -> newDnsRecordService(configList)));
     }
 
     /**

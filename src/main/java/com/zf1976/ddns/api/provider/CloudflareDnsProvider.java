@@ -6,6 +6,7 @@ import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
+import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
 import com.zf1976.ddns.util.*;
@@ -251,7 +252,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         return this.initZoneMapAsync()
                    .compose(v -> {
                        if (!DnsProviderType.CLOUDFLARE.check(dnsServiceType)) {
-                           return Future.failedFuture("The :" + dnsServiceType.name() + " DNS service provider is not supported");
+                           return Future.failedFuture("The :{}" + dnsServiceType.name() + " DNS service provider is not supported");
                        }
                        return Future.succeededFuture(true);
                    });
@@ -403,7 +404,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         // 如果域名属于二级及以上域名，则根据cloudflare查询策略，按主域名查询
         final var zoneId = this.zoneMap.get(extractDomain[0]);
         if (StringUtil.isEmpty(zoneId)) {
-            throw new RuntimeException("Resolved primary domain name:" + domain + " does not exist");
+            throw new ResolvedDomainException("Resolved primary domain name:" + domain + " does not exist");
         }
         return this.concatUrl(this.api, zoneId, "dns_records");
     }

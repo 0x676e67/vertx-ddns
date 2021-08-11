@@ -3,14 +3,12 @@ package com.zf1976.ddns.verticle.auth;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
-import com.zf1976.ddns.verticle.timer.SecureProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
-import io.vertx.ext.auth.authentication.CredentialValidationException;
 import io.vertx.ext.auth.impl.UserImpl;
 
 /**

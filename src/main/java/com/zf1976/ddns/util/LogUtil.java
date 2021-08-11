@@ -120,6 +120,11 @@ public class LogUtil {
         printTrace(log, message, (Throwable) null);
     }
 
+    public static void printInfo(Object message) {
+        printInfo(LOG, message, (Throwable) null);
+    }
+
+
     public static void printDebug(Object message) {
         printDebug(LOG, message, (Throwable) null);
     }

@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.timer;
+package com.zf1976.ddns.verticle.service.impl;
 
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.provider.DnsRecordProvider;
@@ -7,6 +7,7 @@ import com.zf1976.ddns.api.provider.exception.NotSupportDnsProviderException;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.verticle.service.AbstractDnsRecordService;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
@@ -18,22 +19,22 @@ import java.util.*;
  * @author ant
  * Create by Ant on 2021/7/28 10:01 下午
  */
-public class DnsRecordService extends AbstractDnsRecordService {
+public class DnsRecordServiceImpl extends AbstractDnsRecordService {
 
     private final Logger log = LogManager.getLogger("[DnsRecordService]");
 
-    public DnsRecordService(List<DnsConfig> ddnsConfigList, Vertx vertx) {
+    public DnsRecordServiceImpl(List<DnsConfig> ddnsConfigList, Vertx vertx) {
         super(ddnsConfigList, vertx);
     }
 
-    public List<DnsRecordVo> findRecords(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType) {
+    public List<DnsRecordVo> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType) {
         final var provider = this.providerMap.get(dnsServiceType);
         this.checkProvider(provider, dnsServiceType);
         final var result = provider.findDnsRecordList(domain, dnsRecordType);
         return super.findGenericsResultHandler(result, domain);
     }
 
-
+    @Override
     public Boolean createRecord(DnsProviderType dnsProviderType, String domain, String ip, DnsRecordType dnsRecordType) {
         final var provider = this.providerMap.get(dnsProviderType);
         this.checkProvider(provider, dnsProviderType);
@@ -41,6 +42,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
         return super.createGenericsResultHandler(result);
     }
 
+    @Override
     public Boolean modifyRecord(DnsProviderType dnsProviderType, String id, String domain, String ip, DnsRecordType dnsRecordType) {
         final var provider = this.providerMap.get(dnsProviderType);
         this.checkProvider(provider, dnsProviderType);
@@ -48,6 +50,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
         return super.modifyGenericsResultHandler(result);
     }
 
+    @Override
     public Boolean deleteRecord(DnsProviderType dnsProviderType, String recordId, String domain) {
         final var provider = this.providerMap.get(dnsProviderType);
         this.checkProvider(provider, dnsProviderType);
@@ -56,6 +59,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Future<List<DnsRecordVo>> findRecordListAsync(DnsProviderType dnsServiceType,
                                                          String domain,
                                                          DnsRecordType dnsRecordType) {
@@ -74,6 +78,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Future<Boolean> createRecordAsync(DnsProviderType dnsProviderType, String domain, String ip, DnsRecordType dnsRecordType) {
         return Future.succeededFuture(this.providerMap.get(dnsProviderType))
                      .compose(provider -> {
@@ -87,6 +92,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Future<Boolean> modifyRecordAsync(DnsProviderType dnsProviderType, String id, String domain, String ip, DnsRecordType dnsRecordType) {
         return Future.succeededFuture(this.providerMap.get(dnsProviderType))
                      .compose(provider -> {
@@ -100,6 +106,7 @@ public class DnsRecordService extends AbstractDnsRecordService {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Future<Boolean> deleteRecordAsync(DnsProviderType dnsProviderType, String id, String domain) {
         return Future.succeededFuture(this.providerMap.get(dnsProviderType))
                      .compose(provider -> {

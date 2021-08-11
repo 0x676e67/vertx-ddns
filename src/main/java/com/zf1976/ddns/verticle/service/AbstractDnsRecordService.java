@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.timer;
+package com.zf1976.ddns.verticle.service;
 
 import com.zf1976.ddns.api.provider.AliyunDnsProvider;
 import com.zf1976.ddns.api.provider.CloudflareDnsProvider;
@@ -10,6 +10,7 @@ import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
+import com.zf1976.ddns.verticle.timer.PeriodicHandler;
 import io.vertx.core.Vertx;
 
 import java.util.LinkedList;
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/8/7 2:19 PM
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractDnsRecordService implements PeriodicDnsRecordHandler{
+public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRecordService {
 
     protected final Vertx vertx;
     protected final Map<DnsProviderType, DnsRecordProvider> providerMap;

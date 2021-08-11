@@ -6,8 +6,9 @@ import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.timer.DnsRecordService;
-import com.zf1976.ddns.verticle.timer.SecureProvider;
+import com.zf1976.ddns.verticle.service.DnsRecordService;
+import com.zf1976.ddns.verticle.service.impl.DnsRecordServiceImpl;
+import com.zf1976.ddns.verticle.auth.SecureProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -47,7 +48,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
-    protected DnsRecordService dnsConfigTimerService;
+    protected DnsRecordService dnsRecordService;
     protected Boolean notAllowWanAccess = Boolean.TRUE;
 
 
@@ -150,12 +151,12 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
 
     protected Future<Void> initDnsServiceConfig(FileSystem fileSystem) {
         return this.readDnsConfig(fileSystem)
-                   .compose(this::newDnsConfigTimerService);
+                   .compose(this::newDnsRecordService);
     }
 
-    protected Future<Void> newDnsConfigTimerService(List<DnsConfig> configList) {
+    protected Future<Void> newDnsRecordService(List<DnsConfig> configList) {
         try {
-            this.dnsConfigTimerService = new DnsRecordService(configList, this.vertx);
+            this.dnsRecordService = new DnsRecordServiceImpl(configList, this.vertx);
             return Future.succeededFuture();
         } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());
