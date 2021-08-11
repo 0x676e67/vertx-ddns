@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.auth;
 
 public record BasicCredentials(String accessKeyId,
-                               String accessKeySecret) implements DnsApiCredentials {
+                               String accessKeySecret) implements DnsProviderCredentials {
 
     public BasicCredentials {
         if (accessKeyId == null) {

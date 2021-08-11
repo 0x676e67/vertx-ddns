@@ -23,33 +23,44 @@ import java.util.concurrent.ConcurrentHashMap;
  * Create by Ant on 2021/8/7 2:19 PM
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandler{
+public abstract class AbstractDnsRecordService implements PeriodicDnsRecordHandler{
 
     protected final Vertx vertx;
-    protected final Map<DnsProviderType, DnsRecordProvider> dnsProviderMap;
+    protected final Map<DnsProviderType, DnsRecordProvider> providerMap;
 
 
-    protected AbstractDnsRecordHandler(List<DnsConfig> ddnsConfigList, Vertx vertx) {
+    protected AbstractDnsRecordService(List<DnsConfig> dnsConfigList, Vertx vertx) {
         this(new ConcurrentHashMap<>(4), vertx);
-        for (DnsConfig config : ddnsConfigList) {
+        for (DnsConfig config : dnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
                 switch (config.getDnsProviderType()) {
-                    case ALIYUN -> dnsProviderMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case DNSPOD -> dnsProviderMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case HUAWEI -> dnsProviderMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case CLOUDFLARE -> dnsProviderMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
+                    case ALIYUN -> providerMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case DNSPOD -> providerMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case HUAWEI -> providerMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case CLOUDFLARE -> providerMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
                 }
             }
         }
 
     }
 
-    protected AbstractDnsRecordHandler(Map<DnsProviderType, DnsRecordProvider> providerMap, Vertx vertx) {
-        this.dnsProviderMap = providerMap;
+    protected AbstractDnsRecordService(Map<DnsProviderType, DnsRecordProvider> providerMap, Vertx vertx) {
+        this.providerMap = providerMap;
         if (vertx == null) {
             throw new RuntimeException("Vert.x instance cannot be null");
         }
         this.vertx = vertx;
+    }
+
+    public void reloadDnsProviderCredentials(List<DnsConfig> dnsConfigList) {
+        for (DnsConfig config : dnsConfigList) {
+            if (config.getId() != null && config.getSecret() != null) {
+                final var provider = providerMap.get(config.getDnsProviderType());
+                if (provider != null) {
+                    provider.reloadCredentials(config.getId(), config.getSecret());
+                }
+            }
+        }
     }
 
     protected void checkIp(String ip) {

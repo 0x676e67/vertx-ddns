@@ -1,5 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
+import com.zf1976.ddns.api.auth.BasicCredentials;
+import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.DnsProviderType;
 import io.vertx.core.Future;
@@ -113,4 +115,21 @@ public interface DnsRecordProvider<T> {
      * @return {@link Future<Boolean>}
      */
     Future<Boolean> supportAsync(DnsProviderType dnsServiceType);
+
+    /**
+     * 重新加载凭证
+     *
+     * @param dnsProviderCredentials provider credentials
+     */
+    void reloadCredentials(DnsProviderCredentials dnsProviderCredentials);
+
+    /**
+     * 功能描述
+     *
+     * @param accessKey accessKey
+     * @param secretKey secretKey
+     */
+    default void reloadCredentials(String accessKey, String secretKey) {
+        this.reloadCredentials(new BasicCredentials(accessKey, secretKey));
+    }
 }

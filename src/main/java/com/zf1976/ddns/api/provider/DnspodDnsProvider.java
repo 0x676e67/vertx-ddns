@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
@@ -39,7 +39,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public DnspodDnsProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public DnspodDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -225,7 +225,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
 
     private String requestUrlBuild(Map<String, Object> queryParam) {
         final String api = "https://dnspod.tencentcloudapi.com/";
-        return this.composer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret(), api, HttpMethod.GET, queryParam);
+        return this.composer.toSignatureUrl(this.dnsProviderCredentials.getAccessKeySecret(), api, HttpMethod.GET, queryParam);
     }
 
     private HttpRequest requestBuild(Map<String, Object> queryParam) {
@@ -240,7 +240,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
         Map<String, Object> params = new HashMap<>();
         params.put("Nonce", new Random().nextInt(java.lang.Integer.MAX_VALUE) + System.currentTimeMillis());
         params.put("Timestamp", System.currentTimeMillis() / 1000);
-        params.put("SecretId", this.dnsApiCredentials.getAccessKeyId());
+        params.put("SecretId", this.dnsProviderCredentials.getAccessKeyId());
         params.put("Action", action.value);
         params.put("Version", "2021-03-23");
         params.put("SignatureMethod", "HmacSHA256");

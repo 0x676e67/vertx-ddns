@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
@@ -45,7 +45,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     }
 
 
-    public CloudflareDnsProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    public CloudflareDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -56,7 +56,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         final var request = HttpRequest.newBuilder()
                                        .GET()
                                        .uri(URI.create(api))
-                                       .header(HttpHeaders.AUTHORIZATION, "Bearer " + dnsApiCredentials.getAccessKeySecret())
+                                       .header(HttpHeaders.AUTHORIZATION, "Bearer " + dnsProviderCredentials.getAccessKeySecret())
                                        .build();
         final String body;
         try {
@@ -258,7 +258,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     }
 
     private String bearerToken() {
-        final var token = super.dnsApiCredentials.getAccessKeySecret();
+        final var token = super.dnsProviderCredentials.getAccessKeySecret();
         return "Bearer " + token;
     }
 
@@ -465,6 +465,12 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
             }
         }
         return queryParam;
+    }
+
+    @Override
+    public void reloadCredentials(DnsProviderCredentials dnsProviderCredentials) {
+        this.zoneMap.clear();
+        super.reloadCredentials(dnsProviderCredentials);
     }
 
     protected enum Action {

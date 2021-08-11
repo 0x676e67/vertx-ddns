@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.auth;
 
-public interface DnsApiCredentials {
+public interface DnsProviderCredentials {
 
     String getAccessKeyId();
 

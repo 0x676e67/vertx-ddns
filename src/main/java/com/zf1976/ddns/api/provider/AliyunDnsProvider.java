@@ -1,11 +1,10 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
-import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.AliyunDataResult;
@@ -32,7 +31,7 @@ import java.util.Map;
  * 阿里云DNS
  *
  * @author mac
- * @date 2021/7/14
+ * 2021/7/14
  */
 public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, AliyunDnsProvider.Action> {
 
@@ -43,7 +42,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         this(new BasicCredentials(accessKeyId, accessKeySecret), vertx);
     }
 
-    public AliyunDnsProvider(DnsApiCredentials credentials, Vertx vertx) {
+    public AliyunDnsProvider(DnsProviderCredentials credentials, Vertx vertx) {
         super(credentials, vertx);
     }
 
@@ -236,14 +235,14 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
 
     private String requestUrlBuild(Map<String, Object> queryParam) {
         final String api = "https://alidns.aliyuncs.com/";
-        return this.rpcSignatureComposer.toSignatureUrl(this.dnsApiCredentials.getAccessKeySecret() + "&", api, HttpMethod.GET, queryParam);
+        return this.rpcSignatureComposer.toSignatureUrl(this.dnsProviderCredentials.getAccessKeySecret() + "&", api, HttpMethod.GET, queryParam);
     }
 
 
     private Map<String, Object> getCommonQueryParam(Action action) {
         final var queryParam = new HashMap<String, Object>();
         queryParam.put("Format", "JSON");
-        queryParam.put("AccessKeyId", this.dnsApiCredentials.getAccessKeyId());
+        queryParam.put("AccessKeyId", this.dnsProviderCredentials.getAccessKeyId());
         queryParam.put("Action", action.value);
         queryParam.put("SignatureMethod", rpcSignatureComposer.signatureMethod());
         queryParam.put("SignatureNonce", ParameterHelper.getUniqueNonce());

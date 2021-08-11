@@ -10,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.CredentialValidationException;
 import io.vertx.ext.auth.impl.UserImpl;
 
 /**
@@ -49,7 +50,7 @@ public record UsernamePasswordAuthenticationProvider(
                     if (event.succeeded()) {
                         resultHandler.handle(Future.succeededFuture(user));
                     } else {
-                        resultHandler.handle(Future.failedFuture(event.cause().getMessage()));
+                        resultHandler.handle(Future.failedFuture(event.cause()));
                     }
                 });
     }
@@ -64,9 +65,9 @@ public record UsernamePasswordAuthenticationProvider(
             if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), checkUsername) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), checkPassword)) {
                 return Future.succeededFuture(user);
             }
-            return Future.failedFuture("wrong user name or password");
+            return Future.failedFuture("wrong user name or password!");
         } catch (Exception e) {
-            return Future.failedFuture(e.getMessage());
+            return Future.failedFuture("server decryption verification error!");
         }
     }
 

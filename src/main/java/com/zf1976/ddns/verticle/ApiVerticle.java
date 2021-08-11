@@ -68,6 +68,7 @@ public class ApiVerticle extends TemplateVerticle {
               .handler(formLoginHandler);
         // Sign out
         router.post("/logout")
+              .handler(redirectAuthHandler)
               .handler(this::logoutHandler);
         // Store DNS service provider key
         router.post("/api/store/dns/config")

@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.auth.DnsApiCredentials;
+import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.HttpMethod;
 import com.zf1976.ddns.util.*;
@@ -32,19 +32,19 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsProvider]");
     public static final int DEFAULT_CONNECT_TIMEOUT = 100000;
-    protected final DnsApiCredentials dnsApiCredentials;
+    protected DnsProviderCredentials dnsProviderCredentials;
     protected final HttpClient httpClient = HttpClient.newBuilder()
                                                       .connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT))
                                                       .executor(Executors.newSingleThreadExecutor())
                                                       .build();
     protected final WebClient webClient;
 
-    protected AbstractDnsProvider(DnsApiCredentials dnsApiCredentials, Vertx vertx) {
+    protected AbstractDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
         if (vertx == null) {
             throw new RuntimeException("Vert.x instance cannot be null");
         }
         Assert.notNull(dnsApiCredentials, "Credentials cannot been null!");
-        this.dnsApiCredentials = dnsApiCredentials;
+        this.dnsProviderCredentials = dnsApiCredentials;
         final var webClientOptions = new WebClientOptions()
                 .setConnectTimeout(DEFAULT_CONNECT_TIMEOUT)
                 .setSsl(true);
@@ -137,5 +137,10 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
                                                 A action) {
 
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void reloadCredentials(DnsProviderCredentials dnsProviderCredentials) {
+        this.dnsProviderCredentials = dnsProviderCredentials;
     }
 }

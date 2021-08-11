@@ -4,7 +4,7 @@ package com.zf1976.ddns.api.auth;
  * @author mac
  * @date 2021/7/18
  */
-public class TokenCredentials implements DnsApiCredentials{
+public class TokenCredentials implements DnsProviderCredentials {
 
     private final String accessKeySecret;
 
