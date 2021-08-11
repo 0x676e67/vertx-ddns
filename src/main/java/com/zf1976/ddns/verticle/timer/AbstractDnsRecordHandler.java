@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandler{
 
     protected final Vertx vertx;
-    protected final Map<DnsProviderType, DnsRecordProvider> dnsApiMap;
+    protected final Map<DnsProviderType, DnsRecordProvider> dnsProviderMap;
 
 
     protected AbstractDnsRecordHandler(List<DnsConfig> ddnsConfigList, Vertx vertx) {
@@ -34,18 +34,18 @@ public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandl
         for (DnsConfig config : ddnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
                 switch (config.getDnsProviderType()) {
-                    case ALIYUN -> dnsApiMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case DNSPOD -> dnsApiMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case HUAWEI -> dnsApiMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case CLOUDFLARE -> dnsApiMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
+                    case ALIYUN -> dnsProviderMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case DNSPOD -> dnsProviderMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case HUAWEI -> dnsProviderMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
+                    case CLOUDFLARE -> dnsProviderMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
                 }
             }
         }
 
     }
 
-    protected AbstractDnsRecordHandler(Map<DnsProviderType, DnsRecordProvider> recordApiMap, Vertx vertx) {
-        this.dnsApiMap = recordApiMap;
+    protected AbstractDnsRecordHandler(Map<DnsProviderType, DnsRecordProvider> providerMap, Vertx vertx) {
+        this.dnsProviderMap = providerMap;
         if (vertx == null) {
             throw new RuntimeException("Vert.x instance cannot be null");
         }
@@ -64,18 +64,58 @@ public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandl
         }
     }
 
-    protected Boolean deleteResultGenericsResultHandler(Object obj) {
-        if (obj instanceof DnspodDataResult dnspodDataResult) {
-            return dnspodDataResult.getResponse().getError() == null;
-        } else if (obj instanceof CloudflareDataResult cloudflareDataResult) {
-            return cloudflareDataResult.getSuccess();
-        } else return obj instanceof AliyunDataResult || obj instanceof HuaweiDataResult;
+    protected Boolean createGenericsResultHandler(Object result) {
+        if (result instanceof DnspodDataResult dnspodDataResult) {
+            final var response = dnspodDataResult.getResponse();
+            return response.getError() == null && response.getRecordId() != null;
+        } else if (result instanceof CloudflareDataResult cloudflareDataResult) {
+            return cloudflareDataResult.getSuccess()
+                    && CollectionUtil.isEmpty(cloudflareDataResult.getErrors())
+                    && !CollectionUtil.isEmpty(cloudflareDataResult.getResult());
+        } else if (result instanceof AliyunDataResult aliyunDataResult) {
+            return aliyunDataResult.getMessage() == null && aliyunDataResult.getRecordId() != null;
+        } else if (result instanceof HuaweiDataResult huaweiDataResult) {
+            return huaweiDataResult.getMessage() == null && !CollectionUtil.isEmpty(huaweiDataResult.getRecordsets());
+        }
+        return Boolean.FALSE;
     }
 
-    protected List<DnsRecordVo> findGenericsResultHandler(Object obj, String domain) {
+    protected Boolean modifyGenericsResultHandler(Object result) {
+        if (result instanceof DnspodDataResult dnspodDataResult) {
+            final var response = dnspodDataResult.getResponse();
+            return response.getRecordId() != null && response.getError() == null;
+        } else if (result instanceof CloudflareDataResult cloudflareDataResult){
+            return cloudflareDataResult.getSuccess()
+                    && CollectionUtil.isEmpty(cloudflareDataResult.getErrors())
+                    && !CollectionUtil.isEmpty(cloudflareDataResult.getResult());
+        } else if (result instanceof HuaweiDataResult huaweiDataResult) {
+            return huaweiDataResult.getMessage() == null && !CollectionUtil.isEmpty(huaweiDataResult.getRecordsets());
+        } else if (result instanceof AliyunDataResult aliyunDataResult) {
+            return aliyunDataResult.getMessage() == null && aliyunDataResult.getRecordId() != null;
+        }
+        return Boolean.FALSE;
+    }
+
+    protected Boolean deleteGenericsResultHandler(Object result) {
+        if (result instanceof DnspodDataResult dnspodDataResult) {
+            final var response = dnspodDataResult.getResponse();
+            return response.getError() == null && response.getRecordId() != null;
+        } else if (result instanceof CloudflareDataResult cloudflareDataResult) {
+            return cloudflareDataResult.getSuccess()
+                    && !CollectionUtil.isEmpty(cloudflareDataResult.getResult())
+                    && CollectionUtil.isEmpty(cloudflareDataResult.getErrors());
+        } else if (result instanceof AliyunDataResult aliyunDataResult) {
+            return aliyunDataResult.getMessage() == null && aliyunDataResult.getRecordId() != null;
+        } else if (result instanceof HuaweiDataResult huaweiDataResult) {
+            return huaweiDataResult.getMessage() == null && !CollectionUtil.isEmpty(huaweiDataResult.getRecordsets());
+        }
+        return Boolean.FALSE;
+    }
+
+    protected List<DnsRecordVo> findGenericsResultHandler(Object result, String domain) {
         List<DnsRecordVo> recordVoList = new LinkedList<>();
-        if (obj instanceof AliyunDataResult result && result.getDomainRecords() != null) {
-            final var domainRecords = result.getDomainRecords()
+        if (result instanceof AliyunDataResult aliyunDataResult && aliyunDataResult.getDomainRecords() != null) {
+            final var domainRecords = aliyunDataResult.getDomainRecords()
                                             .getRecordList();
             for (AliyunDataResult.Record record : domainRecords) {
                 final var recordVo = DnsRecordVo.newBuilder()
@@ -88,8 +128,8 @@ public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandl
             }
         }
 
-        if (obj instanceof DnspodDataResult result && result.getResponse() != null) {
-            final var recordList = result.getResponse()
+        if (result instanceof DnspodDataResult dnspodDataResult && dnspodDataResult.getResponse() != null) {
+            final var recordList = dnspodDataResult.getResponse()
                                          .getRecordList();
             if (!CollectionUtil.isEmpty(recordList)) {
                 for (DnspodDataResult.RecordList record : recordList) {
@@ -105,8 +145,8 @@ public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandl
             }
         }
 
-        if (obj instanceof HuaweiDataResult result) {
-            final var recordList = result.getRecordsets();
+        if (result instanceof HuaweiDataResult huaweiDataResult) {
+            final var recordList = huaweiDataResult.getRecordsets();
             if (!CollectionUtil.isEmpty(recordList)) {
                 for (HuaweiDataResult.Recordsets record : recordList) {
                     final var huaweiDomain = record.getName()
@@ -125,8 +165,8 @@ public abstract class AbstractDnsRecordHandler implements PeriodicDnsRecordHandl
             }
         }
 
-        if (obj instanceof CloudflareDataResult result && result.getSuccess()) {
-            final var resultList = result.getResult();
+        if (result instanceof CloudflareDataResult cloudflareDataResult && cloudflareDataResult.getSuccess()) {
+            final var resultList = cloudflareDataResult.getResult();
             if (!CollectionUtil.isEmpty(resultList)) {
                 for (CloudflareDataResult.Result record : resultList) {
                     final var extractDomain = HttpUtil.extractDomain(record.getName());

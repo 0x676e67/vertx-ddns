@@ -9,12 +9,13 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CloudflareDataResult {
 
-    private List<CloudflareDataResult.Result> result;
+
     private boolean success;
     private List<Error> errors;
     private List<Object> messages;
     @JsonProperty("result_info")
     private ResultInfo resultInfo;
+    private List<CloudflareDataResult.Result> result;
 
     public List<Result> getResult() {
         return result;
