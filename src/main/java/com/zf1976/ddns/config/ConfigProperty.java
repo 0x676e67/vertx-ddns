@@ -1,7 +1,8 @@
 package com.zf1976.ddns.config;
 
 import com.zf1976.ddns.config.property.AliyunDnsProperties;
-import com.zf1976.ddns.config.property.CommonProperties;
+import com.zf1976.ddns.config.property.DefaultProperties;
+import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -11,7 +12,7 @@ import java.io.BufferedInputStream;
 
 /**
  * @author mac
- * @date 2021/7/7
+ * 2021/7/7
  */
 public class ConfigProperty {
 
@@ -44,12 +45,19 @@ public class ConfigProperty {
         }
     }
 
-    public static CommonProperties getCommonProperties() {
-        return PropertyUtil.getProperties(CommonProperties.class, getInstance().getJsonConfig());
+    public static DefaultProperties getDefaultProperties() {
+        final var jsonConfig = getInstance().getJsonConfig();
+        return PropertyUtil.getProperties(DefaultProperties.class, jsonConfig);
     }
 
     public static AliyunDnsProperties getAliyunDnsProperties() {
-        return PropertyUtil.getProperties(AliyunDnsProperties.class, getInstance().getJsonConfig());
+        final var jsonConfig = getInstance().getJsonConfig();
+        return PropertyUtil.getProperties(AliyunDnsProperties.class, jsonConfig);
+    }
+
+    public static SecureConfig getDefaultSecureConfig() {
+        final var jsonConfig = getInstance().getJsonConfig();
+        return PropertyUtil.getProperties(SecureConfig.class, jsonConfig);
     }
 
 

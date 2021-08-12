@@ -1,12 +1,15 @@
 package com.zf1976.ddns.pojo;
 
+import com.zf1976.ddns.annotation.ConfigPrefix;
+
 import java.io.Serializable;
 
 /**
  * Security Config
  * @author zf1976
  */
-public class SecureConfig implements Serializable {
+@ConfigPrefix(value = "defaultSecureConfig")
+public class SecureConfig implements Serializable , Cloneable{
 
     /**
      * not allow wan access
@@ -68,5 +71,16 @@ public class SecureConfig implements Serializable {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        SecureConfig secureConfig = null;
+        try{
+            secureConfig = (SecureConfig)super.clone();
+        }catch(CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return secureConfig;
     }
 }

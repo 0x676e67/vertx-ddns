@@ -8,7 +8,7 @@ import io.vertx.core.dns.AddressResolverOptions;
 
 /**
  * @author mac
- * @date 2021/7/6
+ * 2021/7/6
  */
 public class Application {
 
@@ -17,7 +17,7 @@ public class Application {
         final var addressResolverOptions = new AddressResolverOptions()
                 // Server list polling
                 .setRotateServers(true);
-        for (String dnsServer : ConfigProperty.getCommonProperties()
+        for (String dnsServer : ConfigProperty.getDefaultProperties()
                                               .getDnsServerList()) {
             addressResolverOptions.addServer(dnsServer);
         }

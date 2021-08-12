@@ -1,5 +1,5 @@
 {
-  "common": {
+  "default": {
     "ipApiList": [
       "https://api-ipv4.ip.sb/ip",
       "https://jsonip.com/",
@@ -16,6 +16,11 @@
       "114.114.114.114",
       "114.114.115.115"
     ]
+  },
+  "defaultSecureConfig" : {
+    "username" : "vertx",
+    "password" : "123456",
+    "notAllowWanAccess" : true
   },
   "aliyun": {
     "defaultRegionId": "cn-shenzhen",

@@ -11,25 +11,15 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.impl.UserImpl;
 
-import java.util.Objects;
-
 /**
  * @author ant
  * Create by Ant on 2021/8/4 1:13 AM
  */
-public class UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
+public record UsernamePasswordAuthenticationProvider(
+        SecureProvider secureProvider) implements AuthenticationProvider {
 
     private static final String usernameKey = "username";
     private static final String passwordKey = "password";
-    private static final String DEFAULT_USERNAME = "vertx";
-    private static final String DEFAULT_PASSWORD = "123456";
-    private final SecureProvider secureProvider;
-    private final SecureConfig defaultSecureConfig;
-
-    public UsernamePasswordAuthenticationProvider(SecureProvider secureProvider) {
-        this.secureProvider = secureProvider;
-        defaultSecureConfig = new SecureConfig(DEFAULT_USERNAME, DEFAULT_PASSWORD);
-    }
 
     /**
      * Authenticate a user.
@@ -55,15 +45,15 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
     public void authenticate(JsonObject credentials, Handler<AsyncResult<User>> resultHandler) {
         final var user = new UserImpl(credentials);
         this.secureProvider.readRsaKeyPair()
-                .compose(rsaKeyPair -> this.secureProvider.readSecureConfig()
-                                                          .compose(secureConfig -> this.checkAuthentication(secureConfig, user, rsaKeyPair)))
-                .onComplete(event -> {
-                    if (event.succeeded()) {
-                        resultHandler.handle(Future.succeededFuture(user));
-                    } else {
-                        resultHandler.handle(Future.failedFuture(event.cause()));
-                    }
-                });
+                           .compose(rsaKeyPair -> this.secureProvider.readSecureConfig()
+                                                                     .compose(secureConfig -> this.checkAuthentication(secureConfig, user, rsaKeyPair)))
+                           .onComplete(event -> {
+                               if (event.succeeded()) {
+                                   resultHandler.handle(Future.succeededFuture(user));
+                               } else {
+                                   resultHandler.handle(Future.failedFuture(event.cause()));
+                               }
+                           });
     }
 
     private Future<User> checkAuthentication(SecureConfig secureConfig, User user, RsaUtil.RsaKeyPair rsaKeyPair) {
@@ -74,11 +64,6 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
             final var jsonObject = new JsonObject()
                     .put(usernameKey, decodeUsername.trim())
                     .put(passwordKey, decodePassword.trim());
-            if (Objects.isNull(secureConfig)
-                    || Objects.isNull(secureConfig.getUsername())
-                    || Objects.isNull(secureConfig.getPassword())) {
-                return this.checkUser(defaultSecureConfig, new UserImpl(jsonObject));
-            }
             return this.checkUser(secureConfig, new UserImpl(jsonObject));
         } catch (Exception e) {
             return Future.failedFuture("server decryption verification error!");

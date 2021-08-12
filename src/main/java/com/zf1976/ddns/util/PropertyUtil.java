@@ -1,11 +1,11 @@
 package com.zf1976.ddns.util;
 
-import com.zf1976.ddns.annotation.YamlPrefix;
+import com.zf1976.ddns.annotation.ConfigPrefix;
 import io.vertx.core.json.JsonObject;
 
 /**
  * @author mac
- * @date 2021/7/6
+ * 2021/7/6
  */
 public final class PropertyUtil {
 
@@ -14,7 +14,7 @@ public final class PropertyUtil {
     }
 
     public static  <T> T getProperties(Class<T> tClass, JsonObject jsonConfig) {
-        final var annotation = tClass.getAnnotation(YamlPrefix.class);
+        final var annotation = tClass.getAnnotation(ConfigPrefix.class);
         if (annotation != null) {
             return jsonConfig.getJsonObject(annotation.value())
                              .mapTo(tClass);

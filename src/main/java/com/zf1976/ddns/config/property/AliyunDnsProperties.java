@@ -1,14 +1,14 @@
 package com.zf1976.ddns.config.property;
 
-import com.zf1976.ddns.annotation.YamlPrefix;
+import com.zf1976.ddns.annotation.ConfigPrefix;
 
 import java.util.List;
 
 /**
  * @author mac
- * @date 2021/7/6
+ *2021/7/6
  */
-@YamlPrefix(value = "aliyun")
+@ConfigPrefix(value = "aliyun")
 public class AliyunDnsProperties {
 
     /**

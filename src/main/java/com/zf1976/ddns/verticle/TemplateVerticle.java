@@ -37,7 +37,7 @@ import java.util.Objects;
 
 /**
  * @author mac
- * @date 2021/7/7
+ * 2021/7/7
  */
 public abstract class TemplateVerticle extends AbstractVerticle implements SecureProvider {
 
@@ -51,7 +51,11 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     protected RsaUtil.RsaKeyPair rsaKeyPair;
     protected DnsRecordService dnsRecordService;
     protected Boolean notAllowWanAccess = Boolean.TRUE;
+    protected SecureConfig defaultSecureConfig;
 
+    public TemplateVerticle() {
+        this.defaultSecureConfig = ConfigProperty.getDefaultSecureConfig();
+    }
 
     protected synchronized Router getRouter() {
         return router;
@@ -137,17 +141,26 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                     }
                     return this.readSecureConfig();
                 })
+                .compose(secureConfig -> this.hidePasswordHandler(ctx, secureConfig))
                 .onSuccess(secureConfig -> {
-                    if (secureConfig != null) {
-                        secureConfig.setPassword(this.hideHandler(secureConfig.getPassword()));
-                        ctx.put("secureConfig", secureConfig);
-                    }
-                    ctx.put("common", ConfigProperty.getCommonProperties())
+                    ctx.put("common", ConfigProperty.getDefaultProperties())
                        .put("ipv4", IpUtil.getNetworkIpv4List())
                        .put("ipv6", IpUtil.getNetworkIpv6List());
                     templateHandler.handle(ctx);
                 })
                 .onFailure(err -> this.routeErrorHandler(ctx, err));
+    }
+
+    protected Future<Void> hidePasswordHandler(RoutingContext ctx, SecureConfig secureConfig) {
+        final var hidePassword = this.hideHandler(secureConfig.getPassword());
+        try {
+            final var clone = (SecureConfig) secureConfig.clone();
+            clone.setPassword(hidePassword);
+            ctx.put("secureConfig", clone);
+            return Future.succeededFuture();
+        } catch (CloneNotSupportedException e) {
+            return Future.failedFuture("Server error!");
+        }
     }
 
     protected Future<Void> initDnsServiceConfig(FileSystem fileSystem) {
@@ -212,7 +225,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                         try {
                             // config is empty
                             if (StringUtil.isEmpty(buffer.toString())) {
-                                return Future.succeededFuture();
+                                return Future.succeededFuture(this.defaultSecureConfig);
                             }
                             SecureConfig secureConfig = Json.decodeValue(buffer, SecureConfig.class);
                             this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
