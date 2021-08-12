@@ -1,9 +1,9 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.util.CollectionUtil;
+import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
-import io.vertx.core.Context;
 import io.vertx.core.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +18,7 @@ import java.util.Objects;
 public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     private final Logger log = LogManager.getLogger("[PeriodicVerticle]");
+    private static final long DEFAULT_PERIODIC_TIME = 5*60*1000;
 
     public PeriodicVerticle(DnsRecordObserver observer) {
         this.addObserver(observer);
@@ -38,20 +39,23 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        vertx.setPeriodic(50000, periodicId -> {
-            final var o = context.get(ApiConstants.CONFIG_PERIODIC_ID);
-            if (Objects.isNull(o)) {
-                context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
-            }
+        final var periodicId = vertx.setPeriodic(50000, event -> {
             this.notifyObserver();
             log.info("Update the domain name record once");
         });
+        context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
     }
 
     @Override
     public void stop() throws Exception {
-        final var o = context.get(ApiConstants.CONFIG_PERIODIC_ID);
-        Long periodicId = (Long) o;
-        vertx.cancelTimer(periodicId);
+        for (DnsRecordObserver observer : this.observers) {
+            this.removeObserver(observer);
+        }
+        final var rawPeriodicId = context.get(ApiConstants.CONFIG_PERIODIC_ID);
+        Long periodicId = (Long) rawPeriodicId;
+        if (vertx.cancelTimer(periodicId)) {
+            log.info("cancel the PeriodicVerticle deployment and cancel the timer!");
+        }
+
     }
 }

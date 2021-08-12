@@ -2,6 +2,7 @@ package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
@@ -54,9 +55,10 @@ public class ApiVerticle extends TemplateVerticle {
               .handler(this::notAllowWanAccessHandler)
               .handler(sessionHandler)
               .failureHandler(this::routeErrorHandler);
-        final var redirectAuthHandler = RedirectAuthHandler.create(new RedirectAuthenticationProvider(),
-                ApiConstants.LOGIN_PATH,
-                ApiConstants.INDEX_PATH);
+        final var redirectAuthHandler = RedirectAuthHandler.create(
+                new RedirectAuthenticationProvider(),
+                ApiConstants.LOGIN_PATH
+        );
         // Redirect authentication
         router.route("/api/*")
               .handler(redirectAuthHandler);
@@ -229,11 +231,15 @@ public class ApiVerticle extends TemplateVerticle {
         try {
             secureConfig = ctx.getBodyAsJson().mapTo(SecureConfig.class);
             Assert.notNull(secureConfig, "body cannot been null!");
-            Assert.hasLength(secureConfig.getUsername(), "username cannot been null!");
-            Assert.hasLength(secureConfig.getPassword(), "username cannot been null!");
+            Assert.hasLength(secureConfig.getUsername(), "username cannot been empty!");
+            Assert.hasLength(secureConfig.getPassword(), "username cannot been empty!");
             this.secureConfigDecryptHandler(secureConfig)
                     .compose(this::storeSecureConfig)
-                    .onSuccess(success -> this.routeResultJson(ctx))
+                    .onSuccess(success -> {
+                        ctx.clearUser();
+                        // return login url
+                        this.routeResultJson(ctx, DataResult.success(ApiConstants.LOGIN_PATH));
+                    })
                     .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception e) {
             this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));

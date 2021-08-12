@@ -23,6 +23,20 @@ public class SecureConfig implements Serializable {
      */
     private String password;
 
+    public SecureConfig() {
+    }
+
+    public SecureConfig(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public SecureConfig(Boolean notAllowWanAccess, String username, String password) {
+        this.notAllowWanAccess = notAllowWanAccess;
+        this.username = username;
+        this.password = password;
+    }
+
     public Boolean getNotAllowWanAccess() {
         return notAllowWanAccess;
     }

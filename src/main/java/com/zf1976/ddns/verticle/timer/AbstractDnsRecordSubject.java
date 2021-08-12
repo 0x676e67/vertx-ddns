@@ -19,7 +19,7 @@ public abstract class AbstractDnsRecordSubject extends AbstractVerticle implemen
     }
 
     @Override
-    public void deleteObserver(DnsRecordObserver obj) {
+    public void removeObserver(DnsRecordObserver obj) {
         this.observers.remove(obj);
     }
 

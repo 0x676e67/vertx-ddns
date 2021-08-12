@@ -14,6 +14,7 @@ import io.vertx.ext.auth.authentication.AuthenticationProvider;
  * Create by Ant on 2021/8/4 2:20 AM
  */
 public class RedirectAuthenticationProvider implements AuthenticationProvider {
+
     /**
      * Authenticate a user.
      * <p>

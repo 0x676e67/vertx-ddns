@@ -440,7 +440,6 @@
             confirm.show("password cannot been empty!")
             return
         }
-        console.log(passwordIsHide(password))
         let secureConfig = {
             "notAllowWanAccess" : notAllowWanAccess,
             "username" : encrypt(username),
@@ -448,7 +447,9 @@
         }
         axiosInstance.post("/api/store/secure/config", secureConfig)
                     .then(res => {
-                        confirm.show("Successfully saved!")
+                        confirm.show("Successfully saved!", function () {
+                            location.reload()
+                        })
                     })
     }
 
@@ -521,7 +522,7 @@
         }
         axiosInstance.post("/api/store/dns/config",data)
             .then(res => {
-            confirm.show("Successfully saved!")
+                confirm.show("Successfully saved!")
             })
     }
 
@@ -779,11 +780,16 @@
          * 显示提示框
          * @param message
          */
-        show: function (message) {
+        show: function (message, callback) {
             const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">${message}</div><div class="modal-footer" align="center"><button type="submit" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">确定</button></div></div></div></form>`;
             $(document.body).append(html);
             $('#confirmModal').modal('show').on('hide.bs.modal', function () {
-                $(this).remove();
+                if (typeof callback === 'function') {
+                    $(this).remove();
+                    callback();
+                } else {
+                    $(this).remove();
+                }
             })
         },
         /**

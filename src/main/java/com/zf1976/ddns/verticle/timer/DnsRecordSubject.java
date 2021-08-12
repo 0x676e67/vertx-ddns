@@ -8,7 +8,7 @@ public interface DnsRecordSubject {
 
     void addObserver(DnsRecordObserver obj);
 
-    void deleteObserver(DnsRecordObserver obj);
+    void removeObserver(DnsRecordObserver obj);
 
     void notifyObserver();
 

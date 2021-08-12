@@ -10,7 +10,7 @@ import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.util.HttpUtil;
-import com.zf1976.ddns.verticle.timer.PeriodicHandler;
+import com.zf1976.ddns.verticle.handler.PeriodicHandler;
 import io.vertx.core.Vertx;
 
 import java.util.LinkedList;
@@ -28,7 +28,7 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
 
     protected final Vertx vertx;
     protected final Map<DnsProviderType, DnsRecordProvider> providerMap;
-    private List<DnsConfig> dnsConfigList = new LinkedList<>();
+    private final List<DnsConfig> dnsConfigList = new LinkedList<>();
 
     protected AbstractDnsRecordService(List<DnsConfig> dnsConfigList, Vertx vertx) {
         this(new ConcurrentHashMap<>(4), vertx);
