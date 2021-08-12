@@ -22,6 +22,12 @@ public interface ApiConstants {
 
     String SERVER_PORT = "serverPort";
 
+    String CONFIG_SUBJECT_ADDRESS = "config.subject.address";
+
+    String CONFIG_PERIODIC_ID = "config.periodic.id";
+
+    String VERTICLE_PERIODIC_DEPLOY_ID = "verticle.periodic.id";
+
     String PERIODIC = "periodicId";
 
     String IPV4_TYPE_KEY_WORD = "A";

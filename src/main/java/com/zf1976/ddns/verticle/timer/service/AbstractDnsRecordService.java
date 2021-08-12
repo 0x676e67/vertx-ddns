@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.service;
+package com.zf1976.ddns.verticle.timer.service;
 
 import com.zf1976.ddns.api.provider.AliyunDnsProvider;
 import com.zf1976.ddns.api.provider.CloudflareDnsProvider;
@@ -28,7 +28,7 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
 
     protected final Vertx vertx;
     protected final Map<DnsProviderType, DnsRecordProvider> providerMap;
-
+    private List<DnsConfig> dnsConfigList = new LinkedList<>();
 
     protected AbstractDnsRecordService(List<DnsConfig> dnsConfigList, Vertx vertx) {
         this(new ConcurrentHashMap<>(4), vertx);
@@ -42,7 +42,7 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
                 }
             }
         }
-
+        this.dnsConfigList.addAll(dnsConfigList);
     }
 
     protected AbstractDnsRecordService(Map<DnsProviderType, DnsRecordProvider> providerMap, Vertx vertx) {
@@ -53,13 +53,17 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
         this.vertx = vertx;
     }
 
-    public void reloadDnsProviderCredentials(List<DnsConfig> dnsConfigList) {
+    public void reloadProviderCredentials(List<DnsConfig> dnsConfigList) {
+        if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
+            this.dnsConfigList.clear();
+        }
         for (DnsConfig config : dnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
                 final var provider = providerMap.get(config.getDnsProviderType());
                 if (provider != null) {
                     provider.reloadCredentials(config.getId(), config.getSecret());
                 }
+                this.dnsConfigList.add(config);
             }
         }
     }
@@ -195,4 +199,49 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
         return recordVoList;
     }
 
+    @Override
+    public void update() {
+        if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
+            for (DnsConfig config : dnsConfigList) {
+                if (Objects.nonNull(config)) {
+                    this.ipv4RecordHandler(config.getDnsProviderType(), config.getIpv4Config());
+                    this.ipv6RecordHandler(config.getDnsProviderType(), config.getIpv6Config());
+                }
+            }
+        }
+    }
+
+    private void ipv4RecordHandler(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config) {
+        if (Objects.nonNull(ipv4Config) && ipv4Config.getEnable()) {
+            // use ip api or network
+            final String ip;
+            if (ipv4Config.getSelectIpMethod()) {
+                final var ipApi = ipv4Config.getInputIpApi();
+                ip = ipApi != null? HttpUtil.getCurrentHostIp(ipApi) : HttpUtil.getCurrentHostIp();
+            } else {
+                ip = ipv4Config.getNetworkIp();
+            }
+            for (String domain : ipv4Config.getDomainList()) {
+                System.out.println(domain);
+            }
+            System.out.println(ip);
+        }
+    }
+
+    private void ipv6RecordHandler(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config) {
+        if (Objects.nonNull(ipv6Config) && ipv6Config.getEnable()) {
+            // use ip api or network
+            final String ip;
+            if (ipv6Config.getSelectIpMethod()) {
+                final var ipApi = ipv6Config.getInputIpApi();
+                ip = ipApi != null? HttpUtil.getCurrentHostIp(ipApi) : HttpUtil.getCurrentHostIp();
+            } else {
+                ip = ipv6Config.getNetworkIp();
+            }
+            for (String domain : ipv6Config.getDomainList()) {
+                System.out.println(domain);
+            }
+            System.out.println(ip);
+        }
+    }
 }

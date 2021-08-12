@@ -6,8 +6,8 @@ import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.service.DnsRecordService;
-import com.zf1976.ddns.verticle.service.impl.DnsRecordServiceImpl;
+import com.zf1976.ddns.verticle.timer.service.DnsRecordService;
+import com.zf1976.ddns.verticle.timer.service.impl.DnsRecordServiceImpl;
 import com.zf1976.ddns.verticle.auth.SecureProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author mac
@@ -154,15 +155,20 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                    .compose(this::newDnsRecordService);
     }
 
-    protected Future<Void> newDnsRecordService(List<DnsConfig> configList) {
+    protected Future<Void> newDnsRecordService(List<DnsConfig> dnsConfigList) {
         try {
-            this.dnsRecordService = new DnsRecordServiceImpl(configList, this.vertx);
+            if (Objects.isNull(this.dnsRecordService)) {
+                this.dnsRecordService = new DnsRecordServiceImpl(dnsConfigList, this.vertx);
+            } else {
+                this.dnsRecordService.reloadProviderCredentials(dnsConfigList);
+            }
             return Future.succeededFuture();
         } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());
             return Future.failedFuture(e);
         }
     }
+
 
     private Future<Void> writeRsaKeyFile(FileSystem fileSystem, String rsaKeyPath) {
         try {
@@ -190,7 +196,7 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
     }
 
     public Future<RsaUtil.RsaKeyPair> readRsaKeyPair() {
-        if (this.rsaKeyPair != null) {
+        if (Objects.nonNull(this.rsaKeyPair)) {
             return Future.succeededFuture(this.rsaKeyPair);
         }
         return vertx.fileSystem()
@@ -278,17 +284,17 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 });
     }
 
-    protected Future<DnsConfig> dnsConfigDecrypt(RsaUtil.RsaKeyPair keyPair, DnsConfig dnsConfig) {
-        if (keyPair == null) {
+    protected Future<DnsConfig> dnsConfigDecrypt(RsaUtil.RsaKeyPair rsaKeyPair, DnsConfig dnsConfig) {
+        if (Objects.isNull(rsaKeyPair)) {
             return Future.failedFuture("RSA keyless");
         }
         try {
             // cloudflare only token is used as access key
             if (!dnsConfig.getDnsProviderType().equals(DnsProviderType.CLOUDFLARE)) {
-                String id = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), dnsConfig.getId());
+                String id = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), dnsConfig.getId());
                 dnsConfig.setId(id);
             }
-            String secret = RsaUtil.decryptByPrivateKey(keyPair.getPrivateKey(), dnsConfig.getSecret());
+            String secret = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), dnsConfig.getSecret());
             dnsConfig.setSecret(secret);
             return Future.succeededFuture(dnsConfig);
         } catch (Exception e) {

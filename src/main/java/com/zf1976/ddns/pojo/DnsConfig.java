@@ -89,10 +89,26 @@ public class DnsConfig implements Serializable {
     }
 
     public static class Ipv4Config {
+        /**
+         * 开启ipv4记录解析
+         */
         private Boolean enable;
+        /**
+         * true:使用ip API获取本机ip
+         * false:使用网卡获取本机ip
+         */
         private Boolean selectIpMethod;
+        /**
+         * ip API
+         */
         private String inputIpApi;
+        /**
+         * 网卡IP
+         */
         private String networkIp;
+        /**
+         * 记录解析列表
+         */
         private List<String> domainList;
 
         public List<String> getDomainList() {
@@ -153,10 +169,26 @@ public class DnsConfig implements Serializable {
     }
 
     public static class Ipv6Config{
+        /**
+         * 开启ipv4记录解析
+         */
         private Boolean enable;
+        /**
+         * true:使用ip API获取本机ip
+         * false:使用网卡获取本机ip
+         */
         private Boolean selectIpMethod;
+        /**
+         * ip API
+         */
         private String inputIpApi;
+        /**
+         * 网卡IP
+         */
         private String networkIp;
+        /**
+         * 记录解析列表
+         */
         private List<String> domainList;
 
         public Boolean getEnable() {

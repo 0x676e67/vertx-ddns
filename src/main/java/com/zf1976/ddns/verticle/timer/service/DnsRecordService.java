@@ -1,8 +1,10 @@
-package com.zf1976.ddns.verticle.service;
+package com.zf1976.ddns.verticle.timer.service;
 
 import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.api.enums.DnsRecordType;
+import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.vo.DnsRecordVo;
+import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Future;
 
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.List;
  * @author mac
  * 2021/8/11 星期三 9:02 下午
  */
-public interface DnsRecordService {
+public interface DnsRecordService extends DnsRecordObserver {
 
     List<DnsRecordVo> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType);
 
@@ -42,4 +44,5 @@ public interface DnsRecordService {
 
     Future<Boolean> deleteRecordAsync(DnsProviderType dnsProviderType, String recordId, String domain);
 
+    void reloadProviderCredentials(List<DnsConfig> dnsConfigList);
 }

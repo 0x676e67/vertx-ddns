@@ -88,7 +88,7 @@ public class ApiVerticle extends TemplateVerticle {
               .blockingHandler(this::deleteDnsRecordHandler);
         // Obtain the RSA public key
         router.get("/common/rsa/public_key")
-              .handler(this::getRsaPublicKeyHandler);
+              .handler(this::readRsaPublicKeyHandler);
         // Initial configuration
         this.initConfig(vertx)
             .compose(v -> httpServer.requestHandler(router)
@@ -107,16 +107,29 @@ public class ApiVerticle extends TemplateVerticle {
 
     @Override
     public void start() throws Exception {
-//        vertx.setPeriodic(1000, id -> {
-//            final var context = vertx.getOrCreateContext();
-//            final var periodicId = context.get(ApiConstants.PERIODIC);
-//            if (periodicId == null) {
-//                context.put(ApiConstants.PERIODIC, id);
-//            } else {
-//                System.out.println(periodicId instanceof Long);
-//                System.out.println(periodicId);
-//            }
-//        });
+        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService), event -> {
+            if (event.succeeded()) {
+                context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
+                log.info("PeriodicVerticle deploy complete!");
+            }
+        });
+    }
+
+    @Override
+    public void stop(Promise<Void> stopPromise) {
+        final var o = context.get(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID);
+        String periodicDeployId = (String) o;
+        this.vertx.undeploy(periodicDeployId, event -> {
+            if (event.succeeded()) {
+                try {
+                    super.stop(stopPromise);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e.getCause());
+                }
+            } else {
+                log.error(event.cause());
+            }
+        });
     }
 
     /**
@@ -162,7 +175,7 @@ public class ApiVerticle extends TemplateVerticle {
      *
      * @param ctx routing context
      */
-    protected void getRsaPublicKeyHandler(RoutingContext ctx) {
+    protected void readRsaPublicKeyHandler(RoutingContext ctx) {
         this.readRsaKeyPair()
             .onSuccess(rsaKeyPair -> this.routeResultJson(ctx, rsaKeyPair.getPublicKey()))
             .onFailure(err -> this.routeErrorHandler(ctx, err));
