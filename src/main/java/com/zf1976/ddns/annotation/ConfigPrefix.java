@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface ConfigPrefix {
     /**
-     * yaml属性前缀值
+     * json属性前缀值
      */
     String value();
 }

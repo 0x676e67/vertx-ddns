@@ -447,7 +447,7 @@
         }
         axiosInstance.post("/api/store/secure/config", secureConfig)
                     .then(res => {
-                        confirm.show("Successfully saved!", function () {
+                        confirm.show("Saved successfully, you need to log in again!", function () {
                             location.reload()
                         })
                     })
