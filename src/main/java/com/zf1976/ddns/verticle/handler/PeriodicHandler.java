@@ -6,5 +6,6 @@ package com.zf1976.ddns.verticle.handler;
  */
 public interface PeriodicHandler {
 
+    
 
 }

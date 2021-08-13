@@ -16,10 +16,7 @@ import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.FormLoginHandler;
-import io.vertx.ext.web.handler.RedirectAuthHandler;
-import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +50,7 @@ public class ApiVerticle extends TemplateVerticle {
         // All routes use session
         router.route()
               .handler(this::notAllowWanAccessHandler)
+              .handler(XFrameHandler.create(XFrameHandler.DENY))
               .handler(sessionHandler)
               .failureHandler(this::routeErrorHandler);
         final var redirectAuthHandler = RedirectAuthHandler.create(
@@ -113,6 +111,10 @@ public class ApiVerticle extends TemplateVerticle {
             if (event.succeeded()) {
                 context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
                 log.info("PeriodicVerticle deploy complete!");
+            } else {
+                final var err = event.cause();
+                err.printStackTrace();
+                log.error("Class：" + err.getClass() + " => Message：" + err.getMessage());
             }
         });
     }
