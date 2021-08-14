@@ -538,7 +538,9 @@
         }
         axiosInstance.post("/api/store/dns/config",data)
             .then(res => {
-                confirm.show("Successfully saved!")
+                confirm.show("Successfully saved!", function () {
+                    location.reload()
+                })
             })
     }
 
