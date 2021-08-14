@@ -350,8 +350,8 @@
 
     // 初始化调用
     setAliyunType()
-    selectIpv4ForApi()
-    selectIpv6ForApi()
+    //selectIpv4ForApi()
+    //selectIpv6ForApi()
     setIpv4RecordType()
     setSecureConfig()
     getLogs()
@@ -381,6 +381,7 @@
                 if (selectDnsProviderType == dnsConfig.dnsProviderType) {
                     targetConfig = dnsConfig
                     document.getElementById("ipv4Enable").checked = dnsConfig.ipv4Config.enable
+                    document.getElementById("ipv6Enable").checked = dnsConfig.ipv6Config.enable
                     if (dnsConfig.ipv4Config.selectIpMethod) {
                         document.getElementById("ipv4Radios1").checked = true
                         document.getElementById("ipv4Radios2").checked = false
@@ -391,6 +392,7 @@
                         document.getElementById("ipv4Radios2").checked = true
                         document.getElementById("ipv4Radios2").onclick()
                     }
+
                     if (dnsConfig.ipv6Config.selectIpMethod) {
                         document.getElementById("ipv6Radios1").checked = true
                         document.getElementById("ipv6Radios2").checked = false
