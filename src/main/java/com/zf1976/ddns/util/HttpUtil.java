@@ -1,14 +1,19 @@
 package com.zf1976.ddns.util;
 
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,40 +24,40 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"UnusedReturnValue", "RegExpRedundantEscape"})
 public final class HttpUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger("[HttpUtil]");
-    public static final String IP_CHECK_REGEXP = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
-    public static final String IP_EXTRACT_REGEXP = "(\\d{1,3}\\.){3}\\d{1,3}";
-    public static final String DOMAIN_REGEXP = "^(?=^.{3,255}$)[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$";
-    public static final String URL_REGEXP = "^(?=^.{3,255}$)(http(s)?:\\/\\/)?(www\\.)?[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+(:\\d+)*(\\/\\w+\\.\\w+)*([\\?&]\\w+=\\w*)*$";
-    public static final Pattern IP_CHECK_PATTERN = Pattern.compile(IP_CHECK_REGEXP);
-    public static final Pattern IP_EXTRACT_PATTERN = Pattern.compile(IP_EXTRACT_REGEXP);
-    public static final Pattern DOMAIN_PATTERN = Pattern.compile(DOMAIN_REGEXP);
-    public static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
+    private static final Logger LOG = LogManager.getLogger("[HttpUtil]");
+    public static final Pattern IP_CHECK_PATTERN = Pattern.compile("((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}");
+    public static final Pattern DOMAIN_PATTERN = Pattern.compile("^(?=^.{3,255}$)[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+$");
+    public static final Pattern IPV4_EXTRACT_PATTERN = Pattern.compile("((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])");
+    public static final Pattern IP6_EXTRACT_PATTERN = Pattern.compile("((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))");
+    private static final Pattern INNER_IP_PATTERN = Pattern.compile("^(127\\.0\\.0\\.1)|(0\\:0\\:0\\:0\\:0\\:0\\:0\\:1)|(localhost)|(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})|(172\\.((1[6-9])|(2\\d)|(3[01]))\\.\\d{1,3}\\.\\d{1,3})|(192\\.168\\.\\d{1,3}\\.\\d{1,3})$");
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-    private static final HttpRequest IP_REQUEST_1 = HttpRequest.newBuilder()
-                                                               .GET()
-                                                               .uri(URI.create("https://api-ipv4.ip.sb/ip"))
-                                                               .build();
+    private static final String DEFAULT_IPV4_API = "https://api-ipv4.ip.sb/ip";
+    private static final String DEFAULT_IPV6_API = "https://api-ipv6.ip.sb/ip";
 
     /**
      * 获取当前主机公网IP
      *
      * @return {@link String}
      */
-    public static String getCurrentHostIp() {
-        String ip;
-        try {
-            final var body = HTTP_CLIENT.send(IP_REQUEST_1, HttpResponse.BodyHandlers.ofString()).body();
-            ip = body.trim();
-            if (!IP_CHECK_PATTERN.matcher(ip).matches()) {
-                ip = "";
-            }
-            LOG.info("Host IP: {}", ip);
-            return ip;
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-        }
-        return "";
+    public static Future<String> getCurrentHostIpv4(Context context) {
+        return getCurrentHostIpv4(DEFAULT_IPV4_API, context);
+    }
+
+    public static Future<String> getCurrentHostIpv6(Context context) {
+        return getCurrentHostIpv6(DEFAULT_IPV6_API, context);
+    }
+
+    /**
+     * 获取当前主机公网IP
+     *
+     * @return {@link String}
+     */
+    public static Future<String> getCurrentHostIpv4(String api, Context context) {
+        return getCurrentHostIp(api, IPV4_EXTRACT_PATTERN, context);
+    }
+
+    public static Future<String> getCurrentHostIpv6(String api, Context context) {
+        return getCurrentHostIp(api, IP6_EXTRACT_PATTERN, context);
     }
 
     /**
@@ -61,28 +66,28 @@ public final class HttpUtil {
      * @return ip
      */
     @SuppressWarnings({"LoopStatementThatDoesntLoop", "UnusedAssignment"})
-    public static String getCurrentHostIp(String ipApi) {
+    public static Future<String> getCurrentHostIp(String ipApi, Pattern IP_EXTRACT_PATTERN_PATTERN, Context context) {
         if (StringUtil.isEmpty(ipApi)) {
-            return getCurrentHostIp();
+            return  Future.succeededFuture();
         }
 
-        try {
-            final var request = HttpRequest.newBuilder()
-                                           .GET()
-                                           .uri(URI.create(ipApi))
-                                           .build();
-            var ip = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString()).body();
-            Matcher mat = IP_EXTRACT_PATTERN.matcher(ip);
-            for (int i = 0; (i < ip.length()) && mat.find(); i++) {
-                ip = mat.group().trim();
-                break;
-            }
-            LOG.info("Host IP: {}", ip);
-            return ip;
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-        }
-        return "";
+        final var request = HttpRequest.newBuilder()
+                                       .GET()
+                                       .uri(URI.create(ipApi))
+                                       .build();
+        var response = HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        return Future.fromCompletionStage(response, context)
+                     .compose(v -> {
+                         var body = v.body();
+                         Matcher mat = IP_EXTRACT_PATTERN_PATTERN.matcher(body);
+                         for (int i = 0; (i < body.length()) && mat.find(); i++) {
+                             body = mat.group()
+                                       .trim();
+                             break;
+                         }
+                         LOG.info("Host IP: {}", body);
+                         return Future.succeededFuture(body);
+                     });
     }
 
     /**
@@ -112,7 +117,13 @@ public final class HttpUtil {
      * @return {@link boolean}
      */
     public static boolean isURL(String url) {
-        return URL_PATTERN.matcher(url).matches();
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            URI.create(url);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -195,5 +206,103 @@ public final class HttpUtil {
             LOG.info("Get client ip: " + ip);
         }
         return ip;
+    }
+
+
+    /**
+     * Determine whether it is an intranet ip
+     *
+     * @param ip IP
+     * @return {@link boolean}
+     */
+    public static boolean isInnerIp(String ip) {
+        return INNER_IP_PATTERN.matcher(ip).find();
+    }
+
+    /**
+     * get ipv4 list
+     *
+     * @return {@link List <String>}
+     */
+    public static List<String> getNetworkIpv4List() {
+        Enumeration<NetworkInterface> netInterfaces;
+        List<String> networkIpList = new ArrayList<>();
+        try {
+            // Get all network cards
+            netInterfaces = NetworkInterface.getNetworkInterfaces();
+            InetAddress ip;
+            // Traverse each network card and get the ip
+            while (netInterfaces.hasMoreElements()) {
+                NetworkInterface ni = netInterfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    ip = addresses.nextElement();
+                    if (!ip.isLoopbackAddress() && ip instanceof Inet4Address && ip.getHostAddress().indexOf(':') == -1) {
+                        networkIpList.add(ni.getName() + "(" + ip.getHostAddress() + ")");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return networkIpList;
+    }
+
+    /**
+     * get ipv6 list
+     *
+     * @return {@link List<String>}
+     */
+    public static List<String> getNetworkIpv6List() {
+        Enumeration<NetworkInterface> netInterfaces;
+        List<String> networkIpList = new ArrayList<>();
+        try {
+            // Get all network cards
+            netInterfaces = NetworkInterface.getNetworkInterfaces();
+            InetAddress ip;
+            // Traverse each network card and get the ip
+            while (netInterfaces.hasMoreElements()) {
+                NetworkInterface ni = netInterfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    ip = addresses.nextElement();
+                    if (!ip.isLoopbackAddress() && ip instanceof Inet6Address && ip.getHostAddress().indexOf(':') == -1) {
+                        networkIpList.add(ni.getName() + "(" + ip.getHostAddress() + ")");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return networkIpList;
+    }
+
+    @Deprecated
+    public static String getLocalIPv6Address() throws SocketException {
+        InetAddress inetAddress = null;
+        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        outer:
+        while (networkInterfaces.hasMoreElements()) {
+            final var inetAddresses = networkInterfaces.nextElement().getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                inetAddress = inetAddresses.nextElement();
+                // Check whether this address is an IPV 6 address and whether it is a reserved address
+                if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet6Address && !isReservedAddress(inetAddress)) {
+                    break outer;
+                }
+            }
+        }
+        assert inetAddress != null;
+        String hostAddress = inetAddress.getHostAddress();
+        // Filter card
+        int index = hostAddress.indexOf('%');
+        if (index > 0) {
+            hostAddress = hostAddress.substring(0, index);
+        }
+        return hostAddress;
+    }
+
+    private static boolean isReservedAddress(InetAddress inetAddress) {
+        return inetAddress.isAnyLocalAddress() || inetAddress.isLinkLocalAddress() || inetAddress.isLoopbackAddress();
     }
 }
