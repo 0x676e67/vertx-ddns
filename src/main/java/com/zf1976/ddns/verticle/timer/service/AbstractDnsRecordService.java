@@ -1,5 +1,6 @@
 package com.zf1976.ddns.verticle.timer.service;
 
+import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.api.provider.AliyunDnsProvider;
 import com.zf1976.ddns.api.provider.CloudflareDnsProvider;
 import com.zf1976.ddns.api.provider.DnspodDnsProvider;
@@ -7,25 +8,28 @@ import com.zf1976.ddns.api.provider.HuaweiDnsProvider;
 import com.zf1976.ddns.api.provider.DnsRecordProvider;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.api.enums.DnsProviderType;
-import com.zf1976.ddns.pojo.vo.DnsRecordVo;
-import com.zf1976.ddns.util.CollectionUtil;
-import com.zf1976.ddns.util.HttpUtil;
-import com.zf1976.ddns.verticle.handler.PeriodicHandler;
+import com.zf1976.ddns.pojo.vo.DnsRecord;
+import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.ApiConstants;
+import com.zf1976.ddns.verticle.handler.ResolveDnsRecordHandler;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author ant
  * Create by Ant on 2021/8/7 2:19 PM
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRecordService {
+public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandler, DnsRecordService {
 
+    protected final Logger log = LogManager.getLogger("[AbstractDnsRecordService]");
     protected final Vertx vertx;
     protected final Map<DnsProviderType, DnsRecordProvider> providerMap;
     private final List<DnsConfig> dnsConfigList = new LinkedList<>();
@@ -128,18 +132,18 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
         return Boolean.FALSE;
     }
 
-    protected List<DnsRecordVo> findGenericsResultHandler(Object result, String domain) {
-        List<DnsRecordVo> recordVoList = new LinkedList<>();
+    protected List<DnsRecord> findGenericsResultHandler(Object result, String domain) {
+        List<DnsRecord> recordVoList = new LinkedList<>();
         if (result instanceof AliyunDataResult aliyunDataResult && aliyunDataResult.getDomainRecords() != null) {
             final var domainRecords = aliyunDataResult.getDomainRecords()
                                             .getRecordList();
             for (AliyunDataResult.Record record : domainRecords) {
-                final var recordVo = DnsRecordVo.newBuilder()
-                                                .withId(record.getRecordId())
-                                                .withDomain(record.getDomainName())
-                                                .withRr(record.getRr())
-                                                .withValue(record.getValue())
-                                                .build();
+                final var recordVo = DnsRecord.newBuilder()
+                                              .withId(record.getRecordId())
+                                              .withDomain(record.getDomainName())
+                                              .withRr(record.getRr())
+                                              .withValue(record.getValue())
+                                              .build();
                 recordVoList.add(recordVo);
             }
         }
@@ -150,12 +154,12 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
             if (!CollectionUtil.isEmpty(recordList)) {
                 for (DnspodDataResult.RecordList record : recordList) {
                     final var extractDomain = HttpUtil.extractDomain(domain);
-                    final var recordVo = DnsRecordVo.newBuilder()
-                                                    .withId(String.valueOf(record.getRecordId()))
-                                                    .withDomain(extractDomain[0])
-                                                    .withRr(record.getName())
-                                                    .withValue(record.getValue())
-                                                    .build();
+                    final var recordVo = DnsRecord.newBuilder()
+                                                  .withId(String.valueOf(record.getRecordId()))
+                                                  .withDomain(extractDomain[0])
+                                                  .withRr(record.getName())
+                                                  .withValue(record.getValue())
+                                                  .build();
                     recordVoList.add(recordVo);
                 }
             }
@@ -169,13 +173,13 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
                                                    .substring(0, record.getName()
                                                                        .length() - 1);
                     final var extractDomain = HttpUtil.extractDomain(huaweiDomain);
-                    final var recordVo = DnsRecordVo.newBuilder()
-                                                    .withId(record.getId())
-                                                    .withDomain(extractDomain[0])
-                                                    .withRr(Objects.equals(extractDomain[1], "") ? "@" : extractDomain[1])
-                                                    .withValue(CollectionUtil.isEmpty(record.getRecords()) ? null : record.getRecords()
+                    final var recordVo = DnsRecord.newBuilder()
+                                                  .withId(record.getId())
+                                                  .withDomain(extractDomain[0])
+                                                  .withRr(Objects.equals(extractDomain[1], "")? "@" : extractDomain[1])
+                                                  .withValue(CollectionUtil.isEmpty(record.getRecords()) ? null : record.getRecords()
                                                                                                                           .get(0))
-                                                    .build();
+                                                  .build();
                     recordVoList.add(recordVo);
                 }
             }
@@ -186,12 +190,12 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
             if (!CollectionUtil.isEmpty(resultList)) {
                 for (CloudflareDataResult.Result record : resultList) {
                     final var extractDomain = HttpUtil.extractDomain(record.getName());
-                    final var recordVo = DnsRecordVo.newBuilder()
-                                                    .withId(record.getId())
-                                                    .withDomain(record.getZoneName())
-                                                    .withRr(Objects.equals(extractDomain[1], "") ? "@" : extractDomain[1])
-                                                    .withValue(record.getContent())
-                                                    .build();
+                    final var recordVo = DnsRecord.newBuilder()
+                                                  .withId(record.getId())
+                                                  .withDomain(record.getZoneName())
+                                                  .withRr(Objects.equals(extractDomain[1], "")? "@" : extractDomain[1])
+                                                  .withValue(record.getContent())
+                                                  .build();
                     recordVoList.add(recordVo);
                 }
             }
@@ -203,45 +207,145 @@ public abstract class AbstractDnsRecordService implements PeriodicHandler, DnsRe
     public void update() {
         if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
             for (DnsConfig config : dnsConfigList) {
-                if (Objects.nonNull(config)) {
-                    this.ipv4RecordHandler(config.getDnsProviderType(), config.getIpv4Config());
-                    this.ipv6RecordHandler(config.getDnsProviderType(), config.getIpv6Config());
-                }
+                this.parserDnsRecordForIpv4(config.getDnsProviderType(), config.getIpv4Config());
+                this.parserDnsRecordForIpv6(config.getDnsProviderType(), config.getIpv6Config());
             }
         }
     }
 
-    private void ipv4RecordHandler(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config) {
+    @Override
+    public void parserDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config) {
         if (Objects.nonNull(ipv4Config) && ipv4Config.getEnable()) {
             // use ip api or network
-            final String ip;
-            if (ipv4Config.getSelectIpMethod()) {
-                final var ipApi = ipv4Config.getInputIpApi();
-                ip = ipApi != null? HttpUtil.getCurrentHostIp(ipApi) : HttpUtil.getCurrentHostIp();
-            } else {
-                ip = ipv4Config.getNetworkIp();
-            }
-            for (String domain : ipv4Config.getDomainList()) {
-                System.out.println(domain);
-            }
-            System.out.println(ip);
+            Future.succeededFuture(ipv4Config.getSelectIpMethod())
+                  .compose(bool -> {
+                      // get ip from api
+                      if (bool) {
+                          return HttpUtil.getCurrentHostIpv4(ipv4Config.getInputIpApi(), vertx.getOrCreateContext());
+                      } else {
+                          // get ip from network
+                          return Future.succeededFuture(ipv4Config.getNetworkIp());
+                      }
+                  })
+                  .onSuccess(resultIp -> this.parserDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
+                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         }
     }
 
-    private void ipv6RecordHandler(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config) {
+
+    @Override
+    public void parserDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config) {
         if (Objects.nonNull(ipv6Config) && ipv6Config.getEnable()) {
             // use ip api or network
-            final String ip;
-            if (ipv6Config.getSelectIpMethod()) {
-                final var ipApi = ipv6Config.getInputIpApi();
-                ip = ipApi != null? HttpUtil.getCurrentHostIp(ipApi) : HttpUtil.getCurrentHostIp();
-            } else {
-                ip = ipv6Config.getNetworkIp();
-            }
-            for (String domain : ipv6Config.getDomainList()) {
-                System.out.println(domain);
-            }
-            System.out.println(ip);
+            Future.succeededFuture(ipv6Config.getSelectIpMethod())
+                    .compose(bool -> {
+                        // get ip from api
+                        if (bool) {
+                            return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi(), vertx.getOrCreateContext());
+                        } else {
+                            return Future.succeededFuture(ipv6Config.getNetworkIp());
+                        }
+                    })
+                  .onSuccess(resultIp -> this.parserDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))
+
+                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         }
     }
+
+    private void parserDnsRecordForIpv4Handler(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config, String resultIp) {
+        @SuppressWarnings("DuplicatedCode") String defaultIp = StringUtil.isEmpty(resultIp)? "" : resultIp;
+        final var domainList = ipv4Config.getDomainList();
+        for (String domainAndIp : domainList) {
+
+            final var extractDomainAndIp = this.extractDomainAndIp(domainAndIp, defaultIp);
+            if (!ObjectUtil.isEmpty(extractDomainAndIp)) {
+                final String domain = extractDomainAndIp[0];
+                final String ip = extractDomainAndIp[1];
+                this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.A)
+                    .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.A))
+                    .onSuccess(message -> {
+                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, message);
+                    })
+                    .onFailure(err -> log.info(err.getMessage(), err.getCause()));
+            }
+
+        }
+    }
+
+    private void parserDnsRecordForIpv6Handler(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config, String resultIp) {
+        String defaultIp = StringUtil.isEmpty(resultIp)? "" : resultIp;
+        final var domainList = ipv6Config.getDomainList();
+        for (String domainAndIp : domainList) {
+
+            final var extractDomainAndIp = this.extractDomainAndIp(domainAndIp, defaultIp);
+            if (!ObjectUtil.isEmpty(extractDomainAndIp)) {
+                final String domain = extractDomainAndIp[0];
+                final String ip = extractDomainAndIp[1];
+                this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.AAAA)
+                    .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.AAAA))
+                    .onSuccess(message -> {
+                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, message);
+                    })
+                    .onFailure(err -> log.info(err.getMessage(), err.getCause()));
+            }
+
+        }
+    }
+
+    /**
+     * 提取 域名:IP [0]--domain    [1]--ip
+     *
+     * @param domainAndIp 域名和ip组合 -> www.baidu.com:1.1.1.1
+     * @param defaultIp 默认ip
+     * @return {@link String[]}
+     */
+    private String[] extractDomainAndIp(String domainAndIp, String defaultIp) {
+        // empty
+        if (StringUtil.isEmpty(domainAndIp) || StringUtil.isEmpty(defaultIp)) {
+            return new String[0];
+        }
+        final String domain;
+        final String ip;
+        final var splitDomainAndIp = domainAndIp.split(":", 2);
+        domain = splitDomainAndIp[0];
+        if (splitDomainAndIp.length < 2) {
+            if (StringUtil.isEmpty(domain)) {
+                return new String[0];
+            }
+            ip = defaultIp;
+        } else {
+            ip = splitDomainAndIp[1];
+        }
+        return new String[]{domain, ip};
+    }
+
+    private String concatDomain(DnsRecord dnsRecord) {
+        return Objects.equals(dnsRecord.getRr(), "@") ? dnsRecord.getDomain() : dnsRecord.getRr() + "." + dnsRecord.getDomain();
+    }
+
+    Future<String> validateDnsRecordStatus(List<DnsRecord> recordList, DnsProviderType dnsProviderType, String domain, String ip, DnsRecordType dnsRecordType) {
+        final var domainMap = recordList.stream()
+                                        .collect(Collectors.toMap(this::concatDomain, DnsRecord::getId));
+        // find if the domain name exists
+        final var id = domainMap.get(domain);
+        // The domain name does not exist, create a domain name record resolution
+        if (StringUtil.isEmpty(id)) {
+            return this.createRecordAsync(dnsProviderType, domain, ip, dnsRecordType)
+                       .compose(bool -> bool? Future.succeededFuture("新增域名解析：" + domain + " 成功！IP：" + ip)
+                               : Future.succeededFuture("新增域名解析：" + domain + " 失败！"));
+        } else {
+            for (DnsRecord dnsRecord : recordList) {
+                final var concatDomain = this.concatDomain(dnsRecord);
+                // If the domain name resolution record exists,
+                // if the ip is changed, the domain name record resolution will be updated
+                if (Objects.equals(concatDomain, domain) && !Objects.equals(dnsRecord.getValue(), ip)) {
+                    return this.modifyRecordAsync(dnsProviderType, id, domain, ip, dnsRecordType)
+                               .compose(bool -> bool? Future.succeededFuture("更新域名解析：" + domain + " 成功！IP：" + ip)
+                                       : Future.succeededFuture("更新域名解析：" + domain + " 失败！"));
+                }
+            }
+            return Future.failedFuture("你的IP：" + ip + "，没有发生变化, 域名：" + domain);
+        }
+    }
+
 }
