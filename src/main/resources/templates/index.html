@@ -401,10 +401,24 @@
                         document.getElementById("ipv6Radios2").checked = true
                         document.getElementById("ipv6Radios2").onclick()
                     }
+                    let ipv4Domain = ""
+                    for (let j = 0; j < dnsConfig.ipv4Config.domainList.length; j++) {
+                        ipv4Domain += dnsConfig.ipv4Config.domainList[j]
+                        if ((j + 1) < dnsConfig.ipv4Config.domainList.length){
+                            ipv4Domain += "\n"
+                        }
+                    }
+                    let ipv6Domain = ""
+                    for (let j = 0; j < dnsConfig.ipv6Config.domainList.length; j++) {
+                        ipv6Domain += dnsConfig.ipv6Config.domainList[j]
+                        if ((j + 1) < dnsConfig.ipv6Config.domainList.length){
+                            ipv6Domain += "\n"
+                        }
+                    }
                     document.getElementById("ipv4ApiInput").value = dnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv4_domains").value = dnsConfig.ipv4Config.domainList
+                    document.getElementById("ipv4_domains").value = ipv4Domain
                     document.getElementById("ipv6ApiInput").value = dnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv6_domains").value = dnsConfig.ipv4Config.domainList
+                    document.getElementById("ipv6_domains").value = ipv6Domain
                 }
                 switch (selectDnsProviderType) {
                     case aliyunType:
