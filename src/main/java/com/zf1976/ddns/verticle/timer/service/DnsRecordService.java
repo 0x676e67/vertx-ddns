@@ -3,7 +3,7 @@ package com.zf1976.ddns.verticle.timer.service;
 import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.api.enums.DnsRecordType;
 import com.zf1976.ddns.pojo.DnsConfig;
-import com.zf1976.ddns.pojo.vo.DnsRecordVo;
+import com.zf1976.ddns.pojo.vo.DnsRecord;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Future;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface DnsRecordService extends DnsRecordObserver {
 
-    List<DnsRecordVo> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType);
+    List<DnsRecord> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType);
 
     Boolean createRecord(DnsProviderType dnsProviderType, String domain, String ip, DnsRecordType dnsRecordType);
 
@@ -27,9 +27,9 @@ public interface DnsRecordService extends DnsRecordObserver {
 
     Boolean deleteRecord(DnsProviderType dnsProviderType, String recordId, String domain);
 
-    Future<List<DnsRecordVo>> findRecordListAsync(DnsProviderType dnsServiceType,
-                                                  String domain,
-                                                  DnsRecordType dnsRecordType);
+    Future<List<DnsRecord>> findRecordListAsync(DnsProviderType dnsServiceType,
+                                                String domain,
+                                                DnsRecordType dnsRecordType);
 
     Future<Boolean> createRecordAsync(DnsProviderType dnsProviderType,
                                       String domain,

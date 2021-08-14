@@ -34,14 +34,15 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+        vertx.eventBus()
+             .consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, log::info);
         super.start(startPromise);
     }
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(50000, event -> {
+        final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, event -> {
             this.notifyObserver();
-            log.info("Update the domain name record once");
         });
         context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
     }

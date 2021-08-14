@@ -81,11 +81,12 @@ public final class HttpUtil {
                          var body = v.body();
                          Matcher mat = IP_EXTRACT_PATTERN_PATTERN.matcher(body);
                          for (int i = 0; (i < body.length()) && mat.find(); i++) {
-                             body = mat.group()
-                                       .trim();
+                             body = mat.group().trim();
                              break;
                          }
-                         LOG.info("Host IP: {}", body);
+                         if (LOG.isDebugEnabled()) {
+                             LOG.debug("Host IP: {}", body);
+                         }
                          return Future.succeededFuture(body);
                      });
     }

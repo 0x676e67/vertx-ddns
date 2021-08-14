@@ -14,6 +14,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.VertxImpl;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
@@ -21,6 +22,10 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +149,7 @@ public class ApiVerticle extends TemplateVerticle {
     protected void notAllowWanAccessHandler(RoutingContext ctx) {
         HttpServerRequest request = ctx.request();
         String ipAddress = HttpUtil.getIpAddress(request);
-        if (IpUtil.isInnerIp(ipAddress)) {
+        if (HttpUtil.isInnerIp(ipAddress)) {
             ctx.next();
         } else {
             this.routeBadRequestHandler(ctx, "Prohibit WAN access！");

@@ -4,7 +4,7 @@ package com.zf1976.ddns.pojo.vo;
  * @author ant
  * Create by Ant on 2021/7/29 1:41 上午
  */
-public class DnsRecordVo {
+public class DnsRecord {
 
     String id;
 
@@ -14,8 +14,8 @@ public class DnsRecordVo {
 
     String value;
 
-    public static DnsRecordVo.DnsRecordVoBuilder newBuilder() {
-        return new DnsRecordVo.DnsRecordVoBuilder();
+    public static DnsRecordBuilder newBuilder() {
+        return new DnsRecordBuilder();
     }
 
     public String getId() {
@@ -36,7 +36,7 @@ public class DnsRecordVo {
 
     @Override
     public String toString() {
-        return "DnsRecordVo{" +
+        return "DnsRecord{" +
                 "id='" + id + '\'' +
                 ", domain='" + domain + '\'' +
                 ", rr='" + rr + '\'' +
@@ -44,42 +44,42 @@ public class DnsRecordVo {
                 '}';
     }
 
-    public static final class DnsRecordVoBuilder {
+    public static final class DnsRecordBuilder {
         String id;
         String domain;
         String rr;
         String value;
 
-        private DnsRecordVoBuilder() {
+        private DnsRecordBuilder() {
         }
 
-        public DnsRecordVoBuilder withId(String id) {
+        public DnsRecordBuilder withId(String id) {
             this.id = id;
             return this;
         }
 
-        public DnsRecordVoBuilder withDomain(String domain) {
+        public DnsRecordBuilder withDomain(String domain) {
             this.domain = domain;
             return this;
         }
 
-        public DnsRecordVoBuilder withRr(String rr) {
+        public DnsRecordBuilder withRr(String rr) {
             this.rr = rr;
             return this;
         }
 
-        public DnsRecordVoBuilder withValue(String value) {
+        public DnsRecordBuilder withValue(String value) {
             this.value = value;
             return this;
         }
 
-        public DnsRecordVo build() {
-            DnsRecordVo dnsRecordVo = new DnsRecordVo();
-            dnsRecordVo.rr = this.rr;
-            dnsRecordVo.domain = this.domain;
-            dnsRecordVo.value = this.value;
-            dnsRecordVo.id = this.id;
-            return dnsRecordVo;
+        public DnsRecord build() {
+            DnsRecord dnsRecord = new DnsRecord();
+            dnsRecord.rr = this.rr;
+            dnsRecord.domain = this.domain;
+            dnsRecord.value = this.value;
+            dnsRecord.id = this.id;
+            return dnsRecord;
         }
     }
 }

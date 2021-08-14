@@ -5,7 +5,7 @@ import com.zf1976.ddns.api.provider.DnsRecordProvider;
 import com.zf1976.ddns.api.provider.exception.FoundDnsProviderException;
 import com.zf1976.ddns.api.provider.exception.NotSupportDnsProviderException;
 import com.zf1976.ddns.pojo.*;
-import com.zf1976.ddns.pojo.vo.DnsRecordVo;
+import com.zf1976.ddns.pojo.vo.DnsRecord;
 import com.zf1976.ddns.api.enums.DnsProviderType;
 import com.zf1976.ddns.verticle.timer.service.AbstractDnsRecordService;
 import io.vertx.core.Future;
@@ -27,7 +27,7 @@ public class DnsRecordServiceImpl extends AbstractDnsRecordService {
         super(ddnsConfigList, vertx);
     }
 
-    public List<DnsRecordVo> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType) {
+    public List<DnsRecord> findRecordList(DnsProviderType dnsServiceType, String domain, DnsRecordType dnsRecordType) {
         final var provider = this.providerMap.get(dnsServiceType);
         this.checkProvider(provider, dnsServiceType);
         final var result = provider.findDnsRecordList(domain, dnsRecordType);
@@ -60,9 +60,9 @@ public class DnsRecordServiceImpl extends AbstractDnsRecordService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<List<DnsRecordVo>> findRecordListAsync(DnsProviderType dnsServiceType,
-                                                         String domain,
-                                                         DnsRecordType dnsRecordType) {
+    public Future<List<DnsRecord>> findRecordListAsync(DnsProviderType dnsServiceType,
+                                                       String domain,
+                                                       DnsRecordType dnsRecordType) {
         return Future.succeededFuture(this.providerMap.get(dnsServiceType))
                      .compose(provider -> {
                          if (provider == null) {

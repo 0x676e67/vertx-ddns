@@ -144,8 +144,8 @@ public abstract class TemplateVerticle extends AbstractVerticle implements Secur
                 .compose(secureConfig -> this.hidePasswordHandler(ctx, secureConfig))
                 .onSuccess(secureConfig -> {
                     ctx.put("common", ConfigProperty.getDefaultProperties())
-                       .put("ipv4", IpUtil.getNetworkIpv4List())
-                       .put("ipv6", IpUtil.getNetworkIpv6List());
+                       .put("ipv4", HttpUtil.getNetworkIpv4List())
+                       .put("ipv6", HttpUtil.getNetworkIpv6List());
                     templateHandler.handle(ctx);
                 })
                 .onFailure(err -> this.routeErrorHandler(ctx, err));
