@@ -286,7 +286,9 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                     .onSuccess(message -> {
                         vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, message);
                     })
-                    .onFailure(err -> log.info(err.getMessage(), err.getCause()));
+                    .onFailure(err -> {
+                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, err.getMessage());
+                    });
             }
 
         }
@@ -331,8 +333,8 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         // The domain name does not exist, create a domain name record resolution
         if (StringUtil.isEmpty(id)) {
             return this.createRecordAsync(dnsProviderType, domain, ip, dnsRecordType)
-                       .compose(bool -> bool? Future.succeededFuture("新增域名解析：" + domain + " 成功！IP：" + ip)
-                               : Future.succeededFuture("新增域名解析：" + domain + " 失败！"));
+                       .compose(bool -> bool? Future.succeededFuture("[" + dnsProviderType.name() + "] 新增域名解析：" + domain + " 成功！IP：" + ip)
+                               : Future.succeededFuture("[" + dnsProviderType.name() + "] 新增域名解析：" + domain + " 失败！"));
         } else {
             for (DnsRecord dnsRecord : recordList) {
                 final var concatDomain = this.concatDomain(dnsRecord);
@@ -340,11 +342,11 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 // if the ip is changed, the domain name record resolution will be updated
                 if (Objects.equals(concatDomain, domain) && !Objects.equals(dnsRecord.getValue(), ip)) {
                     return this.modifyRecordAsync(dnsProviderType, id, domain, ip, dnsRecordType)
-                               .compose(bool -> bool? Future.succeededFuture("更新域名解析：" + domain + " 成功！IP：" + ip)
-                                       : Future.succeededFuture("更新域名解析：" + domain + " 失败！"));
+                               .compose(bool -> bool? Future.succeededFuture("[" + dnsProviderType.name() + "] 更新域名解析：" + domain + " 成功！IP：" + ip)
+                                       : Future.succeededFuture("[" + dnsProviderType.name() + "] 更新域名解析：" + domain + " 失败！"));
                 }
             }
-            return Future.failedFuture("你的IP：" + ip + "，没有发生变化, 域名：" + domain);
+            return Future.succeededFuture("[" + dnsProviderType.name() + "] 域名：" + domain + " 没有发生变化, IP：" + ip);
         }
     }
 

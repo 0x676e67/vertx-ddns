@@ -14,18 +14,15 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.impl.VertxImpl;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +49,23 @@ public class ApiVerticle extends TemplateVerticle {
         final var formLoginHandler = FormLoginHandler.create(new UsernamePasswordAuthenticationProvider(this))
                                                      .setDirectLoggedInOKURL(ApiConstants.INDEX_PATH)
                                                      .setReturnURLParam(ApiConstants.INDEX_PATH);
+        SockJSHandlerOptions options = new SockJSHandlerOptions()
+                .setRegisterWriteHandler(true)
+                .setHeartbeatInterval(2000);
+        SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
+        router.mountSubRouter("/api/logs", sockJSHandler.socketHandler(sockJSSocket -> {
+            vertx.sharedData().getAsyncMap(ApiConstants.SOCKJS_ID, res -> {
+                if (res.succeeded()) {
+                    // get sockJS id
+                    final var writeHandlerID = sockJSSocket.writeHandlerID();
+                    res.result()
+                       .put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, writeHandlerID);
+                } else {
+                    log.error(res.cause()
+                                 .getMessage());
+                }
+            });
+        }));
         // All routes use session
         router.route()
               .handler(this::notAllowWanAccessHandler)

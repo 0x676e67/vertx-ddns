@@ -28,6 +28,10 @@ public interface ApiConstants {
 
     String VERTICLE_PERIODIC_DEPLOY_ID = "verticle.periodic.id";
 
+    String SOCKJS_ID = "sockjs__id";
+
+    String SOCKJS_WRITE_HANDLER_ID = "sockjs_write_handler_id";
+
     String PERIODIC = "periodicId";
 
     String IPV4_TYPE_KEY_WORD = "A";

@@ -21,6 +21,7 @@
     <script src="/js/axios.min.js"></script>
 <!--    RSA-->
     <script src="/js/jsencrypt.js"></script>
+    <script src="https://unpkg.io/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
 </head>
 
 <body>
@@ -355,7 +356,8 @@
     setIpv4RecordType()
     setSecureConfig()
     getLogs()
-    setInterval(getLogs, 1000)
+    //setInterval(getLogs, 1000)
+    getLogs()
 
     function logout() {
         axiosInstance.post("/logout")
@@ -799,7 +801,13 @@
          * @param message
          */
         show: function (message, callback) {
-            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">${message}</div><div class="modal-footer" align="center"><button type="submit" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">确定</button></div></div></div></form>`;
+            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+<div class="modal-dialog modal-sm">
+<div class="modal-content">
+<div class="modal-body">${message}</div>
+<div class="modal-footer" align="center">
+<button type="submit" class="btn btn-primary" style="display:block;margin:0 auto" data-dismiss="modal">确定</button>
+</div></div></div></form>`;
             $(document.body).append(html);
             $('#confirmModal').modal('show').on('hide.bs.modal', function () {
                 if (typeof callback === 'function') {
@@ -819,11 +827,15 @@
     };
 
     function getLogs() {
-        // axiosInstance.get("/api/logs")
-        // .then(res => {
-        //     $("#logs").html(res.data.data)
-        // })
-        $("#logs").html(new Date())
+        var sock = new SockJS('/api/logs');
+        sock.onmessage = function(res) {
+            $("#logs").append('<span class="label label-primary">' + res.data + '</span>')
+        };
+
+        sock.onclose = function() {
+            sock.close()
+        };
+
     }
 
 </script>

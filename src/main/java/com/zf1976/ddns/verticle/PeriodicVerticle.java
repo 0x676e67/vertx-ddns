@@ -5,6 +5,8 @@ import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.shareddata.LocalMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,14 +36,28 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        vertx.eventBus()
-             .consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, log::info);
+        final var eventBus = vertx.eventBus();
+        eventBus.consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, event -> {
+                 vertx.sharedData()
+                         .getAsyncMap(ApiConstants.SOCKJS_ID, res -> {
+                             if (res.succeeded()) {
+                                 res.result().get(ApiConstants.SOCKJS_WRITE_HANDLER_ID)
+                                         .onSuccess(writeHandlerId -> {
+                                             if (writeHandlerId != null) {
+                                                 eventBus.send((String) writeHandlerId, event.body());
+                                             }
+                                         });
+                             } else {
+                                 log.error(res.cause().getMessage());
+                             }
+                         });
+             });
         super.start(startPromise);
     }
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, event -> {
+        final var periodicId = vertx.setPeriodic(20000, event -> {
             this.notifyObserver();
         });
         context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
