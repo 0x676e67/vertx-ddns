@@ -33,16 +33,31 @@
         <strong style="color: #000000">DDNS</strong>
       </a>
     </div>
-      <button class="btn btn-primary submit_btn" onclick="logout()">logout</button>
+      <div class="btn-group">
+          <button type="button"  class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+                  <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+              </svg>
+          </button>
+          <div class="dropdown-menu">
+              <a class="dropdown-item" onclick="logout()">logout</a>
+          </div>
+      </div>
+
   </div>
 </header>
 <main role="main" style="margin-top: 20px; overflow: hidden">
     <div class="row">
       <div class="col-md-6 offset-md-3">
-          <div class="card">
+          <div class="card shadow-sm">
             <!--                <hr  style="color: #1a1e21; size: 1px" >-->
-            <div class="card-header">DDNS服务商设置</div>
-<!--            DDNS服务商Body-->
+              <div class="fs-6 card-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cursor-fill" viewBox="0 0 16 16">
+                      <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z"/>
+                  </svg>
+                  DNS服务商配置
+              </div>
+<!--            DNS服务商Body-->
           <div class="card-body">
             <ul class="nav nav-pills" id="DDNSul">
               <li class="nav-item" onclick="setAliyunType()">
@@ -122,129 +137,141 @@
               </div>
             </div>
           </div>
-            <div class="card-header">IP类型设置</div>
-<!--            IP类型Body-->
-            <div class="card-body">
-                <ul class="nav nav-pills" id="IpType">
-                    <li class="nav-item" onclick="setIpv4RecordType()">
-                        <a class="nav-link active" data-toggle="tab" href="#ipv4">Ipv4</a>
-                    </li>
-                    <li class="nav-item" onclick="setIpv6RecordType()">
-                        <a class="nav-link" data-toggle="tab" href="#ipv6">Ipv6</a>
-                    </li>
-                </ul>
-                <!-- ip类型选项卡对应内容 -->
-                <div class="tab-content" id="ip-tab">
-                    <!--              ipv4选项卡-->
-                    <div class="tab-pane active container " id="ipv4">
-                        <div style="margin-top: 10px">
-                            <form>
-                                <fieldset class="row mb-1">
-                                    <legend class="col-form-label col-sm-2 pt-0">启用</legend>
-                                    <div class="col-sm-10">
-                                        <div class="form-check form-check-inline">
-                                            <label for="ipv4Enable"></label><input class="form-check-input" type="checkbox" id="ipv4Enable" >
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                <fieldset class="row mb-1">
-                                    <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
-                                    <div class="col-sm-10" >
-                                        <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIpv4ForApi()" type="radio" name="ipv4Radios" id="ipv4Radios1" value="true" checked>
-                                            <label class="form-check-label" for="ipv4Radios1">
-                                                通过接口获取
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIpv4vForNetwork()" type="radio" name="ipv4Radios" id="ipv4Radios2" value="false">
-                                            <label class="form-check-label" for="ipv4Radios2">
-                                                通过网卡获取
-                                            </label>
-                                        </div>
-                                        <div class="input-group mb-0" id="ipv4ApiInputDiv">
-                                            <input id="ipv4ApiInput" type="text" class="form-control" placeholder="ipv4 接口">
-                                            <small
-                                                    class="form-text text-muted"
-                                                    th:text="${'填写的URL需返回公网IPv4地址,如：' + common.ipApiList[0] + '，' + common.ipApiList[1] + '，' + common.ipApiList[2] + '，' + common.ipApiList[3]}">
-                                            </small>
-                                        </div>
-                                        <div class="form-select mb-0" id="ipv4_netInterface_select">
-                                            <select id="selectIpv4Value" class="form-control" name="Ipv4NetInterface">请选择网卡</select>
-                                            <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                <fieldset class="row mb">
-                                    <legend class="col-form-label col-sm-2 pt-0">域名列表</legend>
-                                    <div class="col-sm-10" >
-                                        <label for="ipv4_domains"></label>
-                                        <textarea class="form-control" id="ipv4_domains" placeholder="IPv4域名列表" name="Ipv4Domains" rows="3" aria-describedby="ipv4_domains_help"></textarea>
-                                        <small id="ipv4_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.baidu.com:1.1.1.1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
-                                    </div>
-                                </fieldset>
-                            </form>
-                        </div>
-                    </div>
-                    <!--              ipv6选项卡-->
-                    <div class="tab-pane fade container" id="ipv6">
-                        <div style="margin-top: 10px">
-                            <form>
-                                <fieldset class="row mb-1">
-                                    <legend class="col-form-label col-sm-2 pt-0">启用</legend>
-                                    <div class="col-sm-10">
-                                        <div class="form-check form-check-inline">
-                                            <label for="ipv6Enable"></label><input class="form-check-input" type="checkbox" id="ipv6Enable">
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                <fieldset class="row mb-1">
-                                    <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
-                                    <div class="col-sm-10" >
-                                        <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIpv6ForApi()" type="radio" name="ipv6Radios" id="ipv6Radios1" value="true" checked>
-                                            <label class="form-check-label" for="ipv6Radios1">
-                                                通过接口获取
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" onclick="selectIpv6ForNetwork()" type="radio" name="ipv6Radios" id="ipv6Radios2" value="false">
-                                            <label class="form-check-label" for="ipv6Radios2">
-                                                通过网卡获取
-                                            </label>
-                                        </div>
-                                        <div class="input-group mb-0" id="ipv6ApiInputDiv">
-                                            <input id="ipv6ApiInput" type="text" class="form-control" placeholder="ipv6 接口">
-                                            <small
-                                                    class="form-text text-muted"
-                                                    th:text="${'填写的URL需返回公网IPv6地址,如：' + common.ipApiList[4] + '，' + common.ipApiList[5] + '，' + common.ipApiList[6]}">
-                                            </small>
-                                        </div>
-                                        <div class="form-select mb-0" id="ipv6_netInterface_select">
-                                            <select id="selectIpv6Value" class="form-control" name="Ipv6NetInterface">请选择网卡</select>
-                                            <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                <fieldset class="row mb">
-                                    <legend class="col-form-label col-sm-2 pt-0">域名列表</legend>
-                                    <div class="col-sm-10" >
-                                        <label for="ipv6_domains"></label>
-                                        <textarea class="form-control" id="ipv6_domains" placeholder="IPv6域名列表" name="Ipv6Domains" rows="3" aria-describedby="ipv6_domains_help"></textarea>
-                                        <small id="ipv6_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.baidu.com:ff03:0:0:0:0:0:0:c1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
-                                    </div>
-                                </fieldset>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-<!--            <div class="card-header">域名信息查询</div>-->
+
+<!--              <div class="fs-6 card-header">-->
+<!--                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stack" viewBox="0 0 16 16">-->
+<!--                      <path d="m14.12 10.163 1.715.858c.22.11.22.424 0 .534L8.267 15.34a.598.598 0 0 1-.534 0L.165 11.555a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.66zM7.733.063a.598.598 0 0 1 .534 0l7.568 3.784a.3.3 0 0 1 0 .535L8.267 8.165a.598.598 0 0 1-.534 0L.165 4.382a.299.299 0 0 1 0-.535L7.733.063z"></path>-->
+<!--                      <path d="m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.598.598 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.659z"></path>-->
+<!--                  </svg>-->
+<!--                  IP类型设置-->
+<!--              </div>-->
+              <!--            IP类型Body-->
+              <div class="card-body">
+                  <ul class="nav nav-pills" id="IpType">
+                      <li class="nav-item" onclick="setIpv4RecordType()">
+                          <a class="nav-link active" data-toggle="tab" href="#ipv4">Ipv4</a>
+                      </li>
+                      <li class="nav-item" onclick="setIpv6RecordType()">
+                          <a class="nav-link" data-toggle="tab" href="#ipv6">Ipv6</a>
+                      </li>
+                  </ul>
+                  <!-- ip类型选项卡对应内容 -->
+                  <div class="tab-content" id="ip-tab">
+                      <!--              ipv4选项卡-->
+                      <div class="tab-pane active container " id="ipv4">
+                          <div style="margin-top: 10px">
+                              <form>
+                                  <fieldset class="row mb-1">
+                                      <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                      <div class="col-sm-10">
+                                          <div class="form-check form-check-inline">
+                                              <label for="ipv4Enable"></label><input class="form-check-input" type="checkbox" id="ipv4Enable" >
+                                          </div>
+                                      </div>
+                                  </fieldset>
+                                  <fieldset class="row mb-1">
+                                      <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
+                                      <div class="col-sm-10" >
+                                          <div class="form-check">
+                                              <input class="form-check-input" onclick="selectIpv4ForApi()" type="radio" name="ipv4Radios" id="ipv4Radios1" value="true" checked>
+                                              <label class="form-check-label" for="ipv4Radios1">
+                                                  通过接口获取
+                                              </label>
+                                          </div>
+                                          <div class="form-check">
+                                              <input class="form-check-input" onclick="selectIpv4vForNetwork()" type="radio" name="ipv4Radios" id="ipv4Radios2" value="false">
+                                              <label class="form-check-label" for="ipv4Radios2">
+                                                  通过网卡获取
+                                              </label>
+                                          </div>
+                                          <div class="input-group mb-0" id="ipv4ApiInputDiv">
+                                              <input id="ipv4ApiInput" type="text" class="form-control" placeholder="ipv4 接口">
+                                              <small
+                                                      class="form-text text-muted"
+                                                      th:text="${'填写的URL需返回公网IPv4地址,如：' + common.ipApiList[0] + '，' + common.ipApiList[1] + '，' + common.ipApiList[2] + '，' + common.ipApiList[3]}">
+                                              </small>
+                                          </div>
+                                          <div class="form-select mb-0" id="ipv4_netInterface_select">
+                                              <select id="selectIpv4Value" class="form-control" name="Ipv4NetInterface">请选择网卡</select>
+                                              <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
+                                          </div>
+                                      </div>
+                                  </fieldset>
+                                  <fieldset class="row mb">
+                                      <legend class="col-form-label col-sm-2 pt-0">域名列表</legend>
+                                      <div class="col-sm-10" >
+                                          <label for="ipv4_domains"></label>
+                                          <textarea class="form-control" id="ipv4_domains" placeholder="IPv4域名列表" name="Ipv4Domains" rows="3" aria-describedby="ipv4_domains_help"></textarea>
+                                          <small id="ipv4_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.baidu.com:1.1.1.1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
+                                      </div>
+                                  </fieldset>
+                              </form>
+                          </div>
+                      </div>
+                      <!--              ipv6选项卡-->
+                      <div class="tab-pane fade container" id="ipv6">
+                          <div style="margin-top: 10px">
+                              <form>
+                                  <fieldset class="row mb-1">
+                                      <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                      <div class="col-sm-10">
+                                          <div class="form-check form-check-inline">
+                                              <label for="ipv6Enable"></label><input class="form-check-input" type="checkbox" id="ipv6Enable">
+                                          </div>
+                                      </div>
+                                  </fieldset>
+                                  <fieldset class="row mb-1">
+                                      <legend class="col-form-label col-sm-2 pt-0">获取IP方式</legend>
+                                      <div class="col-sm-10" >
+                                          <div class="form-check">
+                                              <input class="form-check-input" onclick="selectIpv6ForApi()" type="radio" name="ipv6Radios" id="ipv6Radios1" value="true" checked>
+                                              <label class="form-check-label" for="ipv6Radios1">
+                                                  通过接口获取
+                                              </label>
+                                          </div>
+                                          <div class="form-check">
+                                              <input class="form-check-input" onclick="selectIpv6ForNetwork()" type="radio" name="ipv6Radios" id="ipv6Radios2" value="false">
+                                              <label class="form-check-label" for="ipv6Radios2">
+                                                  通过网卡获取
+                                              </label>
+                                          </div>
+                                          <div class="input-group mb-0" id="ipv6ApiInputDiv">
+                                              <input id="ipv6ApiInput" type="text" class="form-control" placeholder="ipv6 接口">
+                                              <small
+                                                      class="form-text text-muted"
+                                                      th:text="${'填写的URL需返回公网IPv6地址,如：' + common.ipApiList[4] + '，' + common.ipApiList[5] + '，' + common.ipApiList[6]}">
+                                              </small>
+                                          </div>
+                                          <div class="form-select mb-0" id="ipv6_netInterface_select">
+                                              <select id="selectIpv6Value" class="form-control" name="Ipv6NetInterface">请选择网卡</select>
+                                              <small id="ipv4_url_help" class="form-text text-muted">通过网卡获取IP, 建议在多宽带的路由器中使用</small>
+                                          </div>
+                                      </div>
+                                  </fieldset>
+                                  <fieldset class="row mb">
+                                      <legend class="col-form-label col-sm-2 pt-0">域名列表</legend>
+                                      <div class="col-sm-10" >
+                                          <label for="ipv6_domains"></label>
+                                          <textarea class="form-control" id="ipv6_domains" placeholder="IPv6域名列表" name="Ipv6Domains" rows="3" aria-describedby="ipv6_domains_help"></textarea>
+                                          <small id="ipv6_domains_help" class="form-text text-muted">一行一条记录，域名:IP，比如：www.baidu.com:ff03:0:0:0:0:0:0:c1 (无自定义指向的ip则默认使用ip接口获取的ip或网卡获取的ip)</small>
+                                      </div>
+                                  </fieldset>
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 <!--            域名查询Body-->
             <div class="card-body">
 
                 <div class="input-group mb-1" style="margin-top: 5px;width: auto">
-                    <span class="input-group-text" id="basic-addon8">域名解析记录查询</span>
+
+                    <span class="input-group-text" id="basic-addon8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                        &nbsp;记录查询
+                    </span>
                     <input aria-describedby="basic-addon8" style="width: 50px" id="inputDomain" aria-label="域名" class="form-control" onkeydown="findDnsRecords(event)" placeholder="Enter：请输入需要查询的域名" type="text">
                     <div class="input-group-append">
                         <button class="btn btn-primary submit_btn" onclick="clearTable()">清空</button>
@@ -271,8 +298,14 @@
             </div>
           </div>
 
-          <div class="card" style="margin-top: 50px">
-              <div class="card-header">安全配置</div>
+          <div class="card shadow-sm" style="margin-top: 50px">
+              <div class="fs-6 card-header">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-safe-fill" viewBox="0 0 16 16">
+                      <path d="M9.778 9.414A2 2 0 1 1 6.95 6.586a2 2 0 0 1 2.828 2.828z"></path>
+                      <path d="M2.5 0A1.5 1.5 0 0 0 1 1.5V3H.5a.5.5 0 0 0 0 1H1v3.5H.5a.5.5 0 0 0 0 1H1V12H.5a.5.5 0 0 0 0 1H1v1.5A1.5 1.5 0 0 0 2.5 16h12a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 14.5 0h-12zm3.036 4.464 1.09 1.09a3.003 3.003 0 0 1 3.476 0l1.09-1.09a.5.5 0 1 1 .707.708l-1.09 1.09c.74 1.037.74 2.44 0 3.476l1.09 1.09a.5.5 0 1 1-.707.708l-1.09-1.09a3.002 3.002 0 0 1-3.476 0l-1.09 1.09a.5.5 0 1 1-.708-.708l1.09-1.09a3.003 3.003 0 0 1 0-3.476l-1.09-1.09a.5.5 0 1 1 .708-.708zM14 6.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 1 0z"></path>
+                  </svg>
+                  安全配置
+              </div>
               <div class="card-body">
                   <form>
                       <fieldset class="row mb-1">
@@ -306,8 +339,24 @@
               </div>
           </div>
       </div>
-        <div class="col-md-3">
-            <p class="font-weight-light text-break" style="margin-top: auto;font-size: 13px;" id="logs"></p>
+        <div class="col-md-3 overflow-auto">
+            <div class="card-header fs-6">解析日志</div>
+            <ul class="nav nav-tabs" id="ddnsLogs">
+                <li class="nav-item" onclick="">
+                    <a class="nav-link active" data-toggle="tab" href="#">Alidns</a>
+                </li>
+                <li class="nav-item" onclick="">
+                    <a class="nav-link" data-toggle="tab" href="#">Dnspod</a>
+                </li>
+                <li class="nav-item" onclick="">
+                    <a class="nav-link" data-toggle="tab" href="#">Cloudflare</a>
+                </li>
+                <li class="nav-item" onclick="">
+                    <a class="nav-link" data-toggle="tab" href="#">Huawei</a>
+                </li>
+            </ul>
+            <div class="card-body" id = "logs"></div>
+<!--            <p class="font-weight-light text-break" style="margin-top: auto;font-size: 13px;" id="logs"></p>-->
         </div>
 
     </div>
@@ -828,14 +877,44 @@
 
     function getLogs() {
         var sock = new SockJS('/api/logs');
+        var container = document.getElementById("logs");
         sock.onmessage = function(res) {
-            $("#logs").append('<span class="label label-primary">' + res.data + '</span>')
+            let data = res.data.toString();
+            let dnsProviderName = data.substring(data.indexOf('[') + 1, data.lastIndexOf(']'))
+            let message = data.substring(data.lastIndexOf(']') + 2)
+            let date = getDate()
+            container.innerHTML = container.innerHTML
+                + '<a href="#" class="list-group-item list-group-item-action">'
+                + '<div class="d-flex w-100 justify-content-between">'
+                + '<h6 class="mb-1">' + dnsProviderName + '</h6>'
+                + '<small>' + date + '</small>'
+                + '</div>'
+                + '<p class="mb-1">' + message +'</p>'
+                + '</a>'
         };
 
         sock.onclose = function() {
             sock.close()
         };
 
+    }
+
+    function getDate(){
+        var date = new Date();
+
+        var year = date.getFullYear(),
+            month = date.getMonth() + 1,//月份是从0开始的
+            day = date.getDate(),
+            hour = date.getHours(),
+            min = date.getMinutes(),
+            sec = date.getSeconds();
+        var newTime = year + '-' +
+            month + '-' +
+            day + ' ' +
+            hour + ':' +
+            min + ':' +
+            sec;
+        return newTime;
     }
 
 </script>
