@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.HttpMethod;
 
 import java.util.Map;
 

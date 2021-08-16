@@ -1,12 +1,12 @@
 package com.zf1976.ddns.verticle.timer.service.impl;
 
-import com.zf1976.ddns.api.enums.DnsRecordType;
+import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.api.provider.DnsRecordProvider;
 import com.zf1976.ddns.api.provider.exception.FoundDnsProviderException;
 import com.zf1976.ddns.api.provider.exception.NotSupportDnsProviderException;
 import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecord;
-import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.verticle.timer.service.AbstractDnsRecordService;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

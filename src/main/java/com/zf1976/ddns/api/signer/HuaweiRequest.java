@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signer;
 
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.api.signer.client.HuaweiClientSigner;
 import com.zf1976.ddns.util.ApiURLEncoderUtil;

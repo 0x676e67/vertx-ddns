@@ -1,20 +1,19 @@
 package com.zf1976.ddns.verticle.timer.service;
 
-import com.zf1976.ddns.api.enums.DnsRecordType;
+import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.api.provider.AliyunDnsProvider;
 import com.zf1976.ddns.api.provider.CloudflareDnsProvider;
 import com.zf1976.ddns.api.provider.DnspodDnsProvider;
 import com.zf1976.ddns.api.provider.HuaweiDnsProvider;
 import com.zf1976.ddns.api.provider.DnsRecordProvider;
 import com.zf1976.ddns.pojo.*;
-import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.vo.DnsRecord;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.ApiConstants;
 import com.zf1976.ddns.verticle.handler.ResolveDnsRecordHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

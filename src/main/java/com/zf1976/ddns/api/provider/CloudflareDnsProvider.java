@@ -2,15 +2,15 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
-import com.zf1976.ddns.api.enums.DnsRecordType;
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;

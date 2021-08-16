@@ -2,15 +2,15 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.api.enums.DnsRecordType;
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
-import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;

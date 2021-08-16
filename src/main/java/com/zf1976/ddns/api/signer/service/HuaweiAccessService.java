@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.signer.service;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 
 import java.io.InputStream;

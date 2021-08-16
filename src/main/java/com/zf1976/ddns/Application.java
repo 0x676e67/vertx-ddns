@@ -5,9 +5,6 @@ import com.zf1976.ddns.verticle.DeployVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.dns.AddressResolverOptions;
-import sun.misc.Unsafe;
-
-import java.lang.reflect.Field;
 
 /**
  * @author mac

@@ -1,8 +1,8 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.api.enums.DnsRecordType;
-import com.zf1976.ddns.api.enums.HttpMethod;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

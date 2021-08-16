@@ -1,4 +1,4 @@
-package com.zf1976.ddns.api.enums;
+package com.zf1976.ddns.enums;
 
 public enum HttpMethod {
     GET(false),

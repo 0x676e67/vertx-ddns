@@ -1,7 +1,7 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.api.enums.DnsRecordType;
-import com.zf1976.ddns.api.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
