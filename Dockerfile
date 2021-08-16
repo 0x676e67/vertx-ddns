@@ -8,6 +8,7 @@ MAINTAINER zf1976 <verticle@foxmail.com>
 EXPOSE 	8080
 ################################
 LABEL name=vertx-ddns
+LABEL url=https://github.com/zf1976/vertx-ddns
 
 ENV JVM_XMS="256m" \
     JVM_XMX="256m" \
