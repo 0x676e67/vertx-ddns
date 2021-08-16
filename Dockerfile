@@ -1,7 +1,9 @@
 # from base images
-FROM adoptopenjdk:16-jre-openj9 as builder
+FROM adoptopenjdk:16-jre-openj9 as build
 WORKDIR /app
-ARG JAR_FILE=build/libs/vertx-ddns-1.0-all.jar
+USER root
+
+ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
 COPY ${JAR_FILE} vertx-ddns.jar
 RUN chmod +x vertx-ddns.jar
 MAINTAINER zf1976 <verticle@foxmail.com>
