@@ -46,6 +46,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 RUN mkdir /opt/app
 ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
 COPY ${JAR_FILE} /opt/app/vertx-ddns.jar
+EXPOSE 	8080
 ENV JVM_XMS="256m" \
     JVM_XMX="256m" \
     JVM_OPTS="-Xmx256m -Xms256m" \
