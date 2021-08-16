@@ -19,7 +19,7 @@
   },
   "defaultSecureConfig" : {
     "username" : "vertx",
-    "password" : "123456",
+    "password" : "vertx",
     "notAllowWanAccess" : true
   },
   "aliyun": {
