@@ -39,7 +39,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         final var eventBus = vertx.eventBus();
         eventBus.consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, event -> {
                  vertx.sharedData()
-                         .getAsyncMap(ApiConstants.SOCKJS_ID, res -> {
+                      .getAsyncMap(ApiConstants.SOCKJS_ID, res -> {
                              if (res.succeeded()) {
                                  res.result().get(ApiConstants.SOCKJS_WRITE_HANDLER_ID)
                                          .onSuccess(writeHandlerId -> {
@@ -57,7 +57,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(20000, event -> {
+        final var periodicId = vertx.setPeriodic(10000, event -> {
             this.notifyObserver();
         });
         context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
