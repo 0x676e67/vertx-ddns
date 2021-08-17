@@ -69,8 +69,6 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
 
     public void reloadProviderCredentials(List<DnsConfig> dnsConfigList) {
         this.initDnsProvider(dnsConfigList);
-        System.out.println(this.dnsConfigList);
-        System.out.println(this.providerMap);
         final var localMap = vertx.sharedData()
                                   .getLocalMap(ApiConstants.SHARE_MAP_ID);
         localMap.put(ApiConstants.RUNNING_CONFIG_ID, true);
