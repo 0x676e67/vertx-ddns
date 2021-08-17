@@ -31,6 +31,7 @@ RUN $JAVA_HOME/bin/jlink \
 
 # Define your base image
 FROM debian:buster-slim
+MAINTAINER zf1976 <verticle@foxmail.com>
 USER root
 LABEL name=vertx-ddns
 LABEL url=https://github.com/zf1976/vertx-ddns
@@ -44,6 +45,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # Continue with your application deployment
 RUN mkdir /opt/app
+RUN mkdir /opt/logs
 ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
 COPY ${JAR_FILE} /opt/app/vertx-ddns.jar
 EXPOSE 	8080
