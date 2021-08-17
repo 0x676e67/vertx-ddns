@@ -1,9 +1,13 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.HttpMethod;
-import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.util.Assert;
+import com.zf1976.ddns.util.LogUtil;
+import com.zf1976.ddns.util.ObjectUtil;
+import com.zf1976.ddns.util.StringUtil;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -14,18 +18,24 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
- * @date 2021/7/18
+ * 2021/7/18
  */
 @SuppressWarnings({"RedundantCast"})
 public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> {
@@ -37,6 +47,9 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
                                                       .connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT))
                                                       .executor(Executors.newSingleThreadExecutor())
                                                       .build();
+    protected final CloseableHttpClient closeableHttpClient = HttpClients.custom()
+                                                                         .setConnectionTimeToLive(DEFAULT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
+                                                                         .build();
     protected final WebClient webClient;
 
     protected AbstractDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
@@ -72,19 +85,29 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
         return this.mapperResult(content.getBytes(StandardCharsets.UTF_8), tClass);
     }
 
-    protected T resultHandler(String body) {
+    protected T bodyHandler(String body) {
         throw new UnsupportedOperationException("unrealized");
     }
 
-    protected T resultHandler(String body, A a) {
+    protected T sendRequest(HttpRequestBase request) {
+        try (final var httpResponse = this.closeableHttpClient.execute(request)) {
+            final var body = this.getBody(httpResponse);
+            return this.bodyHandler(body);
+        } catch (IOException e) {
+            LogUtil.printDebug(log, e.getMessage(), e.getCause());
+            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
+        }
+    }
+
+    protected T bodyHandler(String body, A a) {
         throw new UnsupportedOperationException("unrealized");
     }
 
-    protected Future<T> resultHandlerAsync(HttpResponse<Buffer> httpResponse) {
+    protected Future<T> bodyHandlerAsync(HttpResponse<Buffer> httpResponse) {
         throw new UnsupportedOperationException("unrealized");
     }
 
-    protected Future<T> resultHandlerAsync(HttpResponse<Buffer> responseFuture, A a) {
+    protected Future<T> bodyHandlerAsync(HttpResponse<Buffer> responseFuture, A a) {
         throw new UnsupportedOperationException("unrealized");
     }
 
@@ -116,6 +139,24 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
                       .append(path);
         }
         return urlBuilder.toString();
+    }
+
+    protected String getBody(CloseableHttpResponse httpResponse) throws IOException {
+        final var contentBytes = this.getBodyBytes(httpResponse);
+        return new String(contentBytes, StandardCharsets.UTF_8);
+    }
+
+    protected byte[] getBodyBytes(CloseableHttpResponse httpResponse) throws IOException {
+        final var content = httpResponse.getEntity()
+                                        .getContent();
+        final var statusCode = httpResponse.getStatusLine()
+                                           .getStatusCode();
+        if (statusCode == 200 || statusCode == 202 || statusCode == 204) {
+            return content.readAllBytes();
+        } else {
+            LogUtil.printDebug(log, Json.decodeValue(Buffer.buffer(content.readAllBytes())));
+        }
+        return new byte[0];
     }
 
     protected Map<String, Object> getQueryParam(String recordId, String domain, A action) {

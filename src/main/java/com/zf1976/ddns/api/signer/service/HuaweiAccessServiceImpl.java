@@ -1,8 +1,8 @@
 package com.zf1976.ddns.api.signer.service;
 
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.HuaweiSigner;
+import com.zf1976.ddns.enums.HttpMethod;
 import org.apache.http.Header;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * @author mac
- * @date 2021/7/24
+ * 2021/7/24
  */
 @SuppressWarnings("DuplicatedCode")
 public class HuaweiAccessServiceImpl extends HuaweiAccessService<HttpRequestBase> {

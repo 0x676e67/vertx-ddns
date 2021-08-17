@@ -2,32 +2,28 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.enums.DnsRecordType;
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
+import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.pojo.HuaweiDataResult;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,8 +39,6 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
 
     private final Logger log = LogManager.getLogger("[HuaweiDnsProvider]");
     private final String api = "https://dns.myhuaweicloud.com/v2/zones";
-    private final CloseableHttpClient closeableHttpClient = HttpClients.custom()
-                                                                       .build();
     private final Map<String, String> zoneMap = new ConcurrentHashMap<>();
 
     public HuaweiDnsProvider(String id, String secret, Vertx vertx) {
@@ -84,7 +78,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         return httpRequest.send()
                           .compose(bufferHttpResponse -> {
                               final var body = bufferHttpResponse.bodyAsString();
-                              this.initZone(this.resultHandler(body, Action.DESCRIBE));
+                              this.initZone(this.bodyHandler(body, Action.DESCRIBE));
                               return Future.succeededFuture();
                           });
     }
@@ -193,7 +187,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
                                                   .setMethod(HttpMethod.GET)
                                                   .buildAsync();
         return this.sendRequestAsync(asyncHttpRequest)
-                   .compose(v -> this.resultHandlerAsync(v, Action.DESCRIBE));
+                   .compose(v -> this.bodyHandlerAsync(v, Action.DESCRIBE));
     }
 
     /**
@@ -216,7 +210,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
                                                   .setBody(jsonObject.encode())
                                                   .buildAsync();
         return this.sendRequestAsync(asyncHttpRequest, jsonObject)
-                   .compose(v -> this.resultHandlerAsync(v, Action.CREATE));
+                   .compose(v -> this.bodyHandlerAsync(v, Action.CREATE));
     }
 
     /**
@@ -243,7 +237,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
                                                   .setBody(jsonObject.encode())
                                                   .buildAsync();
         return this.sendRequestAsync(aysncHttpRequest, jsonObject)
-                   .compose(v -> this.resultHandlerAsync(v, Action.MODIFY));
+                   .compose(v -> this.bodyHandlerAsync(v, Action.MODIFY));
     }
 
     /**
@@ -260,7 +254,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
                                                   .setMethod(HttpMethod.DELETE)
                                                   .buildAsync();
         return this.sendRequestAsync(asyncHttpRequest)
-                   .compose(v -> this.resultHandlerAsync(v, Action.DESCRIBE));
+                   .compose(v -> this.bodyHandlerAsync(v, Action.DESCRIBE));
     }
 
     /**
@@ -296,9 +290,9 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         byte[] bytes;
         try (CloseableHttpResponse httpResponse = this.closeableHttpClient.execute(httpRequestBase)) {
             if (httpResponse != null) {
-                bytes = this.getContentBytes(httpResponse);
+                bytes = this.getBodyBytes(httpResponse);
                 if (!ObjectUtil.isEmpty(bytes)) {
-                    return this.resultHandler(new String(bytes), action);
+                    return this.bodyHandler(new String(bytes), action);
                 }
             }
             return null;
@@ -322,7 +316,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
     }
 
     @Override
-    protected HuaweiDataResult resultHandler(String body, Action action) {
+    protected HuaweiDataResult bodyHandler(String body, Action action) {
         HuaweiDataResult huaweiDataResult = this.mapperResult(body, HuaweiDataResult.class);
         switch (action) {
             case CREATE, MODIFY, DELETE -> {
@@ -338,10 +332,10 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
     }
 
     @Override
-    protected Future<HuaweiDataResult> resultHandlerAsync(HttpResponse<Buffer> responseFuture, Action action) {
+    protected Future<HuaweiDataResult> bodyHandlerAsync(HttpResponse<Buffer> responseFuture, Action action) {
         final var body = responseFuture.bodyAsString();
         try {
-            final var huaweiDataResult = this.resultHandler(body, action);
+            final var huaweiDataResult = this.bodyHandler(body, action);
             return Future.succeededFuture(huaweiDataResult);
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
@@ -354,20 +348,6 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
             return huaweiDataResult.setRecordsets(Collections.singletonList(result));
         }
         return null;
-    }
-
-
-    private byte[] getContentBytes(CloseableHttpResponse httpResponse) throws IOException {
-        final var content = httpResponse.getEntity()
-                                        .getContent();
-        final var statusCode = httpResponse.getStatusLine()
-                                           .getStatusCode();
-        if (statusCode == 200 || statusCode == 202 || statusCode == 204) {
-            return content.readAllBytes();
-        } else {
-            LogUtil.printDebug(log, Json.decodeValue(Buffer.buffer(content.readAllBytes())));
-        }
-        return new byte[0];
     }
 
     private String getZoneUrl(String domain) {

@@ -2,27 +2,25 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.enums.DnsRecordType;
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
+import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.pojo.AliyunDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
 import com.zf1976.ddns.util.ParameterHelper;
 import com.zf1976.ddns.util.StringUtil;
-import com.zf1976.ddns.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +113,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendRequestAsync(url)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -131,7 +129,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         final var queryParam = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendRequestAsync(url)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -151,7 +149,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         final var queryParam = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendRequestAsync(url)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -166,15 +164,12 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         final var queryParam = this.getQueryParam(id, domain, Action.DELETE);
         final var url = this.requestUrlBuild(queryParam);
         return this.sendRequestAsync(url)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
-    private HttpRequest requestBuild(Map<String, Object> queryParam) {
+    private HttpRequestBase requestBuild(Map<String, Object> queryParam) {
         final var requestUrl = this.requestUrlBuild(queryParam);
-        return HttpRequest.newBuilder()
-                          .GET()
-                          .uri(URI.create(requestUrl))
-                          .build();
+        return new HttpGet(requestUrl);
     }
 
     /**
@@ -196,24 +191,13 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         return Future.failedFuture("The :" + dnsServiceType.name() + "DNS service provider is not supported");
     }
 
-    private AliyunDataResult sendRequest(HttpRequest request) {
-        try {
-            final var body = this.httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                                            .body();
-            return this.resultHandler(body);
-        } catch (IOException | InterruptedException e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
-        }
-    }
-
     @Override
     protected Future<io.vertx.ext.web.client.HttpResponse<Buffer>> sendRequestAsync(String url) {
         return this.webClient.getAbs(url).send();
     }
 
     @Override
-    protected AliyunDataResult resultHandler(String body) {
+    protected AliyunDataResult bodyHandler(String body) {
         final var aliyunDataResult = this.mapperResult(body, AliyunDataResult.class);
         if (aliyunDataResult != null && aliyunDataResult.getMessage() != null) {
             throw new DnsServiceResponseException(aliyunDataResult.getMessage());
@@ -222,10 +206,10 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
     }
 
     @Override
-    protected Future<AliyunDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
+    protected Future<AliyunDataResult> bodyHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
         try {
             final var body = httpResponse.bodyAsString();
-            final var aliyunDataResult = this.resultHandler(body);
+            final var aliyunDataResult = this.bodyHandler(body);
             return Future.succeededFuture(aliyunDataResult);
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());

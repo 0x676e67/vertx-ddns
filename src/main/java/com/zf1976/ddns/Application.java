@@ -1,6 +1,7 @@
 package com.zf1976.ddns;
 
 import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.verticle.DeployVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -22,8 +23,13 @@ public class Application {
             addressResolverOptions.addServer(dnsServer);
         }
         vertxOptions.setAddressResolverOptions(addressResolverOptions);
-        Vertx.vertx(vertxOptions)
-             .deployVerticle(new DeployVerticle(args));
+        final var vertx = Vertx.vertx(vertxOptions);
+        initDepends(vertx);
+        vertx.deployVerticle(new DeployVerticle(args));
+    }
+
+    private static void initDepends(Vertx vertx) {
+        HttpUtil.initCustomWebClient(vertx);
     }
 
 }

@@ -1,13 +1,9 @@
 package com.zf1976.ddns.verticle.timer.service;
 
-import com.zf1976.ddns.enums.DnsRecordType;
-import com.zf1976.ddns.api.provider.AliyunDnsProvider;
-import com.zf1976.ddns.api.provider.CloudflareDnsProvider;
-import com.zf1976.ddns.api.provider.DnspodDnsProvider;
-import com.zf1976.ddns.api.provider.HuaweiDnsProvider;
-import com.zf1976.ddns.api.provider.DnsRecordProvider;
-import com.zf1976.ddns.pojo.*;
+import com.zf1976.ddns.api.provider.*;
 import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.pojo.*;
 import com.zf1976.ddns.pojo.vo.DnsRecord;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.ApiConstants;
@@ -17,7 +13,10 @@ import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -220,7 +219,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                   .compose(bool -> {
                       // get ip from api
                       if (bool) {
-                          return HttpUtil.getCurrentHostIpv4(ipv4Config.getInputIpApi(), vertx.getOrCreateContext());
+                          return HttpUtil.getCurrentHostIpv4(ipv4Config.getInputIpApi());
                       } else {
                           // get ip from network
                           return Future.succeededFuture(ipv4Config.getNetworkIp());
@@ -240,7 +239,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                     .compose(bool -> {
                         // get ip from api
                         if (bool) {
-                            return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi(), vertx.getOrCreateContext());
+                            return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi());
                         } else {
                             return Future.succeededFuture(ipv6Config.getNetworkIp());
                         }
@@ -330,7 +329,11 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         return Objects.equals(dnsRecord.getRr(), "@") ? dnsRecord.getDomain() : dnsRecord.getRr() + "." + dnsRecord.getDomain();
     }
 
-    Future<String> validateDnsRecordStatus(List<DnsRecord> recordList, DnsProviderType dnsProviderType, String domain, String ip, DnsRecordType dnsRecordType) {
+    Future<DnsRecordLog> validateDnsRecordStatus(List<DnsRecord> recordList,
+                                                 DnsProviderType dnsProviderType,
+                                                 String domain,
+                                                 String ip,
+                                                 DnsRecordType dnsRecordType) {
         final var domainMap = recordList.stream()
                                         .collect(Collectors.toMap(this::concatDomain, DnsRecord::getId));
         // find if the domain name exists
@@ -338,8 +341,8 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         // The domain name does not exist, create a domain name record resolution
         if (StringUtil.isEmpty(id)) {
             return this.createRecordAsync(dnsProviderType, domain, ip, dnsRecordType)
-                       .compose(bool -> bool? Future.succeededFuture("[" + dnsProviderType.name() + "] 新增域名解析：" + domain + " 成功！IP：" + ip)
-                               : Future.succeededFuture("[" + dnsProviderType.name() + "] 新增域名解析：" + domain + " 失败！"));
+                       .compose(bool -> bool ? Future.succeededFuture(DnsRecordLog.createLog(dnsProviderType, domain, ip))
+                               : Future.succeededFuture(DnsRecordLog.createFailLog(dnsProviderType, domain)));
         } else {
             for (DnsRecord dnsRecord : recordList) {
                 final var concatDomain = this.concatDomain(dnsRecord);
@@ -347,11 +350,11 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 // if the ip is changed, the domain name record resolution will be updated
                 if (Objects.equals(concatDomain, domain) && !Objects.equals(dnsRecord.getValue(), ip)) {
                     return this.modifyRecordAsync(dnsProviderType, id, domain, ip, dnsRecordType)
-                               .compose(bool -> bool? Future.succeededFuture("[" + dnsProviderType.name() + "] 更新域名解析：" + domain + " 成功！IP：" + ip)
-                                       : Future.succeededFuture("[" + dnsProviderType.name() + "] 更新域名解析：" + domain + " 失败！"));
+                               .compose(bool -> bool ? Future.succeededFuture(DnsRecordLog.modifyLog(dnsProviderType, domain, ip))
+                                       : Future.succeededFuture(DnsRecordLog.modifyFailLog(dnsProviderType, domain)));
                 }
             }
-            return Future.succeededFuture("[" + dnsProviderType.name() + "] 域名：" + domain + " 没有发生变化, IP：" + ip);
+            return Future.succeededFuture(DnsRecordLog.rawLog(dnsProviderType, domain, ip));
         }
     }
 

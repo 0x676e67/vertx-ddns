@@ -1,19 +1,16 @@
 package com.zf1976.ddns.util;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,21 +27,12 @@ public final class HttpUtil {
     public static final Pattern IPV4_EXTRACT_PATTERN = Pattern.compile("((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])");
     public static final Pattern IP6_EXTRACT_PATTERN = Pattern.compile("((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))");
     private static final Pattern INNER_IP_PATTERN = Pattern.compile("^(127\\.0\\.0\\.1)|(0\\:0\\:0\\:0\\:0\\:0\\:0\\:1)|(localhost)|(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})|(172\\.((1[6-9])|(2\\d)|(3[01]))\\.\\d{1,3}\\.\\d{1,3})|(192\\.168\\.\\d{1,3}\\.\\d{1,3})$");
-    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static WebClient webClient;
     private static final String DEFAULT_IPV4_API = "https://api-ipv4.ip.sb/ip";
     private static final String DEFAULT_IPV6_API = "https://api-ipv6.ip.sb/ip";
 
-    /**
-     * 获取当前主机公网IP
-     *
-     * @return {@link String}
-     */
-    public static Future<String> getCurrentHostIpv4(Context context) {
-        return getCurrentHostIpv4(DEFAULT_IPV4_API, context);
-    }
-
-    public static Future<String> getCurrentHostIpv6(Context context) {
-        return getCurrentHostIpv6(DEFAULT_IPV6_API, context);
+    public static void initCustomWebClient(Vertx vertx) {
+        HttpUtil.webClient = WebClient.create(vertx);
     }
 
     /**
@@ -52,43 +40,53 @@ public final class HttpUtil {
      *
      * @return {@link String}
      */
-    public static Future<String> getCurrentHostIpv4(String api, Context context) {
-        return getCurrentHostIp(api, IPV4_EXTRACT_PATTERN, context);
+    public static Future<String> getCurrentHostIpv4() {
+        return getCurrentHostIpv4(DEFAULT_IPV4_API);
     }
 
-    public static Future<String> getCurrentHostIpv6(String api, Context context) {
-        return getCurrentHostIp(api, IP6_EXTRACT_PATTERN, context);
+    public static Future<String> getCurrentHostIpv6() {
+        return getCurrentHostIpv6(DEFAULT_IPV6_API);
+    }
+
+    /**
+     * 获取当前主机公网IP
+     *
+     * @return {@link String}
+     */
+    public static Future<String> getCurrentHostIpv4(String api) {
+        return getCurrentHostIp(api, IPV4_EXTRACT_PATTERN);
+    }
+
+    public static Future<String> getCurrentHostIpv6(String api) {
+        return getCurrentHostIp(api, IP6_EXTRACT_PATTERN);
     }
 
     /**
      * 自行提供IP查询API获取公网ip
+     *
      * @param ipApi api
      * @return ip
      */
     @SuppressWarnings({"LoopStatementThatDoesntLoop", "UnusedAssignment"})
-    public static Future<String> getCurrentHostIp(String ipApi, Pattern IP_EXTRACT_PATTERN_PATTERN, Context context) {
+    public static Future<String> getCurrentHostIp(String ipApi, Pattern IP_EXTRACT_PATTERN_PATTERN) {
         if (StringUtil.isEmpty(ipApi)) {
-            return  Future.succeededFuture();
+            return Future.succeededFuture();
         }
-
-        final var request = HttpRequest.newBuilder()
-                                       .GET()
-                                       .uri(URI.create(ipApi))
-                                       .build();
-        var response = HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-        return Future.fromCompletionStage(response, context)
-                     .compose(v -> {
-                         var body = v.body();
-                         Matcher mat = IP_EXTRACT_PATTERN_PATTERN.matcher(body);
-                         for (int i = 0; (i < body.length()) && mat.find(); i++) {
-                             body = mat.group().trim();
-                             break;
-                         }
-                         if (LOG.isDebugEnabled()) {
-                             LOG.debug("Host IP: {}", body);
-                         }
-                         return Future.succeededFuture(body);
-                     });
+        return webClient.getAbs(ipApi)
+                        .send()
+                        .compose(b -> {
+                            var body = b.bodyAsString();
+                            Matcher mat = IP_EXTRACT_PATTERN_PATTERN.matcher(body);
+                            for (int i = 0; (i < body.length()) && mat.find(); i++) {
+                                body = mat.group()
+                                          .trim();
+                                break;
+                            }
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Host IP: {}", body);
+                            }
+                            return Future.succeededFuture(body);
+                        });
     }
 
     /**

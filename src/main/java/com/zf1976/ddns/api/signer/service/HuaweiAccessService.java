@@ -1,15 +1,15 @@
 package com.zf1976.ddns.api.signer.service;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.HuaweiRequest;
+import com.zf1976.ddns.enums.HttpMethod;
 
 import java.io.InputStream;
 import java.util.Map;
 
 /**
  * @author mac
- * @date 2021/7/24
+ * 2021/7/24
  */
 public abstract class HuaweiAccessService<T> {
     protected String ak;

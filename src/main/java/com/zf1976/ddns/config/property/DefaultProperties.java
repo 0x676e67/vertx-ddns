@@ -1,5 +1,6 @@
 package com.zf1976.ddns.config.property;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.zf1976.ddns.annotation.ConfigPrefix;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
  * 2021/7/7
  */
 @ConfigPrefix(value = "default")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultProperties {
 
     /**

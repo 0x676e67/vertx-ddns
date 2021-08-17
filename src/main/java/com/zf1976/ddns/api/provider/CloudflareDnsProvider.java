@@ -2,21 +2,23 @@ package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.DnsProviderCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
-import com.zf1976.ddns.enums.DnsRecordType;
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
+import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.pojo.CloudflareDataResult;
 import com.zf1976.ddns.pojo.CloudflareDataResult.Result;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.enums.DnsProviderType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -172,7 +175,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         final var queryParam = this.getQueryParam(domain, dnsRecordType, Action.DESCRIBE);
         final var url = this.requestUrlBuild(domain, queryParam);
         return this.sendRequestAsync(url, HttpMethod.GET)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -188,7 +191,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         final var data = this.getQueryParam(domain, ip, dnsRecordType, Action.CREATE);
         final var url = this.requestUrlBuild(domain);
         return this.sendRequestAsync(url, JsonObject.mapFrom(data), HttpMethod.POST)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -208,7 +211,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         final var data = this.getQueryParam(id, domain, ip, dnsRecordType, Action.MODIFY);
         final var url = this.requestUrlBuild(id, domain);
         return this.sendRequestAsync(url, JsonObject.mapFrom(data), HttpMethod.PUT)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -222,7 +225,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     public Future<CloudflareDataResult> deleteDnsRecordAsync(String id, String domain) {
         final var url = this.requestUrlBuild(id, domain);
         return this.sendRequestAsync(url, HttpMethod.DELETE)
-                   .compose(this::resultHandlerAsync);
+                   .compose(this::bodyHandlerAsync);
     }
 
     /**
@@ -264,20 +267,23 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     }
 
 
-    private HttpRequest requestBuild(String domain, Map<String, Object> queryParam, HttpMethod methodType) {
+    private HttpRequestBase requestBuild(String domain, Map<String, Object> queryParam, HttpMethod methodType) {
         return this.requestBuild((String) null, domain, queryParam, methodType);
     }
 
 
-    private HttpRequest requestBuild(String id,
-                                     String domain,
-                                     @SuppressWarnings("SameParameterValue") HttpMethod methodType) {
+    private HttpRequestBase requestBuild(String id,
+                                         String domain,
+                                         @SuppressWarnings("SameParameterValue") HttpMethod methodType) {
         return this.requestBuild(id, domain, (Map<String, Object>) null, methodType);
     }
 
-    private HttpRequest requestBuild(String id, String domain, Map<String, Object> queryParam, HttpMethod methodType) {
+    private HttpRequestBase requestBuild(String id,
+                                         String domain,
+                                         Map<String, Object> queryParam,
+                                         HttpMethod methodType) {
         final String url;
-        HttpRequest httpRequest;
+        HttpRequestBase httpRequest;
         switch (methodType) {
             case GET -> {
                 url = this.requestUrlBuild(domain, queryParam);
@@ -300,32 +306,37 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         return httpRequest;
     }
 
-    private HttpRequest request(String url, HttpMethod methodType) {
+    private HttpRequestBase request(String url, HttpMethod methodType) {
         return this.request(url, null, methodType);
     }
 
-    private HttpRequest request(String url, JsonObject data, HttpMethod methodType) {
-        final var builder = HttpRequest.newBuilder();
-        builder.uri(URI.create(url))
-               .header(HttpHeaders.AUTHORIZATION, this.bearerToken());
+    private HttpRequestBase request(String url, JsonObject data, HttpMethod methodType) {
         switch (methodType) {
-            case GET -> builder.GET();
-            case PUT -> builder.PUT(HttpRequest.BodyPublishers.ofString(data.encode()))
-                               .header(HttpHeaders.CONTENT_TYPE, "application/json");
-            case POST -> builder.POST(HttpRequest.BodyPublishers.ofString(data.encode()))
-                                .header(HttpHeaders.CONTENT_TYPE, "application/json");
-            case DELETE -> builder.DELETE();
-        }
-        return builder.build();
-    }
-
-    private CloudflareDataResult sendRequest(HttpRequest request) {
-        try {
-            final var body = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
-            return this.resultHandler(body);
-        } catch (IOException | InterruptedException e) {
-            LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            throw new DnsServiceResponseException(e.getMessage(), e.getCause());
+            case GET -> {
+                final var httpGet = new HttpGet(url);
+                httpGet.addHeader(HttpHeaders.AUTHORIZATION, this.bearerToken());
+                return httpGet;
+            }
+            case PUT -> {
+                final var httpPut = new HttpPut(url);
+                httpPut.addHeader(HttpHeaders.AUTHORIZATION, this.bearerToken());
+                httpPut.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+                httpPut.setEntity(new StringEntity(data.encode(), StandardCharsets.UTF_8));
+                return httpPut;
+            }
+            case POST -> {
+                final var httpPost = new HttpPost(url);
+                httpPost.addHeader(HttpHeaders.AUTHORIZATION, this.bearerToken());
+                httpPost.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+                httpPost.setEntity(new StringEntity(data.encode(), StandardCharsets.UTF_8));
+                return httpPost;
+            }
+            case DELETE -> {
+                final var httpDelete = new HttpDelete(url);
+                httpDelete.addHeader(HttpHeaders.AUTHORIZATION, this.bearerToken());
+                return httpDelete;
+            }
+            default -> throw new UnsupportedOperationException("request method not supported:" + methodType.name());
         }
     }
 
@@ -409,10 +420,10 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         return this.concatUrl(this.api, zoneId, "dns_records");
     }
 
-    protected Future<CloudflareDataResult> resultHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
+    protected Future<CloudflareDataResult> bodyHandlerAsync(io.vertx.ext.web.client.HttpResponse<Buffer> httpResponse) {
         final String body = httpResponse.bodyAsString();
         try {
-            final var cloudflareDataResult = this.resultHandler(body);
+            final var cloudflareDataResult = this.bodyHandler(body);
             return Future.succeededFuture(cloudflareDataResult);
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
@@ -420,11 +431,12 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
         }
     }
 
-    protected CloudflareDataResult resultHandler(String body) {
+    protected CloudflareDataResult bodyHandler(String body) {
         final CloudflareDataResult cloudflareDataResult;
         final var jsonObject = JsonObject.mapFrom(Json.decodeValue(body));
         final var resultKey = "result";
-        final var result = jsonObject.getMap().get(resultKey);
+        final var result = jsonObject.getMap()
+                                     .get(resultKey);
         if (result instanceof ArrayList) {
             cloudflareDataResult = this.mapperResult(body, CloudflareDataResult.class);
         } else {
