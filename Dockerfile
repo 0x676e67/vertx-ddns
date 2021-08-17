@@ -1,4 +1,5 @@
-#FROM adoptopenjdk:16-jre as build
+# Ubuntu ---- Openj9-jre-complete
+#FROM adoptopenjdk:16-jre-openj9 as build
 #WORKDIR /app
 #USER root
 #
@@ -19,14 +20,11 @@
 #CMD exec java -Xms${JVM_XMS} -Xmx${JVM_XMX} ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar vertx-ddns.jar
 
 
-FROM eclipse-temurin:16.0.2_7-jdk as jre-build
+# Debian ---- Openj9-jlink
+FROM adoptopenjdk:16-jdk-openj9 as jre-build
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
          --add-modules java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
          --output /javaruntime
 
 # Define your base image
@@ -47,11 +45,7 @@ RUN mkdir /app/logs
 ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
 COPY ${JAR_FILE} /app/vertx-ddns.jar
 EXPOSE 	8080
-ENV JVM_XMS="128m" \
-    JVM_XMX="256m" \
-    JVM_OPTS="-Xmx256m -Xms128m" \
+ENV JVM_OPTS="-Xms128m -Xmx256m" \
     TZ=Asia/Shanghai
 
-CMD exec java -Xms${JVM_XMS} -Xmx${JVM_XMX} ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/vertx-ddns.jar
-
-
+CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/vertx-ddns.jar

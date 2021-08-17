@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xlmns:th="http://www.thymeleaf.org" xmlns:xlmns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+
+    <link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" rel="stylesheet">
+
+    <title>hello</title>
+</head>
+<body>
+<div class="container">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <form class="form-inline">
+                <label class="my-1 mr-2" for="logLevel">日志级别</label>
+                <select class="custom-select my-1 mr-sm-2" id="logLevel">
+                    <option selected vaule="OFF">OFF</option>
+                    <option value="ALL">ALL</option>
+                    <option value="TRACE">TRACE</option>
+                    <option value="DEBUG">DEBUG</option>
+                    <option value="INFO">INFO</option>
+                    <option value="WARN">WARN</option>
+                    <option value="ERROR">ERROR</option>
+                </select>
+                <button class="btn btn-primary my-1" id="testBtn">测试</button>
+                &nbsp;&nbsp;
+                <button class="btn btn-primary my-1" id="clearBtn">清除</button>
+            </form>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <h5 class="card-header">系统日志</h5>
+                <div class="card-body" id="messageBox" style="height:600px;overflow:scroll;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#logLevel').change(function () {
+            $.get('/action/refresh/' + $('#logLevel').val(), function (data, status) {
+            })
+        })
+
+        $('#testBtn').click(function () {
+            $.get('/action/test', function (data, status) {
+            })
+            return false // 禁止表单自动提交
+        })
+
+        $('#clearBtn').click(function () {
+            $('#messageBox').html('')
+            return false // 禁止表单自动提交
+        })
+
+        var websocket = null;
+        var host = "";
+        if (window.location.protocol == 'http:') {
+            host = 'ws://' + window.location.host + '/websocket';
+        } else {
+            host = 'wss://' + window.location.host + '/websocket';
+        }
+
+        //判断当前浏览器是否支持WebSocket
+        if ('WebSocket' in window) {
+            websocket = new WebSocket(host);
+        } else if ('MozWebSocket' in window) {
+            websocket = new MozWebSocket(host);
+        } else {
+            alert("该浏览器不支持WebSocket！");
+        }
+
+        //连接发生错误的回调方法
+        websocket.onerror = function () {
+            console.log("连接出错");
+        };
+
+        //连接成功建立的回调方法
+        websocket.onopen = function (event) {
+            console.log("连接成功");
+        }
+
+        //接收到消息的回调方法
+        websocket.onmessage = function (event) {
+            setMessageInnerHTML(event.data);
+        }
+
+        //连接关闭的回调方法
+        websocket.onclose = function () {
+            console.log("连接关闭")
+        }
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+        window.onbeforeunload = function () {
+            websocket.close()
+        }
+
+        //将消息显示在网页上
+        function setMessageInnerHTML(innerHTML) {
+            $('#messageBox').html($('#messageBox').html() + innerHTML + '<br>')
+        }
+
+        //关闭连接
+        function closeWebSocket() {
+            websocket.close()
+        }
+
+        //发送消息
+        function send() {
+            var message = document.getElementById('text').value;
+            websocket.send(message);
+        }
+    })
+
+</script>
+</body>
+</html>
