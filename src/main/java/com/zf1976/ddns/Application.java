@@ -7,13 +7,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.dns.AddressResolverOptions;
 
+import java.io.IOException;
+
 /**
  * @author mac
  * 2021/7/6
  */
 public class Application {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         final var vertxOptions = new VertxOptions();
         final var addressResolverOptions = new AddressResolverOptions()
                 // Server list polling
