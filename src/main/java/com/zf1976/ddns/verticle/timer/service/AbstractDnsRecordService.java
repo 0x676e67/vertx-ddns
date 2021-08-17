@@ -34,17 +34,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
 
     protected AbstractDnsRecordService(List<DnsConfig> dnsConfigList, Vertx vertx) {
         this(new ConcurrentHashMap<>(4), vertx);
-        for (DnsConfig config : dnsConfigList) {
-            if (config.getId() != null && config.getSecret() != null) {
-                switch (config.getDnsProviderType()) {
-                    case ALIYUN -> providerMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case DNSPOD -> providerMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case HUAWEI -> providerMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
-                    case CLOUDFLARE -> providerMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
-                }
-            }
-        }
-        this.dnsConfigList.addAll(dnsConfigList);
+        this.initDnsProvider(dnsConfigList);
     }
 
     protected AbstractDnsRecordService(Map<DnsProviderType, DnsRecordProvider> providerMap, Vertx vertx) {
@@ -55,19 +45,32 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         this.vertx = vertx;
     }
 
-    public void reloadProviderCredentials(List<DnsConfig> dnsConfigList) {
+    private void initDnsProvider(List<DnsConfig> dnsConfigList) {
         if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
             this.dnsConfigList.clear();
         }
         for (DnsConfig config : dnsConfigList) {
             if (config.getId() != null && config.getSecret() != null) {
-                final var provider = providerMap.get(config.getDnsProviderType());
-                if (provider != null) {
+                final var provider = this.providerMap.get(config.getDnsProviderType());
+                if (provider == null) {
+                    switch (config.getDnsProviderType()) {
+                        case ALIYUN -> providerMap.put(DnsProviderType.ALIYUN, new AliyunDnsProvider(config.getId(), config.getSecret(), vertx));
+                        case DNSPOD -> providerMap.put(DnsProviderType.DNSPOD, new DnspodDnsProvider(config.getId(), config.getSecret(), vertx));
+                        case HUAWEI -> providerMap.put(DnsProviderType.HUAWEI, new HuaweiDnsProvider(config.getId(), config.getSecret(), vertx));
+                        case CLOUDFLARE -> providerMap.put(DnsProviderType.CLOUDFLARE, new CloudflareDnsProvider(config.getSecret(), vertx));
+                    }
+                } else {
                     provider.reloadCredentials(config.getId(), config.getSecret());
                 }
-                this.dnsConfigList.add(config);
             }
         }
+        this.dnsConfigList.addAll(dnsConfigList);
+    }
+
+    public void reloadProviderCredentials(List<DnsConfig> dnsConfigList) {
+        this.initDnsProvider(dnsConfigList);
+        System.out.println(this.dnsConfigList);
+        System.out.println(this.providerMap);
         final var localMap = vertx.sharedData()
                                   .getLocalMap(ApiConstants.SHARE_MAP_ID);
         localMap.put(ApiConstants.RUNNING_CONFIG_ID, true);
