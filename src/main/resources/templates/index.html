@@ -572,14 +572,14 @@
     let selectDnsRecordType = ipv4RecordType
 
     // 初始化调用
-    setAliyunType()
-    //selectIpv4ForApi()
-    //selectIpv6ForApi()
+    selectIpv4ForApi()
+    selectIpv6ForApi()
     setIpv4RecordType()
+    setAliyunType()
     setSecureConfig()
     getLogs()
+
     //setInterval(getLogs, 1000)
-    getLogs()
 
     function logout() {
         axiosInstance.post("/logout")
