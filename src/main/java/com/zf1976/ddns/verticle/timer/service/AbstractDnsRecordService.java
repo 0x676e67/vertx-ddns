@@ -68,22 +68,10 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 this.dnsConfigList.add(config);
             }
         }
-        vertx.sharedData()
-             .getAsyncMap(ApiConstants.SHARE_MAP_ID, event -> {
-                 if (event.succeeded()) {
-                     final var result = event.result();
-                     //noinspection RedundantCast
-                     result.put(ApiConstants.RUNNING_CONFIG_ID, (Boolean) true)
-                           .onSuccess(v -> {
-                               // update immediately
-                               this.update();
-                           })
-                           .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-                 } else {
-                     log.error(event.cause());
-                 }
-             });
-
+        final var localMap = vertx.sharedData()
+                                  .getLocalMap(ApiConstants.SHARE_MAP_ID);
+        localMap.put(ApiConstants.RUNNING_CONFIG_ID, true);
+        this.update();
     }
 
     protected void checkIp(String ip) {

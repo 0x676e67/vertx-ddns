@@ -61,24 +61,15 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
+        final var localMap = vertx.sharedData()
+                                  .getLocalMap(ApiConstants.SHARE_MAP_ID);
         final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
-            vertx.sharedData()
-                 .getAsyncMap(ApiConstants.SHARE_MAP_ID, event -> {
-                     if (event.succeeded()) {
-                         event.result()
-                              .get(ApiConstants.RUNNING_CONFIG_ID)
-                              .onSuccess(v -> {
-                                  if (!(v instanceof Boolean bool && bool)) {
-                                      this.notifyObserver();
-                                  } else {
-                                      event.result()
-                                           .remove(ApiConstants.RUNNING_CONFIG_ID);
-                                  }
-                              })
-                              .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-                     }
-                     log.error(event.cause());
-                 });
+            final var v = localMap.get(ApiConstants.RUNNING_CONFIG_ID);
+            if (!(v instanceof Boolean bool && bool)) {
+                this.notifyObserver();
+            } else {
+                localMap.remove(ApiConstants.RUNNING_CONFIG_ID);
+            }
         });
         context.put(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID, periodicId);
     }

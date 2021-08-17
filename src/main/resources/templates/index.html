@@ -296,10 +296,23 @@
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto" onclick="storeDDNSConfig()">保存配置</button>
-            </div>
-          </div>
 
+                <div class="text-center" style="margin-top: 15px">
+                    <div class="btn-group" id="button-container">
+                        <button class="btn btn-primary" onclick="storeDDNSConfig()" style="display:block;margin:0 auto">
+                            保存配置
+                        </button>
+
+                        <button class="btn btn-secondary" data-toggle="tooltip" onclick="resovleDnsRecord()"
+                                type="button">
+                            重新解析域名列表
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+          </div>
+          <!--        Secure-->
           <div class="card shadow-sm" style="margin-top: 50px">
               <div class="fs-6 card-header">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-safe-fill" viewBox="0 0 16 16">
@@ -687,6 +700,13 @@
         return secureConfig.password == password
     }
 
+    function resovleDnsRecord() {
+        axiosInstance.post("/api/dns/record/resolve")
+            .then(res => {
+                confirm.show("请求已经发送，请查看日志观察结果")
+            })
+    }
+
     function storeDDNSConfig() {
         let ipv4Address
         let ipv6Address
@@ -694,7 +714,7 @@
         if (document.getElementsByName("ipv4Radios")[0].checked) {
             ipv4Address = document.getElementById("ipv4ApiInput").value
         } else {
-            ipv4Address = document.getElementById("selectIpv4Value")? document.getElementById("selectIpv4Value").value : null
+            ipv4Address = document.getElementById("selectIpv4Value") ? document.getElementById("selectIpv4Value").value : null
         }
 
         // 从Api获取Ipv6

@@ -67,7 +67,7 @@ public class ApiVerticle extends TemplateVerticle {
                      }
                  });
         }));
-        // All routes use session
+        // all routes use session
         router.route()
               .handler(this::notAllowWanAccessHandler)
               .handler(XFrameHandler.create(XFrameHandler.DENY))
@@ -77,20 +77,20 @@ public class ApiVerticle extends TemplateVerticle {
                 new RedirectAuthenticationProvider(),
                 ApiConstants.LOGIN_PATH
         );
-        // Redirect authentication
+        // redirect authentication
         router.route("/api/*")
               .handler(redirectAuthHandler);
         router.route("/index.html")
               .handler(redirectAuthHandler);
-        // The page must have POST form login data
+        // the page must have POST form login data
         router.post("/login")
               .handler(BodyHandler.create())
               .handler(formLoginHandler);
-        // Sign out
+        // sign out
         router.post("/logout")
               .handler(redirectAuthHandler)
               .handler(this::logoutHandler);
-        // Store DNS service provider key
+        // store DNS service provider key
         router.post("/api/store/dns/config")
               .consumes("application/json")
               .handler(BodyHandler.create())
@@ -100,12 +100,15 @@ public class ApiVerticle extends TemplateVerticle {
               .consumes("application/json")
               .handler(BodyHandler.create())
               .handler(this::storeSecureConfigHandler);
-        // Query DNS service provider's domain name resolution record
+        // query DNS service provider's domain name resolution record
         router.post("/api/dns/record/list")
               .handler(this::findDnsRecordsHandler);
-        // DELETE analysis record
+        // delete analysis record
         router.delete("/api/dns/record")
-              .blockingHandler(this::deleteDnsRecordHandler);
+              .handler(this::deleteDnsRecordHandler);
+        // resolve dns record
+        router.post("/api/dns/record/resolve")
+              .handler(this::resolveDnsRecordHandler);
         // Obtain the RSA public key
         router.get("/common/rsa/public_key")
               .handler(this::readRsaPublicKeyHandler);
@@ -115,7 +118,7 @@ public class ApiVerticle extends TemplateVerticle {
                                     .listen(serverPort))
             .onSuccess(event -> {
                 log.info("Vertx web server initialized with port(s): {}(http)", serverPort);
-                log.info("DDNS-Vertx is running at http://localhost:{}",serverPort);
+                log.info("DDNS-Vertx is running at http://localhost:{}", serverPort);
                 try {
                     super.start(startPromise);
                 } catch (Exception e) {
@@ -243,6 +246,11 @@ public class ApiVerticle extends TemplateVerticle {
         }
     }
 
+    protected void resolveDnsRecordHandler(RoutingContext ctx) {
+        this.dnsRecordService.update();
+        this.routeResultJson(ctx);
+    }
+
     /**
      * store secure config handler
      *
@@ -251,7 +259,8 @@ public class ApiVerticle extends TemplateVerticle {
     protected void storeSecureConfigHandler(RoutingContext ctx) {
         SecureConfig secureConfig;
         try {
-            secureConfig = ctx.getBodyAsJson().mapTo(SecureConfig.class);
+            secureConfig = ctx.getBodyAsJson()
+                              .mapTo(SecureConfig.class);
             Assert.notNull(secureConfig, "body cannot been null!");
             Assert.hasLength(secureConfig.getUsername(), "username cannot been empty!");
             Assert.hasLength(secureConfig.getPassword(), "username cannot been empty!");
