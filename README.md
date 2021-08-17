@@ -49,5 +49,7 @@
   ```bash
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns
   ```
-
+  
+## 注
+- 默认登录的用户名密码：vertx
 <img src="./img/1BC05189-0624-4729-B900-2CE4A42177B1.png"/>
