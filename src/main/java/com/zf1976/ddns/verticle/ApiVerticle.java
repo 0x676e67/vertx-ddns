@@ -1,7 +1,7 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
@@ -54,17 +54,18 @@ public class ApiVerticle extends TemplateVerticle {
                 .setHeartbeatInterval(2000);
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
         router.mountSubRouter("/api/logs", sockJSHandler.socketHandler(sockJSSocket -> {
-            vertx.sharedData().getAsyncMap(ApiConstants.SOCKJS_ID, res -> {
-                if (res.succeeded()) {
-                    // get sockJS id
-                    final var writeHandlerID = sockJSSocket.writeHandlerID();
-                    res.result()
-                       .put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, writeHandlerID);
-                } else {
-                    log.error(res.cause()
-                                 .getMessage());
-                }
-            });
+            vertx.sharedData()
+                 .getAsyncMap(ApiConstants.SHARE_MAP_ID, res -> {
+                     if (res.succeeded()) {
+                         // get sockJS id
+                         final var writeHandlerID = sockJSSocket.writeHandlerID();
+                         res.result()
+                            .put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, writeHandlerID);
+                     } else {
+                         log.error(res.cause()
+                                      .getMessage());
+                     }
+                 });
         }));
         // All routes use session
         router.route()

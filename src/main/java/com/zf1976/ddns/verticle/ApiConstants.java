@@ -24,11 +24,13 @@ public interface ApiConstants {
 
     String CONFIG_SUBJECT_ADDRESS = "config.subject.address";
 
-    String CONFIG_PERIODIC_ID = "config.periodic.id";
+    String DEFAULT_CONFIG_PERIODIC_ID = "default.config.periodic.id";
+
+    String RUNNING_CONFIG_ID = "running.config.periodic.id";
 
     String VERTICLE_PERIODIC_DEPLOY_ID = "verticle.periodic.id";
 
-    String SOCKJS_ID = "sockjs__id";
+    String SHARE_MAP_ID = "sockjs__id";
 
     String SOCKJS_WRITE_HANDLER_ID = "sockjs_write_handler_id";
 

@@ -41,7 +41,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         // send dns record resolve log
         eventBus.consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, logResult -> {
             vertx.sharedData()
-                 .getAsyncMap(ApiConstants.SOCKJS_ID, asyncMapAsyncResult -> {
+                 .getAsyncMap(ApiConstants.SHARE_MAP_ID, asyncMapAsyncResult -> {
                      if (asyncMapAsyncResult.succeeded()) {
                          asyncMapAsyncResult.result()
                                             .get(ApiConstants.SOCKJS_WRITE_HANDLER_ID)
@@ -61,10 +61,26 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(10000, event -> {
-            this.notifyObserver();
+        final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
+            vertx.sharedData()
+                 .getAsyncMap(ApiConstants.SHARE_MAP_ID, event -> {
+                     if (event.succeeded()) {
+                         event.result()
+                              .get(ApiConstants.RUNNING_CONFIG_ID)
+                              .onSuccess(v -> {
+                                  if (!(v instanceof Boolean bool && bool)) {
+                                      this.notifyObserver();
+                                  } else {
+                                      event.result()
+                                           .remove(ApiConstants.RUNNING_CONFIG_ID);
+                                  }
+                              })
+                              .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                     }
+                     log.error(event.cause());
+                 });
         });
-        context.put(ApiConstants.CONFIG_PERIODIC_ID, periodicId);
+        context.put(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID, periodicId);
     }
 
     @Override
@@ -72,7 +88,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         for (DnsRecordObserver observer : this.observers) {
             this.removeObserver(observer);
         }
-        final var rawPeriodicId = context.get(ApiConstants.CONFIG_PERIODIC_ID);
+        final var rawPeriodicId = context.get(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID);
         Long periodicId = (Long) rawPeriodicId;
         if (vertx.cancelTimer(periodicId)) {
             log.info("cancel the PeriodicVerticle deployment and cancel the timer!");
