@@ -19,7 +19,7 @@
 #CMD exec java -Xms${JVM_XMS} -Xmx${JVM_XMX} ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar vertx-ddns.jar
 
 
-FROM eclipse-temurin:16-jdk as jre-build
+FROM eclipse-temurin:16.0.2_7-jdk as jre-build
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
          --add-modules java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
@@ -41,19 +41,17 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
-#COPY --from=jre-build /usr/share/fonts /usr/share/fonts
-
 
 # Continue with your application deployment
 RUN mkdir /app/logs
 ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
 COPY ${JAR_FILE} /app/vertx-ddns.jar
 EXPOSE 	8080
-ENV JVM_XMS="256m" \
+ENV JVM_XMS="128m" \
     JVM_XMX="256m" \
-    JVM_OPTS="-Xmx256m -Xms256m" \
+    JVM_OPTS="-Xmx256m -Xms128m" \
     TZ=Asia/Shanghai
 
-CMD exec java -Xms${JVM_XMS} -Xmx${JVM_XMX} ${JVM_OPTS} -Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1 -Djdk.reflect.allowGetCallerClass=true -Djava.security.egd=file:/dev/./urandom -jar /app/vertx-ddns.jar
+CMD exec java -Xms${JVM_XMS} -Xmx${JVM_XMX} ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/vertx-ddns.jar
 
 
