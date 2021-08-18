@@ -38,9 +38,9 @@
 ## Docker中使用
 
 > docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`,三种基础系统所对应Runtime环境的镜像，
-> 其中`debian`,`alpine`为基础的镜像经过jlink生成的极简JRE Runtime，大大减少了镜像体积。
-> 使用OpenJ9有效减少运行内存占用
-> 三种镜像大小`ubuntu` < `debian` < `ubuntu`
+> 其中`debian`,`alpine`为基础的镜像经过jlink生成的极简JRE Runtime，大大减少了镜像体积， 使用OpenJ9有效减少运行内存占用。
+> 三种镜像大小`ubuntu` < `debian` < `ubuntu`。
+
 - 使用host模式, 自行添加--net=host参数，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 如果不挂载主机目录, 删除容器同时会删除配置
 - 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
