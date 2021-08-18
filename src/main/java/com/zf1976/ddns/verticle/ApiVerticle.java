@@ -55,17 +55,9 @@ public class ApiVerticle extends TemplateVerticle {
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
         router.mountSubRouter("/api/logs", sockJSHandler.socketHandler(sockJSSocket -> {
             vertx.sharedData()
-                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID, res -> {
-                     if (res.succeeded()) {
-                         // get sockJS id
-                         final var writeHandlerID = sockJSSocket.writeHandlerID();
-                         res.result()
-                            .put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, writeHandlerID);
-                     } else {
-                         log.error(res.cause()
-                                      .getMessage());
-                     }
-                 });
+                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
+                 .compose(shareMap -> shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, sockJSSocket.writeHandlerID()))
+                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         }));
         // all routes use session
         router.route()

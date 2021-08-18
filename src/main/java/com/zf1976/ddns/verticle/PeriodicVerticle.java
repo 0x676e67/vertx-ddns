@@ -5,6 +5,7 @@ import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.verticle.codec.DnsRecordLogMessageCodec;
 import com.zf1976.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
 import org.apache.logging.log4j.LogManager;
@@ -41,22 +42,13 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         // send dns record resolve log
         eventBus.consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, logResult -> {
             vertx.sharedData()
-                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID, asyncMapAsyncResult -> {
-                     if (asyncMapAsyncResult.succeeded()) {
-                         asyncMapAsyncResult.result()
-                                            .get(ApiConstants.SOCKJS_WRITE_HANDLER_ID)
-                                            .onSuccess(writeHandlerId -> {
-                                                if (writeHandlerId != null) {
-                                                    eventBus.send((String) writeHandlerId, Json.encode(logResult.body()));
-                                                }
-                                            })
-                                            .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-                     } else {
-                         log.error(asyncMapAsyncResult.cause()
-                                                      .getMessage());
-                     }
-                 });
-             });
+                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
+                 .compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_WRITE_HANDLER_ID))
+                 .onSuccess(v -> {
+                     eventBus.send((String) v, Json.encode(logResult.body()));
+                 })
+                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+        });
         super.start(startPromise);
     }
 
@@ -65,12 +57,19 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         final var localMap = vertx.sharedData()
                                   .getLocalMap(ApiConstants.SHARE_MAP_ID);
         final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
-            final var v = localMap.get(ApiConstants.RUNNING_CONFIG_ID);
-            if (!(v instanceof Boolean bool && bool)) {
-                this.notifyObserver();
-            } else {
-                localMap.remove(ApiConstants.RUNNING_CONFIG_ID);
-            }
+            vertx.sharedData()
+                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
+                 .compose(shareMap -> shareMap.get(ApiConstants.RUNNING_CONFIG_ID)
+                                              .compose(v -> {
+                                                  if (!(v instanceof Boolean bool && bool)) {
+                                                      this.notifyObserver();
+                                                      return Future.succeededFuture();
+                                                  } else {
+                                                      final var remove = localMap.remove(ApiConstants.RUNNING_CONFIG_ID);
+                                                      return Future.succeededFuture(remove);
+                                                  }
+                                              }))
+                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
         context.put(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID, periodicId);
     }
@@ -80,9 +79,8 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         for (DnsRecordObserver observer : this.observers) {
             this.removeObserver(observer);
         }
-        final var rawPeriodicId = context.get(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID);
-        Long periodicId = (Long) rawPeriodicId;
-        if (vertx.cancelTimer(periodicId)) {
+        final var periodicId = context.get(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID);
+        if (vertx.cancelTimer((Long) periodicId)) {
             log.info("cancel the PeriodicVerticle deployment and cancel the timer!");
         }
     }
