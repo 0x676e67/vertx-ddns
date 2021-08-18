@@ -41,7 +41,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         // send dns record resolve log
         eventBus.consumer(ApiConstants.CONFIG_SUBJECT_ADDRESS, logResult -> {
             vertx.sharedData()
-                 .getAsyncMap(ApiConstants.SHARE_MAP_ID, asyncMapAsyncResult -> {
+                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID, asyncMapAsyncResult -> {
                      if (asyncMapAsyncResult.succeeded()) {
                          asyncMapAsyncResult.result()
                                             .get(ApiConstants.SOCKJS_WRITE_HANDLER_ID)
@@ -49,7 +49,8 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                                                 if (writeHandlerId != null) {
                                                     eventBus.send((String) writeHandlerId, Json.encode(logResult.body()));
                                                 }
-                                            });
+                                            })
+                                            .onFailure(err -> log.error(err.getMessage(), err.getCause()));
                      } else {
                          log.error(asyncMapAsyncResult.cause()
                                                       .getMessage());

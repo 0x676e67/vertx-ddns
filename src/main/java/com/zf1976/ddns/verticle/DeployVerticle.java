@@ -44,7 +44,7 @@ public class DeployVerticle extends AbstractVerticle {
             load = ConfigProperty.getInstance()
                                  .getJsonConfig();
             final var jsonObject = JsonObject.mapFrom(load);
-            // 设置服务端口配置
+            // set service port configuration
             if (ObjectUtil.isEmpty(this.args)) {
                 jsonObject.put(ApiConstants.SERVER_PORT, 8080);
             } else {
