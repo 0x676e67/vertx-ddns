@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.AliyunSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
@@ -40,7 +40,7 @@ public class AliyunDnsProvider extends AbstractDnsProvider<AliyunDataResult, Ali
         this(new BasicCredentials(accessKeyId, accessKeySecret), vertx);
     }
 
-    public AliyunDnsProvider(DnsProviderCredentials credentials, Vertx vertx) {
+    public AliyunDnsProvider(ProviderCredentials credentials, Vertx vertx) {
         super(credentials, vertx);
     }
 

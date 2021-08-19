@@ -1,9 +1,9 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.DnsRecordType;
 import io.vertx.core.Future;
 
 /**
@@ -121,7 +121,7 @@ public interface DnsRecordProvider<T> {
      *
      * @param dnsProviderCredentials provider credentials
      */
-    void reloadCredentials(DnsProviderCredentials dnsProviderCredentials);
+    void reloadCredentials(ProviderCredentials dnsProviderCredentials);
 
     /**
      * 功能描述

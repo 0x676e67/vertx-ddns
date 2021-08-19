@@ -1,9 +1,9 @@
 package com.zf1976.ddns.api.signer;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
-import com.zf1976.ddns.enums.HttpMethod;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.signer.client.AsyncHuaweiClientSinger;
 import com.zf1976.ddns.api.signer.client.HuaweiClientSigner;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.util.ApiURLEncoderUtil;
 import com.zf1976.ddns.util.LogUtil;
 import io.vertx.core.buffer.Buffer;
@@ -32,7 +32,7 @@ public class HuaweiRequest {
     private String body = null;
     private String fragment = null;
 
-    private HuaweiRequest(DnsProviderCredentials basicCredentials) {
+    private HuaweiRequest(ProviderCredentials basicCredentials) {
         this.setKey(basicCredentials.getAccessKeyId());
         this.setSecret(basicCredentials.getAccessKeySecret());
     }
@@ -216,7 +216,7 @@ public class HuaweiRequest {
         return this;
     }
 
-    public static HuaweiRequest newBuilder(DnsProviderCredentials credentials) {
+    public static HuaweiRequest newBuilder(ProviderCredentials credentials) {
         return new HuaweiRequest(credentials);
     }
 

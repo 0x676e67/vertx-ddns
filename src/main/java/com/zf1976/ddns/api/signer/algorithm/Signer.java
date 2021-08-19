@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.algorithm;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.util.DataTypeConverterUtil;
 
 import javax.crypto.Mac;
@@ -23,7 +23,7 @@ public abstract class Signer {
         return hmacSHA256Signer;
     }
 
-    public abstract String signString(String stringToSign, DnsProviderCredentials credentials);
+    public abstract String signString(String stringToSign, ProviderCredentials credentials);
 
     public abstract String signString(String stringToSign, String accessKeySecret);
 

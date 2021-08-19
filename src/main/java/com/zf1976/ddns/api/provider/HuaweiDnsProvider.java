@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
 import com.zf1976.ddns.api.provider.exception.ResolvedDomainException;
@@ -45,7 +45,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public HuaweiDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
+    public HuaweiDnsProvider(ProviderCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
         // init web client
         AsyncHuaweiClientSinger.initClient(super.webClient);
@@ -368,7 +368,7 @@ public class HuaweiDnsProvider extends AbstractDnsProvider<HuaweiDataResult, Hua
 
 
     @Override
-    public void reloadCredentials(DnsProviderCredentials dnsProviderCredentials) {
+    public void reloadCredentials(ProviderCredentials dnsProviderCredentials) {
         this.zoneMap.clear();
         super.reloadCredentials(dnsProviderCredentials);
     }

@@ -1,7 +1,7 @@
 package com.zf1976.ddns.api.provider;
 
 import com.zf1976.ddns.api.auth.BasicCredentials;
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.signer.rpc.DnspodSignatureComposer;
 import com.zf1976.ddns.api.signer.rpc.RpcAPISignatureComposer;
@@ -38,7 +38,7 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
         this(new BasicCredentials(id, secret), vertx);
     }
 
-    public DnspodDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
+    public DnspodDnsProvider(ProviderCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 

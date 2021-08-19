@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.algorithm;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 
 /**
  * @author mac
@@ -11,7 +11,7 @@ public class HmacSHA256Signer extends Signer {
     public static final String ALGORITHM_NAME = "HmacSHA256";
 
     @Override
-    public String signString(String stringToSign, DnsProviderCredentials credentials) {
+    public String signString(String stringToSign, ProviderCredentials credentials) {
         return signString(stringToSign, credentials.getAccessKeySecret());
     }
 

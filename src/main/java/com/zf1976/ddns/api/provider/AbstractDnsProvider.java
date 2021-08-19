@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.HttpMethod;
@@ -42,7 +42,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsProvider]");
     public static final int DEFAULT_CONNECT_TIMEOUT = 60;
-    protected DnsProviderCredentials dnsProviderCredentials;
+    protected ProviderCredentials dnsProviderCredentials;
     protected final HttpClient httpClient = HttpClient.newBuilder()
                                                       .connectTimeout(Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT))
                                                       .executor(Executors.newSingleThreadExecutor())
@@ -52,7 +52,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
                                                                          .build();
     protected final WebClient webClient;
 
-    protected AbstractDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
+    protected AbstractDnsProvider(ProviderCredentials dnsApiCredentials, Vertx vertx) {
         if (vertx == null) {
             throw new RuntimeException("Vert.x instance cannot be null");
         }
@@ -181,7 +181,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
     }
 
     @Override
-    public void reloadCredentials(DnsProviderCredentials dnsProviderCredentials) {
+    public void reloadCredentials(ProviderCredentials dnsProviderCredentials) {
         this.dnsProviderCredentials = dnsProviderCredentials;
     }
 }

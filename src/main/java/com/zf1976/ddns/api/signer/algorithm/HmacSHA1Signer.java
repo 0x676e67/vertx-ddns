@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.signer.algorithm;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 
 public class HmacSHA1Signer extends Signer {
 
@@ -13,7 +13,7 @@ public class HmacSHA1Signer extends Signer {
         return sign(stringToSign, accessKeySecret, ALGORITHM_NAME);
     }
 
-    public String signString(String stringToSign, DnsProviderCredentials credentials) {
+    public String signString(String stringToSign, ProviderCredentials credentials) {
         return this.signString(stringToSign, credentials.getAccessKeySecret());
     }
 

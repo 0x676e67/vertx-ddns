@@ -1,6 +1,6 @@
 package com.zf1976.ddns.api.provider;
 
-import com.zf1976.ddns.api.auth.DnsProviderCredentials;
+import com.zf1976.ddns.api.auth.ProviderCredentials;
 import com.zf1976.ddns.api.auth.TokenCredentials;
 import com.zf1976.ddns.api.provider.exception.DnsServiceResponseException;
 import com.zf1976.ddns.api.provider.exception.InvalidDnsCredentialException;
@@ -49,7 +49,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     }
 
 
-    public CloudflareDnsProvider(DnsProviderCredentials dnsApiCredentials, Vertx vertx) {
+    public CloudflareDnsProvider(ProviderCredentials dnsApiCredentials, Vertx vertx) {
         super(dnsApiCredentials, vertx);
     }
 
@@ -481,7 +481,7 @@ public class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareDataRes
     }
 
     @Override
-    public void reloadCredentials(DnsProviderCredentials dnsProviderCredentials) {
+    public void reloadCredentials(ProviderCredentials dnsProviderCredentials) {
         this.zoneMap.clear();
         super.reloadCredentials(dnsProviderCredentials);
     }
