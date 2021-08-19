@@ -54,8 +54,6 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        final var localMap = vertx.sharedData()
-                                  .getLocalMap(ApiConstants.SHARE_MAP_ID);
         final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
             vertx.sharedData()
                  .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
@@ -65,8 +63,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                                                       this.notifyObserver();
                                                       return Future.succeededFuture();
                                                   } else {
-                                                      final var remove = localMap.remove(ApiConstants.RUNNING_CONFIG_ID);
-                                                      return Future.succeededFuture(remove);
+                                                      return shareMap.remove(ApiConstants.RUNNING_CONFIG_ID);
                                                   }
                                               }))
                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
