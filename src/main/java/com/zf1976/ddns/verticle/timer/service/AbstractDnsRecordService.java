@@ -269,13 +269,15 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 final String ip = extractDomainAndIp[1];
                 this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.A)
                     .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.A))
-                    .onSuccess(message -> {
-                        LogUtil.printDebug(this.log, message);
-                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, message);
+                    .onSuccess(recordLog -> {
+                        LogUtil.printDebug(this.log, recordLog);
+                        vertx.eventBus()
+                             .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, recordLog);
                     })
                     .onFailure(err -> {
                         LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
-                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, err.getMessage());
+                        vertx.eventBus()
+                             .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                     });
             }
 
@@ -293,13 +295,15 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 final String ip = extractDomainAndIp[1];
                 this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.AAAA)
                     .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.AAAA))
-                    .onSuccess(message -> {
-                        LogUtil.printDebug(this.log, message);
-                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, message);
+                    .onSuccess(recordLog -> {
+                        LogUtil.printDebug(this.log, recordLog);
+                        vertx.eventBus()
+                             .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, recordLog);
                     })
                     .onFailure(err -> {
                         LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
-                        vertx.eventBus().send(ApiConstants.CONFIG_SUBJECT_ADDRESS, err.getMessage());
+                        vertx.eventBus()
+                             .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                     });
             }
 

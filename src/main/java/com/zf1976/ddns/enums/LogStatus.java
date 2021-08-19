@@ -11,6 +11,10 @@ public enum LogStatus {
      */
     ROW,
     /**
+     * err
+     */
+    ERROR,
+    /**
      * 新增/创建
      */
     CREATE,
