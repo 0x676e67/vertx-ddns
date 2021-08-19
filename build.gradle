@@ -28,6 +28,7 @@ ext{
     log4jVersion = "2.14.1"
     nettyVersion = "4.1.58.Final"
     apacheComponentVersion = '4.5.13'
+    caffeineVersion = "3.0.3"
 }
 
 dependencies {
@@ -37,6 +38,7 @@ dependencies {
     implementation "io.vertx:vertx-web-templ-thymeleaf:${vertxVersion}"
     implementation group: 'io.netty', name: 'netty-resolver-dns-native-macos', version: "${nettyVersion}", classifier:'osx-x86_64'
     implementation "org.apache.httpcomponents:httpclient:${apacheComponentVersion}"
+    implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"

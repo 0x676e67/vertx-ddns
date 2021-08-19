@@ -44,8 +44,9 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
             vertx.sharedData()
                  .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
                  .compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_WRITE_HANDLER_ID))
-                 .onSuccess(v -> {
-                     eventBus.send((String) v, Json.encode(logResult.body()));
+                 .compose(writeHandlerId -> this.storeMemoryLog(writeHandlerId, logResult.body()))
+                 .onSuccess(writeHandlerId -> {
+                     eventBus.send(writeHandlerId, Json.encode(logResult.body()));
                  })
                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
@@ -82,5 +83,17 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
         }
     }
 
+    protected Future<String> storeMemoryLog(Object writeHandlerId, Object obj) {
+        String sendId;
+        try {
+            sendId = (String) writeHandlerId;
+            DnsRecordLog recordLog = (DnsRecordLog) obj;
+            return vertx.sharedData()
+                        .getAsyncMap(ApiConstants.STORE_DNS_RECORD_LOG_ID)
+                        .compose(v -> Future.succeededFuture(sendId));
+        } catch (Exception e) {
+            return Future.failedFuture(e.getMessage());
+        }
 
+    }
 }

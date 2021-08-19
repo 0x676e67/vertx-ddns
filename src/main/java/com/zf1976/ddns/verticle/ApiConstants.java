@@ -30,9 +30,11 @@ public interface ApiConstants {
 
     String VERTICLE_PERIODIC_DEPLOY_ID = "verticle.periodic.id";
 
-    String SHARE_MAP_ID = "sockjs__id";
+    String SHARE_MAP_ID = "sockjs.d";
 
-    String SOCKJS_WRITE_HANDLER_ID = "sockjs_write_handler_id";
+    String SOCKJS_WRITE_HANDLER_ID = "sockjs.write.handler.id";
+
+    String STORE_DNS_RECORD_LOG_ID = "store.dns.record.id.log.id";
 
     String PERIODIC = "periodicId";
 
