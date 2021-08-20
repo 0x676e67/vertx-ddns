@@ -48,7 +48,7 @@ public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> 
                                                       .executor(Executors.newSingleThreadExecutor())
                                                       .build();
     protected final CloseableHttpClient closeableHttpClient = HttpClients.custom()
-                                                                         .setConnectionTimeToLive(DEFAULT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
+                                                                         .setConnectionTimeToLive(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
                                                                          .build();
     protected final WebClient webClient;
 

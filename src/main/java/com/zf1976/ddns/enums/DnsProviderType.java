@@ -2,26 +2,32 @@ package com.zf1976.ddns.enums;
 
 /**
  * @author mac
- * @date 2021/7/8
+ * 2021/7/8
  */
 public enum DnsProviderType {
 
     /**
-     * 阿里云
+     * 阿里云 0000
      */
-    ALIYUN,
+    ALIYUN((byte) 0),
     /**
-     * 腾讯云
+     * 腾讯云 0001
      */
-    DNSPOD,
+    DNSPOD((byte) (1)),
     /**
-     * Cloudflare
+     * Cloudflare 0010
      */
-    CLOUDFLARE,
+    CLOUDFLARE((byte) (1 << 1)),
     /**
-     * 华为云
+     * 华为云 0100
      */
-    HUAWEI;
+    HUAWEI((byte) (1 << 2));
+
+    public final byte index;
+
+    DnsProviderType(byte index) {
+        this.index = index;
+    }
 
     public static DnsProviderType checkType(String value) {
         for (DnsProviderType type : values()) {

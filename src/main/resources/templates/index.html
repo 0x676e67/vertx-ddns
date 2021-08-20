@@ -363,17 +363,17 @@
                     解析日志
                 </div>
                 <ul class="nav nav-tabs nav-fill" id="ddnsLogs">
-                    <li class="nav-item" onclick="">
-                        <a class="nav-link active" data-toggle="tab" href="#">Alidns</a>
+                    <li class="nav-item" onclick="getLogs('ALIYUN')">
+                        <a class="nav-link active" data-toggle="tab">Alidns</a>
                     </li>
-                    <li class="nav-item" onclick="">
-                        <a class="nav-link" data-toggle="tab" href="#">Dnspod</a>
+                    <li class="nav-item" onclick="getLogs('DNSPOD')">
+                        <a class="nav-link" data-toggle="tab">Dnspod</a>
                     </li>
-                    <li class="nav-item" onclick="">
-                        <a class="nav-link" data-toggle="tab" href="#">Cloudflare</a>
+                    <li class="nav-item" onclick="getLogs('CLOUDFLARE')">
+                        <a class="nav-link" data-toggle="tab">Cloudflare</a>
                     </li>
-                    <li class="nav-item" onclick="">
-                        <a class="nav-link" data-toggle="tab" href="#">Huawei</a>
+                    <li class="nav-item" onclick="getLogs('HUAWEI')">
+                        <a class="nav-link" data-toggle="tab">Huawei</a>
                     </li>
                 </ul>
                 <div class="card-body">
@@ -452,7 +452,6 @@
                     </div>
                 </div>
             </div>
-<!--            <p class="font-weight-light text-break" style="margin-top: auto;font-size: 13px;" id="logs"></p>-->
         </div>
 
     </div>
@@ -558,6 +557,16 @@
         confirm.show(error.response.data.errMsg)
         return Promise.reject(error);
     });
+
+    const sock = new SockJS('/api/logs');
+    window.οnbefοreunlοad = function () {
+        if (event.clientX > document.body.clientWidth && event.clientY < 0 || event.altKey) {
+            sock.close()
+        } else {
+            sock.close()
+        }
+    }
+
     // 保存的配置
     const dnsConfigList = [[${dnsConfigList}]]
     const secureConfig = [[${secureConfig}]]
@@ -570,16 +579,14 @@
     // 默认类型
     let selectDnsProviderType = aliyunType
     let selectDnsRecordType = ipv4RecordType
-
     // 初始化调用
     selectIpv4ForApi()
     selectIpv6ForApi()
     setIpv4RecordType()
     setAliyunType()
     setSecureConfig()
-    getLogs()
+    initLogSockJs()
 
-    //setInterval(getLogs, 1000)
 
     function logout() {
         axiosInstance.post("/logout")
@@ -1055,27 +1062,51 @@
         }
     };
 
-    function getLogs() {
-        var sock = new SockJS('/api/logs');
+    function initLogSockJs() {
         var container = document.getElementById("logs");
-        sock.onmessage = function(res) {
-            let data = JSON.parse(res.data)
-            let dnsProviderName = data.dnsProviderType
-            let content = data.content
-            let timestamp = data.timestamp
-            container.innerHTML = container.innerHTML
-                + '<a href="#" class="list-group-item list-group-item-action ">'
-                + '<div class="d-flex w-100 justify-content-between">'
-                + '<h6 class="mb-1">' + '解析时间：' + getDate(timestamp) + '</h6>'
-                + '</div>'
-                + '<p class="mb-1">' + content + '</p>'
-                + '</a>'
+        sock.onmessage = function (res) {
+            var json = JSON.parse(res.data);
+            console.log(json)
+            if (json instanceof Array) {
+                for (let i = 0; i < json.length; i++) {
+                    let data = json[i]
+                    let dnsProviderName = data.dnsProviderType
+                    let content = data.content
+                    let timestamp = data.timestamp
+                    container.innerHTML = container.innerHTML
+                        + '<a href="#" class="list-group-item list-group-item-action ">'
+                        + '<div class="d-flex w-100 justify-content-between">'
+                        + '<h6 class="mb-1">' + '解析时间：' + getDate(timestamp) + '</h6>'
+                        + '</div>'
+                        + '<p class="mb-1">' + content + '</p>'
+                        + '</a>'
+                }
+            } else {
+                let dnsProviderName = json
+                let content = json.content
+                let timestamp = json.timestamp
+                container.innerHTML = container.innerHTML
+                    + '<a href="#" class="list-group-item list-group-item-action ">'
+                    + '<div class="d-flex w-100 justify-content-between">'
+                    + '<h6 class="mb-1">' + '解析时间：' + getDate(timestamp) + '</h6>'
+                    + '</div>'
+                    + '<p class="mb-1">' + content + '</p>'
+                    + '</a>'
+            }
         };
 
         sock.onclose = function () {
             sock.close()
         };
+        sock.onopen = function () {
+            sock.send('ALIYUN');
+        };
+    }
 
+    function getLogs(providerType) {
+        var container = document.getElementById("logs");
+        container.innerHTML = ''
+        sock.send(providerType)
     }
 
     function getDate(timestamp) {

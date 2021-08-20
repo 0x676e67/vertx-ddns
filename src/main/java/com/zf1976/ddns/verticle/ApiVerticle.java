@@ -1,9 +1,12 @@
 package com.zf1976.ddns.verticle;
 
+import com.zf1976.ddns.cache.AbstractMemoryLogCache;
+import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsConfig;
+import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.auth.RedirectAuthenticationProvider;
@@ -15,6 +18,7 @@ import io.vertx.core.http.Cookie;
 import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -29,11 +33,12 @@ import java.util.Map;
 
 /**
  * @author mac
- * @date 2021/7/6
+ * 2021/7/6
  */
 public class ApiVerticle extends TemplateVerticle {
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
+    private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -53,12 +58,8 @@ public class ApiVerticle extends TemplateVerticle {
                 .setRegisterWriteHandler(true)
                 .setHeartbeatInterval(2000);
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
-        router.mountSubRouter("/api/logs", sockJSHandler.socketHandler(sockJSSocket -> {
-            vertx.sharedData()
-                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
-                 .compose(shareMap -> shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, sockJSSocket.writeHandlerID()))
-                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-        }));
+        router.mountSubRouter("/api/logs", this.dnsRecordLogHandler(sockJSHandler));
+
         // all routes use session
         router.route()
               .handler(this::notAllowWanAccessHandler)
@@ -148,6 +149,41 @@ public class ApiVerticle extends TemplateVerticle {
             } else {
                 log.error(event.cause());
             }
+        });
+    }
+
+    /**
+     * sockJS handler
+     *
+     * @param sockJSHandler sockJs
+     * @return {@link Router}
+     */
+    private Router dnsRecordLogHandler(SockJSHandler sockJSHandler) {
+        return sockJSHandler.socketHandler(socket -> {
+            vertx.sharedData()
+                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
+                 .compose(shareMap -> {
+                     socket.handler(providerType -> {
+                               final DnsProviderType dnsProviderType;
+                               try {
+                                   dnsProviderType = DnsProviderType.checkType(providerType.toString());
+                               } catch (Exception e) {
+                                   socket.write(e.getMessage());
+                                   return;
+                               }
+                               final var completableFuture = this.cache.get(dnsProviderType);
+                               Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
+                                     .compose(collection -> shareMap.put(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE, dnsProviderType)
+                                                                    .compose(v -> socket.write(Json.encodePrettily(collection))))
+                                     .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                           })
+                           .exceptionHandler(Throwable::printStackTrace);
+                     if (socket.writeHandlerID() != null) {
+                         return shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, socket.writeHandlerID());
+                     }
+                     return Future.failedFuture("No authentication, please log in for authentication");
+                 })
+                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
     }
 

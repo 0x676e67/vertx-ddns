@@ -234,7 +234,11 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                       }
                   })
                   .onSuccess(resultIp -> this.parserDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
-                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                  .onFailure(err -> {
+                      LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                      vertx.eventBus()
+                           .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
+                  });
         }
     }
 
@@ -244,17 +248,20 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         if (Objects.nonNull(ipv6Config) && ipv6Config.getEnable()) {
             // use ip api or network
             Future.succeededFuture(ipv6Config.getSelectIpMethod())
-                    .compose(bool -> {
-                        // get ip from api
-                        if (bool) {
-                            return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi());
-                        } else {
-                            return Future.succeededFuture(ipv6Config.getNetworkIp());
-                        }
-                    })
+                  .compose(bool -> {
+                      // get ip from api
+                      if (bool) {
+                          return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi());
+                      } else {
+                          return Future.succeededFuture(ipv6Config.getNetworkIp());
+                      }
+                  })
                   .onSuccess(resultIp -> this.parserDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))
-
-                  .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                  .onFailure(err -> {
+                      LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                      vertx.eventBus()
+                           .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
+                  });
         }
     }
 

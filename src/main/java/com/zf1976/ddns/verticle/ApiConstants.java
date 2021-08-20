@@ -34,7 +34,7 @@ public interface ApiConstants {
 
     String SOCKJS_WRITE_HANDLER_ID = "sockjs.write.handler.id";
 
-    String STORE_DNS_RECORD_LOG_ID = "store.dns.record.id.log.id";
+    String SOCKJS_SELECT_PROVIDER_TYPE = "sockjs.select.provider.type";
 
     String PERIODIC = "periodicId";
 
