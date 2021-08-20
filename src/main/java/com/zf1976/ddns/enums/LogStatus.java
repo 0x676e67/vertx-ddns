@@ -9,34 +9,45 @@ public enum LogStatus {
     /**
      * 无变化
      */
-    ROW,
+    RAW("无变化"),
     /**
      * err
      */
-    ERROR,
+    ERROR("错误"),
     /**
      * 新增/创建
      */
-    CREATE,
+    CREATE("新增"),
     /**
      * 更改
      */
-    MODIFY,
+    MODIFY("更新"),
     /**
      * 删除
      */
-    DELETE,
+    DELETE("删除"),
     /**
      * 描述
      */
-    DESCRIBE,
+    DESCRIBE("描述"),
     /**
      * 新增失败
      */
-    CREATE_FAIL,
+    CREATE_FAIL("新增失败"),
     /**
      * 更新失败
      */
-    MODIFY_FAIL
+    MODIFY_FAIL("更新失败");
 
+    private final String value;
+
+    LogStatus(String value) {
+        this.value = value;
+    }
+
+
+    @Override
+    public String toString() {
+        return this.value;
+    }
 }

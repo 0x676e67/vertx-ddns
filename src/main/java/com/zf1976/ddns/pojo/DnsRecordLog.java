@@ -17,6 +17,8 @@ public class DnsRecordLog implements Serializable {
 
     private DnsProviderType dnsProviderType;
 
+    private LogStatus logStatus;
+
     private String content;
 
     private Long timestamp;
@@ -31,9 +33,8 @@ public class DnsRecordLog implements Serializable {
     }
 
     private DnsRecordLog(DnsProviderType dnsProviderType, String domainOrMessage, String ip, LogStatus logStatus) {
-        this.dnsProviderType = dnsProviderType;
         switch (logStatus) {
-            case ROW -> this.content = "域名：" + domainOrMessage + " 没有发生变化, IP：" + ip;
+            case RAW -> this.content = "域名：" + domainOrMessage + " 没有发生变化, IP：" + ip;
             case CREATE -> this.content = "新增域名解析：" + domainOrMessage + " 成功！IP：" + ip;
             case CREATE_FAIL -> this.content = "新增域名解析：" + domainOrMessage + " 失败！";
             case MODIFY -> this.content = "更新域名解析：" + domainOrMessage + " 成功！IP：" + ip;
@@ -41,11 +42,13 @@ public class DnsRecordLog implements Serializable {
             case ERROR -> this.content = domainOrMessage;
             default -> throw new UnsupportedOperationException("Unsupported log status: " + logStatus.name());
         }
+        this.dnsProviderType = dnsProviderType;
+        this.logStatus = logStatus;
         this.timestamp = new Date().getTime();
     }
 
     public static DnsRecordLog rawLog(DnsProviderType dnsProviderType, String domain, String ip) {
-        return new DnsRecordLog(dnsProviderType, domain, ip, LogStatus.ROW);
+        return new DnsRecordLog(dnsProviderType, domain, ip, LogStatus.RAW);
     }
 
     public static DnsRecordLog createLog(DnsProviderType dnsProviderType, String domain, String ip) {
@@ -95,10 +98,20 @@ public class DnsRecordLog implements Serializable {
         return this;
     }
 
+    public LogStatus getLogStatus() {
+        return logStatus;
+    }
+
+    public DnsRecordLog setLogStatus(LogStatus logStatus) {
+        this.logStatus = logStatus;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DnsRecordLog{" +
                 "dnsProviderType=" + dnsProviderType +
+                ", logStatus=" + logStatus +
                 ", content='" + content + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
