@@ -363,17 +363,17 @@
                     解析日志
                 </div>
                 <ul class="nav nav-tabs nav-fill" id="ddnsLogs">
-                    <li class="nav-item" onclick="getLogs('ALIYUN')">
-                        <a class="nav-link active" data-toggle="tab">Alidns</a>
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" onclick="getLogs('ALIYUN')">Alidns</a>
                     </li>
-                    <li class="nav-item" onclick="getLogs('DNSPOD')">
-                        <a class="nav-link" data-toggle="tab">Dnspod</a>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" onclick="getLogs('DNSPOD')">Dnspod</a>
                     </li>
-                    <li class="nav-item" onclick="getLogs('CLOUDFLARE')">
-                        <a class="nav-link" data-toggle="tab">Cloudflare</a>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" onclick="getLogs('CLOUDFLARE')">Cloudflare</a>
                     </li>
-                    <li class="nav-item" onclick="getLogs('HUAWEI')">
-                        <a class="nav-link" data-toggle="tab">Huawei</a>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" onclick="getLogs('HUAWEI')">Huawei</a>
                     </li>
                 </ul>
                 <div class="card-body">
@@ -382,15 +382,13 @@
                 </div>
 
                 <div class="text-center" style="margin-top: 15px">
-                    <div class="btn-group" id="button-container">
-                        <button class="btn btn-warning " data-placement="top" data-toggle="tooltip" onclick=""
-                                title="清空当前选项的解析记录日志">清空解析日志
-                        </button>
-                        <button class="btn btn-secondary" data-target="#staticBackdrop" data-toggle="modal"
-                                type="button">
-                            系统运行日志
-                        </button>
-                    </div>
+                    <button class="btn btn-warning " data-placement="top" data-toggle="tooltip" onclick="clearLogs()"
+                            title="清空当前选项的解析记录日志">清空解析日志
+                    </button>
+                    <button class="btn btn-secondary" data-target="#staticBackdrop" data-toggle="modal"
+                            type="button">
+                        系统运行日志
+                    </button>
                 </div>
                 <!-- Button trigger modal -->
 
@@ -456,84 +454,84 @@
 
     </div>
 </main>
-<script>
-    $(document).ready(function () {
-        $('#logLevel').change(function () {
-            $.get('/action/refresh/' + $('#logLevel').val(), function (data, status) {
-            })
-        })
+<!--<script>-->
+<!--    $(document).ready(function () {-->
+<!--        $('#logLevel').change(function () {-->
+<!--            $.get('/action/refresh/' + $('#logLevel').val(), function (data, status) {-->
+<!--            })-->
+<!--        })-->
 
-        $('#testBtn').click(function () {
-            $.get('/action/test', function (data, status) {
-            })
-            return false // 禁止表单自动提交
-        })
+<!--        $('#testBtn').click(function () {-->
+<!--            $.get('/action/test', function (data, status) {-->
+<!--            })-->
+<!--            return false // 禁止表单自动提交-->
+<!--        })-->
 
-        $('#clearBtn').click(function () {
-            $('#messageBox').html('')
-            return false // 禁止表单自动提交
-        })
+<!--        $('#clearBtn').click(function () {-->
+<!--            $('#messageBox').html('')-->
+<!--            return false // 禁止表单自动提交-->
+<!--        })-->
 
-        var websocket = null;
-        var host = "";
-        if (window.location.protocol == 'http:') {
-            host = 'ws://' + window.location.host + '/websocket';
-        } else {
-            host = 'wss://' + window.location.host + '/websocket';
-        }
+<!--        var websocket = null;-->
+<!--        var host = "";-->
+<!--        if (window.location.protocol == 'http:') {-->
+<!--            host = 'ws://' + window.location.host + '/websocket';-->
+<!--        } else {-->
+<!--            host = 'wss://' + window.location.host + '/websocket';-->
+<!--        }-->
 
-        //判断当前浏览器是否支持WebSocket
-        if ('WebSocket' in window) {
-            websocket = new WebSocket(host);
-        } else if ('MozWebSocket' in window) {
-            websocket = new MozWebSocket(host);
-        } else {
-            alert("该浏览器不支持WebSocket！");
-        }
+<!--        //判断当前浏览器是否支持WebSocket-->
+<!--        if ('WebSocket' in window) {-->
+<!--            websocket = new WebSocket(host);-->
+<!--        } else if ('MozWebSocket' in window) {-->
+<!--            websocket = new MozWebSocket(host);-->
+<!--        } else {-->
+<!--            alert("该浏览器不支持WebSocket！");-->
+<!--        }-->
 
-        //连接发生错误的回调方法
-        websocket.onerror = function () {
-            console.log("连接出错");
-        };
+<!--        //连接发生错误的回调方法-->
+<!--        websocket.onerror = function () {-->
+<!--            console.log("连接出错");-->
+<!--        };-->
 
-        //连接成功建立的回调方法
-        websocket.onopen = function (event) {
-            console.log("连接成功");
-        }
+<!--        //连接成功建立的回调方法-->
+<!--        websocket.onopen = function (event) {-->
+<!--            console.log("连接成功");-->
+<!--        }-->
 
-        //接收到消息的回调方法
-        websocket.onmessage = function (event) {
-            setMessageInnerHTML(event.data);
-        }
+<!--        //接收到消息的回调方法-->
+<!--        websocket.onmessage = function (event) {-->
+<!--            setMessageInnerHTML(event.data);-->
+<!--        }-->
 
-        //连接关闭的回调方法
-        websocket.onclose = function () {
-            console.log("连接关闭")
-        }
+<!--        //连接关闭的回调方法-->
+<!--        websocket.onclose = function () {-->
+<!--            console.log("连接关闭")-->
+<!--        }-->
 
-        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
-        window.onbeforeunload = function () {
-            websocket.close()
-        }
+<!--        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。-->
+<!--        window.onbeforeunload = function () {-->
+<!--            websocket.close()-->
+<!--        }-->
 
-        //将消息显示在网页上
-        function setMessageInnerHTML(innerHTML) {
-            $('#messageBox').html($('#messageBox').html() + innerHTML + '<br>')
-        }
+<!--        //将消息显示在网页上-->
+<!--        function setMessageInnerHTML(innerHTML) {-->
+<!--            $('#messageBox').html($('#messageBox').html() + innerHTML + '<br>')-->
+<!--        }-->
 
-        //关闭连接
-        function closeWebSocket() {
-            websocket.close()
-        }
+<!--        //关闭连接-->
+<!--        function closeWebSocket() {-->
+<!--            websocket.close()-->
+<!--        }-->
 
-        //发送消息
-        function send() {
-            var message = document.getElementById('text').value;
-            websocket.send(message);
-        }
-    })
+<!--        //发送消息-->
+<!--        function send() {-->
+<!--            var message = document.getElementById('text').value;-->
+<!--            websocket.send(message);-->
+<!--        }-->
+<!--    })-->
 
-</script>
+<!--</script>-->
 
 <script th:inline="javascript">
 
@@ -559,6 +557,7 @@
     });
 
     const sock = new SockJS('/api/logs');
+    let selectLogType = "ALIYUN"
     window.οnbefοreunlοad = function () {
         if (event.clientX > document.body.clientWidth && event.clientY < 0 || event.altKey) {
             sock.close()
@@ -592,6 +591,14 @@
         axiosInstance.post("/logout")
             .then(res => {
                 window.location.href = 'login.html';
+            })
+    }
+
+    function clearLogs() {
+        axiosInstance.delete("/api/dns/record/log?type=" + selectLogType)
+            .then(res => {
+                confirm.show("当页日志已清除")
+                document.getElementById('logs').innerHTML = ''
             })
     }
 
@@ -1066,7 +1073,6 @@
         var container = document.getElementById("logs");
         sock.onmessage = function (res) {
             var json = JSON.parse(res.data);
-            console.log(json)
             if (json instanceof Array) {
                 for (let i = 0; i < json.length; i++) {
                     let data = json[i]
@@ -1103,15 +1109,16 @@
         };
     }
 
+
     function getLogs(providerType) {
-        var container = document.getElementById("logs");
-        container.innerHTML = ''
+        document.getElementById("logs").innerHTML = ''
+        selectLogType = providerType
         sock.send(providerType)
     }
 
+
     function getDate(timestamp) {
         var date = new Date(timestamp);
-
         var year = date.getFullYear(),
             month = date.getMonth() + 1,//月份是从0开始的
             day = date.getDate(),

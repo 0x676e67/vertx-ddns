@@ -41,14 +41,14 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractDnsProvider<T, A> implements DnsRecordProvider<T> {
 
     protected final Logger log = LogManager.getLogger("[AbstractDnsProvider]");
-    public static final int DEFAULT_CONNECT_TIMEOUT = 60;
+    public static final int DEFAULT_CONNECT_TIMEOUT = 60000;
     protected ProviderCredentials dnsProviderCredentials;
     protected final HttpClient httpClient = HttpClient.newBuilder()
-                                                      .connectTimeout(Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT))
+                                                      .connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT))
                                                       .executor(Executors.newSingleThreadExecutor())
                                                       .build();
     protected final CloseableHttpClient closeableHttpClient = HttpClients.custom()
-                                                                         .setConnectionTimeToLive(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                                                                         .setConnectionTimeToLive(DEFAULT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
                                                                          .build();
     protected final WebClient webClient;
 

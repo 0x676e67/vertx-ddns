@@ -102,6 +102,8 @@ public class ApiVerticle extends TemplateVerticle {
         // resolve dns record
         router.post("/api/dns/record/resolve")
               .handler(this::resolveDnsRecordHandler);
+        router.delete("/api/dns/record/log")
+              .handler(this::clearDnsRecordLogHandler);
         // Obtain the RSA public key
         router.get("/common/rsa/public_key")
               .handler(this::readRsaPublicKeyHandler);
@@ -272,6 +274,24 @@ public class ApiVerticle extends TemplateVerticle {
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, "Parameter error");
         }
+    }
+
+    protected void clearDnsRecordLogHandler(RoutingContext ctx) {
+        final var type = ctx.request()
+                            .getParam("type");
+        try {
+            final var dnsProviderType = DnsProviderType.checkType(type);
+            final var completableFuture = this.cache.get(dnsProviderType);
+            Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
+                  .onSuccess(event -> {
+                      event.clear();
+                      this.routeResultJson(ctx);
+                  })
+                  .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+        } catch (Exception e) {
+            this.routeBadRequestHandler(ctx, e.getMessage());
+        }
+
     }
 
     protected void resolveDnsRecordHandler(RoutingContext ctx) {
