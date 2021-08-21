@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.auth;
+package com.zf1976.ddns.verticle.provider;
 
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;

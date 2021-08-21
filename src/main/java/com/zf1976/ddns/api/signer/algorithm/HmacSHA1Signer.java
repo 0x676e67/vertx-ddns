@@ -9,11 +9,11 @@ public class HmacSHA1Signer extends Signer {
     public HmacSHA1Signer() {
     }
 
-    public String signString(String stringToSign, String accessKeySecret) {
-        return sign(stringToSign, accessKeySecret, ALGORITHM_NAME);
+    public byte[] signString(String stringToSign, String secret) {
+        return sign(stringToSign, secret, ALGORITHM_NAME);
     }
 
-    public String signString(String stringToSign, ProviderCredentials credentials) {
+    public byte[] signString(String stringToSign, ProviderCredentials credentials) {
         return this.signString(stringToSign, credentials.getAccessKeySecret());
     }
 

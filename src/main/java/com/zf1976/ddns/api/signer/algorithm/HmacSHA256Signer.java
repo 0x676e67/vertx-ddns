@@ -4,20 +4,20 @@ import com.zf1976.ddns.api.auth.ProviderCredentials;
 
 /**
  * @author mac
- * @date 2021/7/19
+ * 2021/7/19
  */
 public class HmacSHA256Signer extends Signer {
 
     public static final String ALGORITHM_NAME = "HmacSHA256";
 
     @Override
-    public String signString(String stringToSign, ProviderCredentials credentials) {
+    public byte[] signString(String stringToSign, ProviderCredentials credentials) {
         return signString(stringToSign, credentials.getAccessKeySecret());
     }
 
     @Override
-    public String signString(String stringToSign, String accessKeySecret) {
-        return sign(stringToSign, accessKeySecret, ALGORITHM_NAME);
+    public byte[] signString(String stringToSign, String secret) {
+        return sign(stringToSign, secret, ALGORITHM_NAME);
     }
 
     public String getSignerName() {

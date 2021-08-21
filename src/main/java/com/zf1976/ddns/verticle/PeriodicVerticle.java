@@ -6,6 +6,7 @@ import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.verticle.codec.DnsRecordLogMessageCodec;
+import com.zf1976.ddns.verticle.handler.WebhookHandler;
 import com.zf1976.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Future;
@@ -26,12 +27,15 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
     private static final long DEFAULT_PERIODIC_TIME = 5 * 60 * 1000;
     private final DnsRecordLogMessageCodec dnsRecordLogMessageCodec = new DnsRecordLogMessageCodec();
     private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
+    private final WebhookHandler webhookHandler;
 
-    public PeriodicVerticle(DnsRecordObserver observer) {
+    public PeriodicVerticle(DnsRecordObserver observer, WebhookHandler webhookHandler) {
         this.addObserver(observer);
+        this.webhookHandler = webhookHandler;
     }
 
-    public PeriodicVerticle(List<DnsRecordObserver> observers) {
+    public PeriodicVerticle(List<DnsRecordObserver> observers, WebhookHandler webhookHandler) {
+        this.webhookHandler = webhookHandler;
         if (!CollectionUtil.isEmpty(observers)) {
             for (DnsRecordObserver observer : observers) {
                 this.addObserver(observer);
@@ -51,25 +55,20 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                                            .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID);
             localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_WRITE_HANDLER_ID))
                          .compose(writeHandlerId -> this.storeMemoryLog(writeHandlerId, recordLog))
+                         .compose(writeHandlerId -> localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE))
+                                                                 .compose(providerType -> {
+                                                                     try {
+                                                                         final var dnsProviderType = (DnsProviderType) providerType;
+                                                                         if (!dnsProviderType.check(recordLog.getDnsProviderType())) {
+                                                                             return Future.failedFuture(" no the :" + dnsProviderType.name() + "provider type");
+                                                                         }
+                                                                         return Future.succeededFuture(writeHandlerId);
+                                                                     } catch (Exception e) {
+                                                                         return Future.failedFuture(e.getMessage());
+                                                                     }
+                                                                 }))
                          .onSuccess(writeHandlerId -> {
-                             if (writeHandlerId != null) {
-                                 localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE))
-                                              .compose(providerType -> {
-                                                  try {
-                                                      final var dnsProviderType = (DnsProviderType) providerType;
-                                                      return Future.succeededFuture(dnsProviderType);
-                                                  } catch (Exception e) {
-                                                      return Future.failedFuture(e.getMessage());
-                                                  }
-                                              })
-                                              .onSuccess(dnsProviderType -> {
-                                                  if (dnsProviderType.check(recordLog.getDnsProviderType())) {
-                                                      eventBus.send(writeHandlerId, Json.encode(logResult.body()));
-                                                  }
-                                              })
-                                              .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-
-                             }
+                             eventBus.send(writeHandlerId, Json.encode(logResult.body()));
                          })
                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
@@ -79,18 +78,18 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
     @Override
     public void start() throws Exception {
         final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
-            vertx.sharedData()
-                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
-                 .compose(shareMap -> shareMap.get(ApiConstants.RUNNING_CONFIG_ID)
-                                              .compose(v -> {
-                                                  if (!(v instanceof Boolean bool && bool)) {
-                                                      this.notifyObserver();
-                                                      return Future.succeededFuture();
-                                                  } else {
-                                                      return shareMap.remove(ApiConstants.RUNNING_CONFIG_ID);
-                                                  }
-                                              }))
-                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+            final var localAsyncMap = vertx.sharedData()
+                                           .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID);
+            localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.RUNNING_CONFIG_ID))
+                         .compose(v -> {
+                             if (!(v instanceof Boolean bool && bool)) {
+                                 this.notifyObserver();
+                                 return Future.succeededFuture();
+                             } else {
+                                 return localAsyncMap.compose(shareMap -> shareMap.remove(ApiConstants.RUNNING_CONFIG_ID));
+                             }
+                         })
+                         .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
         context.put(ApiConstants.DEFAULT_CONFIG_PERIODIC_ID, periodicId);
     }
@@ -115,7 +114,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                          .compose(collection -> {
                              collection.add(recordLog);
                              if (sendId == null) {
-                                 return Future.succeededFuture();
+                                 return Future.failedFuture("sockjs write handler ID is null");
                              }
                              return Future.succeededFuture(sendId);
                          });

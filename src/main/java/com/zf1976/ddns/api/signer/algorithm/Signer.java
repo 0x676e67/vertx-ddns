@@ -1,7 +1,6 @@
 package com.zf1976.ddns.api.signer.algorithm;
 
 import com.zf1976.ddns.api.auth.ProviderCredentials;
-import com.zf1976.ddns.util.DataTypeConverterUtil;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,9 +22,17 @@ public abstract class Signer {
         return hmacSHA256Signer;
     }
 
-    public abstract String signString(String stringToSign, ProviderCredentials credentials);
+    protected static byte[] sign(String stringToSign, String secret, String algorithmName) {
+        try {
+            Mac mac = Mac.getInstance(algorithmName);
+            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), algorithmName));
+            return mac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException | InvalidKeyException var5) {
+            throw new IllegalArgumentException(var5.toString());
+        }
+    }
 
-    public abstract String signString(String stringToSign, String accessKeySecret);
+    public abstract byte[] signString(String stringToSign, ProviderCredentials credentials);
 
     public abstract String getSignerName();
 
@@ -33,14 +40,5 @@ public abstract class Signer {
 
     public abstract String getSignerType();
 
-    protected static String sign(String stringToSign, String accessKeySecret, String algorithmName) {
-        try {
-            Mac mac = Mac.getInstance(algorithmName);
-            mac.init(new SecretKeySpec(accessKeySecret.getBytes(StandardCharsets.UTF_8), algorithmName));
-            byte[] signData = mac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8));
-            return DataTypeConverterUtil._printBase64Binary(signData);
-        } catch (NoSuchAlgorithmException | InvalidKeyException var5) {
-            throw new IllegalArgumentException(var5.toString());
-        }
-    }
+    public abstract byte[] signString(String stringToSign, String secret);
 }

@@ -1,12 +1,10 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
+import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.util.ApiURLEncoderUtil;
+import com.zf1976.ddns.util.DataTypeConverterUtil;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -34,23 +32,19 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
                                            .toArray(new String[]{});
         Arrays.sort(sortedKeys);
         StringBuilder canonicalizeQueryString = new StringBuilder();
-        try {
-            for (String key : sortedKeys) {
-                canonicalizeQueryString.append("&")
-                                       .append(ApiURLEncoderUtil.aliyunPercentEncode(key))
-                                       .append("=")
-                                       .append(ApiURLEncoderUtil.aliyunPercentEncode(queryParamMap.get(key)
-                                                                                                  .toString()));
-            }
-
-            return method.name() +
-                    SEPARATOR +
-                    ApiURLEncoderUtil.aliyunPercentEncode("/") +
-                    SEPARATOR +
-                    ApiURLEncoderUtil.aliyunPercentEncode(canonicalizeQueryString.substring(1));
-        } catch (UnsupportedEncodingException exp) {
-            throw new RuntimeException("UTF-8 encoding is not supported.");
+        for (String key : sortedKeys) {
+            canonicalizeQueryString.append("&")
+                                   .append(ApiURLEncoderUtil.aliyunPercentEncode(key))
+                                   .append("=")
+                                   .append(ApiURLEncoderUtil.aliyunPercentEncode(queryParamMap.get(key)
+                                                                                              .toString()));
         }
+
+        return method.name() +
+                SEPARATOR +
+                ApiURLEncoderUtil.aliyunPercentEncode("/") +
+                SEPARATOR +
+                ApiURLEncoderUtil.aliyunPercentEncode(canonicalizeQueryString.substring(1));
 
     }
 
@@ -64,7 +58,8 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         // 签名
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
-        return canonicalizeRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        final var signatureBase64 = DataTypeConverterUtil._printBase64Binary(signature);
+        return canonicalizeRequestUrl(urlPattern, queries, ApiURLEncoderUtil.aliyunPercentEncode(signatureBase64));
     }
 
 

@@ -1,16 +1,16 @@
 package com.zf1976.ddns.api.signer.rpc;
 
-import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
+import com.zf1976.ddns.enums.HttpMethod;
+import com.zf1976.ddns.util.ApiURLEncoderUtil;
+import com.zf1976.ddns.util.DataTypeConverterUtil;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
 /**
  * @author mac
- * @date 2021/7/19
+ * 2021/7/19
  */
 public class DnspodSignatureComposer implements RpcAPISignatureComposer {
 
@@ -52,8 +52,9 @@ public class DnspodSignatureComposer implements RpcAPISignatureComposer {
                                  Map<String, Object> queries) {
         final var stringToSign = this.composeStringToSign(methodType, queries);
         final var signature = this.signer.signString(stringToSign, accessKeySecret);
+        final var base64Binary = DataTypeConverterUtil._printBase64Binary(signature);
         // 这里需要给签名做URL编码，否则会连续请求会间歇性认证失败
-        return canonicalizeRequestUrl(urlPattern, queries, URLEncoder.encode(signature, StandardCharsets.UTF_8));
+        return canonicalizeRequestUrl(urlPattern, queries, ApiURLEncoderUtil.encode(base64Binary));
     }
 
     @Override

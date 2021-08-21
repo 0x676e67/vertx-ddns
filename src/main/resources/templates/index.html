@@ -21,7 +21,9 @@
     <script src="/js/axios.min.js"></script>
 <!--    RSA-->
     <script src="/js/jsencrypt.js"></script>
+<!--    SockJS-->
     <script src="https://unpkg.io/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
+    <!--    Markdown-->
 </head>
 
 <body>
@@ -409,7 +411,7 @@
                 </div>
 
                 <div class="text-center" style="margin-top: 15px">
-                    <button class="btn btn-warning " data-placement="top" data-toggle="tooltip" onclick="clearLogs()"
+                    <button class="btn btn-info " data-placement="top" data-toggle="tooltip" onclick="clearLogs()"
                             title="清空当前选项的解析记录日志">清空解析日志
                     </button>
                     <button class="btn btn-secondary" data-target="#staticBackdrop" data-toggle="modal"
@@ -1100,7 +1102,7 @@
                     let content = data.content
                     let timestamp = data.timestamp
                     container.innerHTML = container.innerHTML
-                        + '<a  class="list-group-item ">'
+                        + '<a  class="list-group-item list-group-item-secondary">'
                         + '<div class="d-flex w-100 justify-content-between">'
                         + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
                         + '<small>' + getDate(timestamp) + '</small>'
@@ -1113,7 +1115,7 @@
                 let status = json.logStatus
                 let timestamp = json.timestamp
                 container.innerHTML = container.innerHTML
-                    + '<a  class="list-group-item ">'
+                    + '<a  class="list-group-item list-group-item-action">'
                     + '<div class="d-flex w-100 justify-content-between">'
                     + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
                     + '<small>' + getDate(timestamp) + '</small>'

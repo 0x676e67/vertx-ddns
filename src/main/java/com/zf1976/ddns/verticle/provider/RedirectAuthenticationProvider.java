@@ -1,4 +1,4 @@
-package com.zf1976.ddns.verticle.auth;
+package com.zf1976.ddns.verticle.provider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

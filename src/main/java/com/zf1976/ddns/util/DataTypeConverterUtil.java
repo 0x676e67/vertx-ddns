@@ -45,21 +45,21 @@ public class DataTypeConverterUtil {
     public static int _printBase64Binary(byte[] input, int offset, int len, char[] buf, int ptr) {
         for (int i = offset; i < len; i += 3) {
             switch (len - i) {
-                case 1:
+                case 1 -> {
                     buf[ptr++] = encode(input[i] >> 2);
                     buf[ptr++] = encode(((input[i]) & 0x3) << 4);
                     buf[ptr++] = '=';
                     buf[ptr++] = '=';
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     buf[ptr++] = encode(input[i] >> 2);
                     buf[ptr++] = encode(
                             ((input[i] & 0x3) << 4) |
                                     ((input[i + 1] >> 4) & 0xF));
                     buf[ptr++] = encode((input[i + 1] & 0xF) << 2);
                     buf[ptr++] = '=';
-                    break;
-                default:
+                }
+                default -> {
                     buf[ptr++] = encode(input[i] >> 2);
                     buf[ptr++] = encode(
                             ((input[i] & 0x3) << 4) |
@@ -68,7 +68,7 @@ public class DataTypeConverterUtil {
                             ((input[i + 1] & 0xF) << 2) |
                                     ((input[i + 2] >> 6) & 0x3));
                     buf[ptr++] = encode(input[i + 2] & 0x3F);
-                    break;
+                }
             }
         }
         return ptr;

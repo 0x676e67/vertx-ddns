@@ -9,8 +9,10 @@ import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.auth.RedirectAuthenticationProvider;
-import com.zf1976.ddns.verticle.auth.UsernamePasswordAuthenticationProvider;
+import com.zf1976.ddns.verticle.handler.WebhookHandler;
+import com.zf1976.ddns.verticle.provider.RedirectAuthenticationProvider;
+import com.zf1976.ddns.verticle.provider.SecureProvider;
+import com.zf1976.ddns.verticle.provider.UsernamePasswordAuthenticationProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -35,7 +37,7 @@ import java.util.Map;
  * @author mac
  * 2021/7/6
  */
-public class ApiVerticle extends TemplateVerticle {
+public class ApiVerticle extends TemplateVerticle implements SecureProvider, WebhookHandler {
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
     private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
@@ -44,8 +46,6 @@ public class ApiVerticle extends TemplateVerticle {
     public void start(Promise<Void> startPromise) {
         final var serverPort = serverPort();
         final var router = getRouter();
-        final var httpServer = vertx.createHttpServer()
-                                    .exceptionHandler(Throwable::printStackTrace);
         final var sessionStore = LocalSessionStore.create(vertx, ApiConstants.SESSION_NAME);
         final var sessionHandler = SessionHandler.create(sessionStore)
                                                  .setLazySession(true)
@@ -62,7 +62,7 @@ public class ApiVerticle extends TemplateVerticle {
 
         // all routes use session
         router.route()
-              .handler(this::notAllowWanAccessHandler)
+              .handler(this::allowWanAccessHandler)
               .handler(XFrameHandler.create(XFrameHandler.DENY))
               .handler(sessionHandler)
               .failureHandler(this::routeErrorHandler);
@@ -104,13 +104,16 @@ public class ApiVerticle extends TemplateVerticle {
               .handler(this::resolveDnsRecordHandler);
         router.delete("/api/dns/record/log")
               .handler(this::clearDnsRecordLogHandler);
-        // Obtain the RSA public key
+        // obtain the RSA public key
         router.get("/common/rsa/public_key")
               .handler(this::readRsaPublicKeyHandler);
-        // Initial configuration
+        // initial configuration
         this.initConfig(vertx)
-            .compose(v -> httpServer.requestHandler(router)
-                                    .listen(serverPort))
+            .compose(v -> vertx.createHttpServer()
+                               .exceptionHandler(Throwable::printStackTrace)
+                               .requestHandler(router)
+                               .listen(serverPort)
+            )
             .onSuccess(event -> {
                 log.info("Vertx web server initialized with port(s): {}(http)", serverPort);
                 log.info("DDNS-Vertx is running at http://localhost:{}", serverPort);
@@ -125,7 +128,7 @@ public class ApiVerticle extends TemplateVerticle {
 
     @Override
     public void start() throws Exception {
-        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService), event -> {
+        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService, this), event -> {
             if (event.succeeded()) {
                 context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
                 log.info("PeriodicVerticle deploy complete!");
@@ -179,7 +182,7 @@ public class ApiVerticle extends TemplateVerticle {
                                                                     .compose(v -> socket.write(Json.encodePrettily(collection))))
                                      .onFailure(err -> log.error(err.getMessage(), err.getCause()));
                            })
-                           .exceptionHandler(Throwable::printStackTrace);
+                           .exceptionHandler(log::error);
                      if (socket.writeHandlerID() != null) {
                          return shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, socket.writeHandlerID());
                      }
@@ -194,7 +197,7 @@ public class ApiVerticle extends TemplateVerticle {
      *
      * @param ctx routing context
      */
-    protected void notAllowWanAccessHandler(RoutingContext ctx) {
+    protected void allowWanAccessHandler(RoutingContext ctx) {
         HttpServerRequest request = ctx.request();
         String ipAddress = HttpUtil.getIpAddress(request);
         if (HttpUtil.isInnerIp(ipAddress)) {

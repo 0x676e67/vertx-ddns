@@ -1,5 +1,7 @@
 package com.zf1976.ddns.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * @author mac
  * 2021/8/17 星期二 2:22 上午
@@ -47,6 +49,7 @@ public enum LogStatus {
 
 
     @Override
+    @JsonValue
     public String toString() {
         return this.value;
     }

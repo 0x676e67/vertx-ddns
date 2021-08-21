@@ -1,14 +1,13 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.config.ConfigProperty;
-import com.zf1976.ddns.pojo.DnsConfig;
+import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DataResult;
+import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.timer.service.DnsRecordService;
 import com.zf1976.ddns.verticle.timer.service.impl.DnsRecordServiceImpl;
-import com.zf1976.ddns.verticle.auth.SecureProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -39,7 +38,7 @@ import java.util.Objects;
  * @author mac
  * 2021/7/7
  */
-public abstract class TemplateVerticle extends AbstractVerticle implements SecureProvider {
+public abstract class TemplateVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;

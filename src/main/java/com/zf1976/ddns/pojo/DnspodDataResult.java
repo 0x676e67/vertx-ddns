@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * @author mac
- * @date 2021/7/19
+ * 2021/7/19
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DnspodDataResult {
