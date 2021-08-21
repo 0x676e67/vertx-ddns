@@ -80,7 +80,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(20000, id -> {
+        final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
             final var localAsyncMap = vertx.sharedData()
                                            .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID);
             localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.RUNNING_CONFIG_ID))
