@@ -235,7 +235,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                   })
                   .onSuccess(resultIp -> this.parserDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
                   .onFailure(err -> {
-                      LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                      LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                       vertx.eventBus()
                            .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                   });
@@ -258,7 +258,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                   })
                   .onSuccess(resultIp -> this.parserDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))
                   .onFailure(err -> {
-                      LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                      LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                       vertx.eventBus()
                            .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                   });
@@ -277,12 +277,12 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.A)
                     .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.A))
                     .onSuccess(recordLog -> {
-                        LogUtil.printDebug(this.log, recordLog);
+                        LogUtil.printInfo(this.log, recordLog);
                         vertx.eventBus()
                              .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, recordLog);
                     })
                     .onFailure(err -> {
-                        LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                        LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                         vertx.eventBus()
                              .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                     });
@@ -303,12 +303,12 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 this.findRecordListAsync(dnsProviderType, domain, DnsRecordType.AAAA)
                     .compose(recordList -> this.validateDnsRecordStatus(recordList, dnsProviderType, domain, ip, DnsRecordType.AAAA))
                     .onSuccess(recordLog -> {
-                        LogUtil.printDebug(this.log, recordLog);
+                        LogUtil.printInfo(this.log, recordLog);
                         vertx.eventBus()
                              .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, recordLog);
                     })
                     .onFailure(err -> {
-                        LogUtil.printDebug(this.log, err.getMessage(), err.getCause());
+                        LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                         vertx.eventBus()
                              .send(ApiConstants.CONFIG_SUBJECT_ADDRESS, DnsRecordLog.errorLog(dnsProviderType, err.getMessage()));
                     });

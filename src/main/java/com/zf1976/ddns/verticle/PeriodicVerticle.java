@@ -56,19 +56,22 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
             localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_WRITE_HANDLER_ID))
                          .compose(writeHandlerId -> this.storeMemoryLog(writeHandlerId, recordLog))
                          .compose(writeHandlerId -> localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE))
-                                                                 .compose(providerType -> {
+                                                                 .compose(v -> {
                                                                      try {
-                                                                         final var dnsProviderType = (DnsProviderType) providerType;
-                                                                         if (!dnsProviderType.check(recordLog.getDnsProviderType())) {
-                                                                             return Future.failedFuture(" no the :" + dnsProviderType.name() + "provider type");
+                                                                         final var dnsProviderType = (DnsProviderType) v;
+                                                                         if (recordLog.getDnsProviderType()
+                                                                                      .check(dnsProviderType)) {
+                                                                             return Future.succeededFuture(writeHandlerId);
                                                                          }
-                                                                         return Future.succeededFuture(writeHandlerId);
+                                                                         return Future.succeededFuture();
                                                                      } catch (Exception e) {
                                                                          return Future.failedFuture(e.getMessage());
                                                                      }
                                                                  }))
                          .onSuccess(writeHandlerId -> {
-                             eventBus.send(writeHandlerId, Json.encode(logResult.body()));
+                             if (writeHandlerId != null) {
+                                 eventBus.send(writeHandlerId, Json.encode(logResult.body()));
+                             }
                          })
                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));
         });
@@ -77,7 +80,7 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
 
     @Override
     public void start() throws Exception {
-        final var periodicId = vertx.setPeriodic(DEFAULT_PERIODIC_TIME, id -> {
+        final var periodicId = vertx.setPeriodic(20000, id -> {
             final var localAsyncMap = vertx.sharedData()
                                            .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID);
             localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.RUNNING_CONFIG_ID))
@@ -106,16 +109,12 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
     }
 
     protected Future<String> storeMemoryLog(Object writeHandlerId, DnsRecordLog recordLog) {
-        String sendId;
         try {
-            sendId = (String) writeHandlerId;
+            String sendId = (String) writeHandlerId;
             final var completableFuture = this.cache.get(recordLog.getDnsProviderType());
             return Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
                          .compose(collection -> {
                              collection.add(recordLog);
-                             if (sendId == null) {
-                                 return Future.failedFuture("sockjs write handler ID is null");
-                             }
                              return Future.succeededFuture(sendId);
                          });
         } catch (Exception e) {
