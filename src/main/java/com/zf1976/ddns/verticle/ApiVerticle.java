@@ -4,6 +4,7 @@ import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
+import com.zf1976.ddns.enums.WebhookProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DnsRecordLog;
@@ -22,6 +23,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
@@ -41,6 +43,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
     private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
+    private WebClient webClient;
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -108,6 +111,9 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         // store webhook config
         router.post("/api/webhook/config")
               .handler(this::storeWebhookConfig);
+        // send test webhook
+        router.post("/api/webhook/test")
+              .handler(this::sendWebhookTest);
         // obtain the RSA public key
         router.get("/common/rsa/public_key")
               .handler(this::readRsaPublicKeyHandler);
@@ -132,6 +138,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
 
     @Override
     public void start() throws Exception {
+        this.webClient = WebClient.create(vertx);
         this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService, this), event -> {
             if (event.succeeded()) {
                 context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
@@ -159,6 +166,38 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                 log.error(event.cause());
             }
         });
+    }
+
+    protected void storeWebhookConfig(RoutingContext ctx) {
+        final var request = ctx.request();
+        try {
+            final var providerType = WebhookProviderType.checkType(request.getParam("type"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Webhook test
+     *
+     * @param ctx router context
+     */
+    protected void sendWebhookTest(RoutingContext ctx) {
+        final var request = ctx.request();
+        try {
+            final var url = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), request.getParam("url")
+                                                                                           .replaceAll(" +", "+"));
+            this.webClient.postAbs(url)
+                          .send()
+                          .onSuccess(event -> {
+                              this.routeSuccessHandler(ctx, "webhook test sent");
+                          })
+                          .onFailure(err -> {
+                              this.routeErrorHandler(ctx, err.getMessage());
+                          });
+        } catch (Exception e) {
+            this.routeBadRequestHandler(ctx, e.getMessage());
+        }
     }
 
     /**
@@ -225,7 +264,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                 final var cookie = cookieEntry.getValue();
                 if (ObjectUtil.nullSafeEquals(id, cookie.getValue())) {
                     ctx.clearUser();
-                    this.routeResultJson(ctx, "Sign out successfully！");
+                    this.routeSuccessHandler(ctx, "Sign out successfully！");
                     break;
                 }
             }
@@ -241,7 +280,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
      */
     protected void readRsaPublicKeyHandler(RoutingContext ctx) {
         this.readRsaKeyPair()
-            .onSuccess(rsaKeyPair -> this.routeResultJson(ctx, rsaKeyPair.getPublicKey()))
+            .onSuccess(rsaKeyPair -> this.routeSuccessHandler(ctx, rsaKeyPair.getPublicKey()))
             .onFailure(err -> this.routeErrorHandler(ctx, err));
     }
 
@@ -257,7 +296,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
             final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             this.dnsRecordService.findRecordListAsync(dnsProviderType, domain, dnsRecordType)
-                                 .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                                 .onSuccess(bool -> this.routeSuccessHandler(ctx, bool))
                                  .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
             this.routeErrorHandler(ctx, "Parameter error");
@@ -276,16 +315,13 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
             final var dnsProviderType = DnsProviderType.checkType(request.getParam(ApiConstants.DDNS_PROVIDER_TYPE));
             final var domain = request.getParam(ApiConstants.DOMAIN);
             this.dnsRecordService.deleteRecordAsync(dnsProviderType, recordId, domain)
-                                 .onSuccess(bool -> this.routeResultJson(ctx, bool))
+                                 .onSuccess(bool -> this.routeSuccessHandler(ctx, bool))
                                  .onFailure(err -> this.routeBadRequestHandler(ctx, err));
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, "Parameter error");
         }
     }
 
-    protected void storeWebhookConfig(RoutingContext ctx) {
-        final var request = ctx.request();
-    }
 
     protected void clearDnsRecordLogHandler(RoutingContext ctx) {
         final var type = ctx.request()
@@ -296,7 +332,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
             Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
                   .onSuccess(event -> {
                       event.clear();
-                      this.routeResultJson(ctx);
+                      this.routeSuccessHandler(ctx);
                   })
                   .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
         } catch (Exception e) {
@@ -307,7 +343,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
 
     protected void resolveDnsRecordHandler(RoutingContext ctx) {
         this.dnsRecordService.update();
-        this.routeResultJson(ctx);
+        this.routeSuccessHandler(ctx);
     }
 
     /**
@@ -328,7 +364,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                     .onSuccess(success -> {
                         ctx.clearUser();
                         // return login url
-                        this.routeResultJson(ctx, DataResult.success(ApiConstants.LOGIN_PATH));
+                        this.routeSuccessHandler(ctx, DataResult.success(ApiConstants.LOGIN_PATH));
                     })
                     .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception e) {
@@ -358,9 +394,9 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                 default:
             }
             this.dnsConfigDecryptHandler(dnsConfig)
-                    .compose(this::storeDnsConfig)
-                    .onSuccess(success -> this.routeResultJson(ctx))
-                    .onFailure(err -> this.routeErrorHandler(ctx, err));
+                .compose(this::storeDnsConfig)
+                .onSuccess(success -> this.routeSuccessHandler(ctx))
+                .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception exception) {
             this.routeBadRequestHandler(ctx, "Parameter abnormal");
         }

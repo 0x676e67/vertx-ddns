@@ -13,5 +13,15 @@ public enum WebhookProviderType {
     /**
      * DingDing（钉钉）
      */
-    DING_DING
+    DING_DING;
+
+    public static WebhookProviderType checkType(String value) {
+        for (WebhookProviderType type : values()) {
+            if (type.toString()
+                    .equals(value)) {
+                return type;
+            }
+        }
+        throw new RuntimeException("The Webhook Type provider does not exist");
+    }
 }

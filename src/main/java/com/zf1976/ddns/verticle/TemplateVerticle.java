@@ -42,7 +42,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
-    protected static String workDir = null;
+    protected String workDir = null;
     protected static final String WORK_DIR_NAME = ".vertx_ddns";
     protected static final String DNS_CONFIG_FILENAME = "dns_config.json";
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
@@ -87,6 +87,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
         final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
         final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
+         this.workDir = projectWorkPath;
         return fileSystem.mkdirs(projectWorkPath)
                          .compose(v -> fileSystem.exists(dnsConfigFilePath))
                          .compose(bool -> createFile(fileSystem, bool, dnsConfigFilePath))
@@ -94,13 +95,14 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                          .compose(bool -> createFile(fileSystem, bool, secureFilePath))
                          .compose(v -> fileSystem.exists(rsaKeyPath))
                          .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
-                         .compose(v -> {
+                         .compose(v -> readRsaKeyPair())
+                         .compose(rsaKeyPair -> {
                              log.info("Initialize project working directory：" + projectWorkPath);
                              log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
                              log.info("Initialize secure configuration file：" + secureFilePath);
                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
                              log.info("RSA key has been initialized");
-                             TemplateVerticle.workDir = projectWorkPath;
+                             this.rsaKeyPair = rsaKeyPair;
                              this.routeTemplateHandler(router, vertx);
                              return this.initDnsServiceConfig(vertx.fileSystem());
                          });
@@ -374,21 +376,21 @@ public abstract class TemplateVerticle extends AbstractVerticle {
 
     private HttpServerResponse setCommonHeader(HttpServerResponse response) {
         return response.putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                        .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+                       .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
     }
 
-    protected void routeResultJson(RoutingContext routingContext, Object object) {
+    protected void routeSuccessHandler(RoutingContext routingContext, Object object) {
         routingContext.response()
                       .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
                       .end(Json.encodePrettily(DataResult.success(object)));
     }
 
-    protected void routeResultJson(RoutingContext routingContext) {
-        this.routeResultJson(routingContext, null);
+    protected void routeSuccessHandler(RoutingContext routingContext) {
+        this.routeSuccessHandler(routingContext, null);
     }
 
     protected void routeErrorHandler(RoutingContext routingContext, String message) {
-         this.routeErrorHandler(routingContext, new Exception(message));
+        this.routeErrorHandler(routingContext, new Exception(message));
     }
 
     protected void routeErrorHandler(RoutingContext routingContext, Throwable throwable) {

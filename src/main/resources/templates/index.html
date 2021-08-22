@@ -434,9 +434,11 @@
                                   </div>
                                   <div class="input-group" style="margin-top: 15px">
                                           <span class="input-group-btn">
-                                                  <button class="btn btn-info" type="button">发送测试</button>
+                                                  <button class="btn btn-info" onclick="sendWebhookTest('ServerJ')"
+                                                          type="button">发送测试</button>
                                           </span>
-                                      <input class="form-control" placeholder="Webhook URL" type="text">
+                                      <input class="form-control" id="server_j_url" placeholder="Webhook URL"
+                                             type="text">
                                   </div>
                                   <div style="margin-top: 10px">
                                       <a href="https://sct.ftqq.com/sendkey" target="_blank">获取Webhook URL</a>
@@ -623,84 +625,6 @@
         }
     })();
 </script>
-<!--<script>-->
-<!--    $(document).ready(function () {-->
-<!--        $('#logLevel').change(function () {-->
-<!--            $.get('/action/refresh/' + $('#logLevel').val(), function (data, status) {-->
-<!--            })-->
-<!--        })-->
-
-<!--        $('#testBtn').click(function () {-->
-<!--            $.get('/action/test', function (data, status) {-->
-<!--            })-->
-<!--            return false // 禁止表单自动提交-->
-<!--        })-->
-
-<!--        $('#clearBtn').click(function () {-->
-<!--            $('#messageBox').html('')-->
-<!--            return false // 禁止表单自动提交-->
-<!--        })-->
-
-<!--        var websocket = null;-->
-<!--        var host = "";-->
-<!--        if (window.location.protocol == 'http:') {-->
-<!--            host = 'ws://' + window.location.host + '/websocket';-->
-<!--        } else {-->
-<!--            host = 'wss://' + window.location.host + '/websocket';-->
-<!--        }-->
-
-<!--        //判断当前浏览器是否支持WebSocket-->
-<!--        if ('WebSocket' in window) {-->
-<!--            websocket = new WebSocket(host);-->
-<!--        } else if ('MozWebSocket' in window) {-->
-<!--            websocket = new MozWebSocket(host);-->
-<!--        } else {-->
-<!--            alert("该浏览器不支持WebSocket！");-->
-<!--        }-->
-
-<!--        //连接发生错误的回调方法-->
-<!--        websocket.onerror = function () {-->
-<!--            console.log("连接出错");-->
-<!--        };-->
-
-<!--        //连接成功建立的回调方法-->
-<!--        websocket.onopen = function (event) {-->
-<!--            console.log("连接成功");-->
-<!--        }-->
-
-<!--        //接收到消息的回调方法-->
-<!--        websocket.onmessage = function (event) {-->
-<!--            setMessageInnerHTML(event.data);-->
-<!--        }-->
-
-<!--        //连接关闭的回调方法-->
-<!--        websocket.onclose = function () {-->
-<!--            console.log("连接关闭")-->
-<!--        }-->
-
-<!--        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。-->
-<!--        window.onbeforeunload = function () {-->
-<!--            websocket.close()-->
-<!--        }-->
-
-<!--        //将消息显示在网页上-->
-<!--        function setMessageInnerHTML(innerHTML) {-->
-<!--            $('#messageBox').html($('#messageBox').html() + innerHTML + '<br>')-->
-<!--        }-->
-
-<!--        //关闭连接-->
-<!--        function closeWebSocket() {-->
-<!--            websocket.close()-->
-<!--        }-->
-
-<!--        //发送消息-->
-<!--        function send() {-->
-<!--            var message = document.getElementById('text').value;-->
-<!--            websocket.send(message);-->
-<!--        }-->
-<!--    })-->
-
-<!--</script>-->
 
 <script th:inline="javascript">
 
@@ -755,6 +679,23 @@
     setSecureConfig()
     initLogSockJs()
 
+
+    function sendWebhookTest(providerType) {
+        if (providerType == "ServerJ") {
+            let title = document.getElementById('server_j_title').value
+            if (title == '') {
+                confirm.show("Title cannot be empty")
+                return
+            }
+            let content = document.getElementById('server_j_content').value
+            let url = document.getElementById('server_j_url').value
+            let absUrl = url + "?title=" + title + "&desp=" + content
+            axiosInstance.post("/api/webhook/test?url=" + encrypt(absUrl))
+                .then(res => {
+                    confirm.show(res.data.data)
+                })
+        }
+    }
 
     function logout() {
         axiosInstance.post("/logout")
