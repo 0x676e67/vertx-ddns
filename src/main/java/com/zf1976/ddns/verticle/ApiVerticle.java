@@ -102,8 +102,12 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         // resolve dns record
         router.post("/api/dns/record/resolve")
               .handler(this::resolveDnsRecordHandler);
+        // clear resolve dns record log
         router.delete("/api/dns/record/log")
               .handler(this::clearDnsRecordLogHandler);
+        // store webhook config
+        router.post("/api/webhook/config")
+              .handler(this::storeWebhookConfig);
         // obtain the RSA public key
         router.get("/common/rsa/public_key")
               .handler(this::readRsaPublicKeyHandler);
@@ -277,6 +281,10 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, "Parameter error");
         }
+    }
+
+    protected void storeWebhookConfig(RoutingContext ctx) {
+        final var request = ctx.request();
     }
 
     protected void clearDnsRecordLogHandler(RoutingContext ctx) {
