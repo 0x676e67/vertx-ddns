@@ -11,6 +11,6 @@ public interface ResolveDnsRecordHandler {
 
     void parserDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config);
 
-    void parserDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config);
+    void resolveDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config);
 
 }

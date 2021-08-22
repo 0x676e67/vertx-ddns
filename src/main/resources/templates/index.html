@@ -29,6 +29,22 @@
     <!--    SockJS-->
     <script src="https://unpkg.io/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
     <!--    Markdown-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 0px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 5px;
+        }
+
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 5px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -377,20 +393,53 @@
                               <a aria-controls="pills-profile" aria-selected="false" class="nav-link" data-toggle="pill"
                                  href="#server_j" id="pills-profile-tab" role="tab">Server酱</a>
                           </li>
-                          <li class="nav-item" role="presentation">
-                              <a aria-controls="pills-contact" aria-selected="false" class="nav-link" data-toggle="pill"
-                                 href="#pills-contact" id="pills-contact-tab" role="tab">Contact</a>
-                          </li>
                       </ul>
                       <div class="tab-content" id="pills-tabContent">
                           <div aria-labelledby="pills-home-tab" class="tab-pane fade show active" id="dingding"
-                               role="tabpanel">Dingding
+                               role="tabpanel">
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" id="dingding-text" name="dingding-model" type="radio"
+                                         value="option1">
+                                  <label class="form-check-label" for="dingding-text">Text消息</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" id="dingding-link" name="dingding-model" type="radio"
+                                         value="option2">
+                                  <label class="form-check-label" for="dingding-link">Link消息</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                  <input class="form-check-input" id="dingding-markdown" name="dingding-model"
+                                         type="radio" value="option3">
+                                  <label class="form-check-label" for="dingding-markdown">Markdown消息</label>
+                              </div>
                           </div>
+                          <!--                          server酱-->
                           <div aria-labelledby="pills-profile-tab" class="tab-pane fade" id="server_j" role="tabpanel">
-                              server
-                          </div>
-                          <div aria-labelledby="pills-contact-tab" class="tab-pane fade" id="pills-contact"
-                               role="tabpanel">...
+                              <div>
+                                  <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
+                                       width="16" xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                                  </svg>
+                                  <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
+                              </div>
+                              <div class="shadow-none p-3 bg-light rounded">
+                                  <div class="input-group mb-3">
+                                      <input class="form-control" id="server_j_title" placeholder="输入消息的标题" type="text"
+                                             value="">
+                                  </div>
+                                  <div>
+                                      <textarea class="cur form-control" id="server_j_content"
+                                                placeholder="输入消息内容，支持 Markdown。注意Markdown语法中两次回车才是换行。"
+                                                style="height: 90px;"></textarea>
+                                  </div>
+                                  <div>
+                                      <button class="btn btn-info" style="margin-top: 10px" type="button">
+                                          <span class="bp3-button-text">发送</span>
+                                      </button>
+                                  </div>
+                              </div>
+                              <div class="markdown-body" id="server_j_show"
+                                   style="border-bottom: 1px solid #eee;margin-top: 10px; margin-bottom: 10px"></div>
                           </div>
                       </div>
                   </div>
@@ -497,6 +546,79 @@
 
     </div>
 </main>
+<!--Markdown JS-->
+<script>
+    let converter = new showdown.Converter(),
+        container_edit = document.getElementById("server_j_content"),
+        container_show = document.getElementById("server_j_show");
+
+    // 将输入框中的 markdown 语句 转换为html 输出到 预览容器中
+    let translation = (function () {
+        return function () {
+            container_show.innerHTML = converter.makeHtml(container_edit.value);
+            // 按比例调整 预览容器 的滚动条位置
+            let ratio = container_edit.scrollTop / container_edit.scrollHeight;
+            container_show.scrollTop = container_show.scrollHeight * ratio;
+        }
+    })();
+
+    // 监听输入框输入，实时将输入内容同步的右侧 预览框
+    container_edit.onkeyup = translation;
+
+    //监听鼠标进入 输入框范围 设置状态
+    container_edit.onmouseover = function () {
+        container_show.classList.remove('cur');
+        container_edit.classList.add('cur');
+    };
+    //监听鼠标离开 输入框范围 设置状态
+    container_edit.onmouseleave = function () {
+        container_edit.classList.remove('cur')
+    };
+    //监听鼠标进入 预览容器范围 设置状态
+    container_show.onmouseover = function () {
+        container_edit.classList.remove('cur')
+        container_show.classList.add('cur');
+    };
+    //监听鼠标离开 预览容器范围 设置状态
+    container_show.onmouseleave = function () {
+        container_show.classList.remove('cur')
+    };
+
+    // 监听 输入框 内容滚动
+    container_edit.addEventListener('scroll', function () {
+        // 若鼠标在 输入框范围内 则 以输入框为主 同步 预览容器内容滚动条高度
+        if (hasClass(container_edit, "cur")) {
+            let ratio = container_edit.scrollTop / container_edit.scrollHeight;
+            container_show.scrollTop = container_show.scrollHeight * ratio;
+        }
+    });
+    // 监听 预览容器 内容滚动
+    container_show.addEventListener('scroll', function () {
+        // 若鼠标在 预览范围内 则 以 预览容器为主 同步 输入框内容滚动条高度
+        if (hasClass(container_show, "cur")) {
+            let ratio = container_show.scrollTop / container_show.scrollHeight;
+            container_edit.scrollTop = container_edit.scrollHeight * ratio;
+        }
+    });
+
+    // 判断 dom对象是否含有 指定 class 属性
+    var hasClass = (function () {
+        var div = document.createElement("div");
+        if ("classList" in div && typeof div.classList.contains === "function") {
+            return function (elem, className) {
+                return elem.classList.contains(className);
+            };
+        } else {
+            return function (elem, className) {
+                var classes = elem.className.split(/\s+/);
+                for (var i = 0; i < classes.length; i++) {
+                    if (classes[i] === className) return true;
+                }
+                return false;
+            };
+        }
+    })();
+</script>
 <!--<script>-->
 <!--    $(document).ready(function () {-->
 <!--        $('#logLevel').change(function () {-->

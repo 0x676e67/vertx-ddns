@@ -214,7 +214,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
             for (DnsConfig config : dnsConfigList) {
                 this.parserDnsRecordForIpv4(config.getDnsProviderType(), config.getIpv4Config());
-                this.parserDnsRecordForIpv6(config.getDnsProviderType(), config.getIpv6Config());
+                this.resolveDnsRecordForIpv6(config.getDnsProviderType(), config.getIpv6Config());
             }
         }
     }
@@ -233,7 +233,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                           return Future.succeededFuture(ipv4Config.getNetworkIp());
                       }
                   })
-                  .onSuccess(resultIp -> this.parserDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
+                  .onSuccess(resultIp -> this.resolveDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
                   .onFailure(err -> {
                       LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                       vertx.eventBus()
@@ -244,7 +244,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
 
 
     @Override
-    public void parserDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config) {
+    public void resolveDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config) {
         if (Objects.nonNull(ipv6Config) && ipv6Config.getEnable()) {
             // use ip api or network
             Future.succeededFuture(ipv6Config.getSelectIpMethod())
@@ -256,7 +256,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                           return Future.succeededFuture(ipv6Config.getNetworkIp());
                       }
                   })
-                  .onSuccess(resultIp -> this.parserDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))
+                  .onSuccess(resultIp -> this.resolveDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))
                   .onFailure(err -> {
                       LogUtil.printInfo(this.log, err.getMessage(), err.getCause());
                       vertx.eventBus()
@@ -265,8 +265,10 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         }
     }
 
-    private void parserDnsRecordForIpv4Handler(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config, String resultIp) {
-        @SuppressWarnings("DuplicatedCode") String defaultIp = StringUtil.isEmpty(resultIp)? "" : resultIp;
+    private void resolveDnsRecordForIpv4Handler(DnsProviderType dnsProviderType,
+                                                DnsConfig.Ipv4Config ipv4Config,
+                                                String resultIp) {
+        @SuppressWarnings("DuplicatedCode") String defaultIp = StringUtil.isEmpty(resultIp) ? "" : resultIp;
         final var domainList = ipv4Config.getDomainList();
         for (String domainAndIp : domainList) {
 
@@ -291,8 +293,10 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
         }
     }
 
-    private void parserDnsRecordForIpv6Handler(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config, String resultIp) {
-        String defaultIp = StringUtil.isEmpty(resultIp)? "" : resultIp;
+    private void resolveDnsRecordForIpv6Handler(DnsProviderType dnsProviderType,
+                                                DnsConfig.Ipv6Config ipv6Config,
+                                                String resultIp) {
+        String defaultIp = StringUtil.isEmpty(resultIp) ? "" : resultIp;
         final var domainList = ipv6Config.getDomainList();
         for (String domainAndIp : domainList) {
 
@@ -369,7 +373,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                 // if the ip is changed, the domain name record resolution will be updated
                 if (Objects.equals(concatDomain, domain) && !Objects.equals(dnsRecord.getValue(), ip)) {
                     return this.modifyRecordAsync(dnsProviderType, id, domain, ip, dnsRecordType)
-                               .compose(bool -> bool ? Future.succeededFuture(DnsRecordLog.modifyLog(dnsProviderType, domain, ip))
+                               .compose(bool -> bool ? Future.succeededFuture(DnsRecordLog.modifyLog(dnsProviderType, domain, ip, dnsRecord.getValue()))
                                        : Future.succeededFuture(DnsRecordLog.modifyFailLog(dnsProviderType, domain)));
                 }
             }

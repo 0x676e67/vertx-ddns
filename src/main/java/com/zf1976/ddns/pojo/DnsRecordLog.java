@@ -1,5 +1,6 @@
 package com.zf1976.ddns.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.LogStatus;
@@ -23,21 +24,37 @@ public class DnsRecordLog implements Serializable {
 
     private Long timestamp;
 
+    @JsonIgnore
+    private String sourceIp;
+
+    @JsonIgnore
+    private String targetIp;
+
+    @JsonIgnore
+    private String domainOrMessage;
+
     public DnsRecordLog() {
 
     }
-
 
     private DnsRecordLog(DnsProviderType dnsProviderType, String domainOrMessage, LogStatus logStatus) {
         this(dnsProviderType, domainOrMessage, (String) null, logStatus);
     }
 
     private DnsRecordLog(DnsProviderType dnsProviderType, String domainOrMessage, String ip, LogStatus logStatus) {
+        this(dnsProviderType, domainOrMessage, ip, (String) null, logStatus);
+    }
+
+    private DnsRecordLog(DnsProviderType dnsProviderType,
+                         String domainOrMessage,
+                         String targetIp,
+                         String sourceIp,
+                         LogStatus logStatus) {
         switch (logStatus) {
-            case RAW -> this.content = "域名：" + domainOrMessage + " 没有发生变化, IP：" + ip;
-            case CREATE -> this.content = "新增域名解析：" + domainOrMessage + " 成功！IP：" + ip;
+            case RAW -> this.content = "域名：" + domainOrMessage + " 没有发生变化, IP：" + targetIp;
+            case CREATE -> this.content = "新增域名解析：" + domainOrMessage + " 成功！IP：" + targetIp;
             case CREATE_FAIL -> this.content = "新增域名解析：" + domainOrMessage + " 失败！";
-            case MODIFY -> this.content = "更新域名解析：" + domainOrMessage + " 成功！IP：" + ip;
+            case MODIFY -> this.content = "更新域名解析：" + domainOrMessage + " 成功！IP：" + sourceIp + " -> " + targetIp;
             case MODIFY_FAIL -> this.content = "更新域名解析：" + domainOrMessage + " 失败！";
             case ERROR -> this.content = domainOrMessage;
             default -> throw new UnsupportedOperationException("Unsupported log status: " + logStatus.name());
@@ -45,6 +62,9 @@ public class DnsRecordLog implements Serializable {
         this.dnsProviderType = dnsProviderType;
         this.logStatus = logStatus;
         this.timestamp = new Date().getTime();
+        this.sourceIp = sourceIp;
+        this.targetIp = targetIp;
+        this.domainOrMessage = domainOrMessage;
     }
 
     public static DnsRecordLog rawLog(DnsProviderType dnsProviderType, String domain, String ip) {
@@ -59,8 +79,8 @@ public class DnsRecordLog implements Serializable {
         return new DnsRecordLog(dnsProviderType, domain, LogStatus.CREATE_FAIL);
     }
 
-    public static DnsRecordLog modifyLog(DnsProviderType dnsProviderType, String domain, String ip) {
-        return new DnsRecordLog(dnsProviderType, domain, ip, LogStatus.MODIFY);
+    public static DnsRecordLog modifyLog(DnsProviderType dnsProviderType, String domain, String ip, String rawIp) {
+        return new DnsRecordLog(dnsProviderType, domain, ip, rawIp, LogStatus.MODIFY);
     }
 
     public static DnsRecordLog modifyFailLog(DnsProviderType dnsProviderType, String domain) {
@@ -107,6 +127,33 @@ public class DnsRecordLog implements Serializable {
         return this;
     }
 
+    public String getSourceIp() {
+        return sourceIp;
+    }
+
+    public DnsRecordLog setSourceIp(String sourceIp) {
+        this.sourceIp = sourceIp;
+        return this;
+    }
+
+    public String getTargetIp() {
+        return targetIp;
+    }
+
+    public DnsRecordLog setTargetIp(String targetIp) {
+        this.targetIp = targetIp;
+        return this;
+    }
+
+    public String getDomainOrMessage() {
+        return domainOrMessage;
+    }
+
+    public DnsRecordLog setDomainOrMessage(String domainOrMessage) {
+        this.domainOrMessage = domainOrMessage;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DnsRecordLog{" +
@@ -114,6 +161,9 @@ public class DnsRecordLog implements Serializable {
                 ", logStatus=" + logStatus +
                 ", content='" + content + '\'' +
                 ", timestamp=" + timestamp +
+                ", sourceIp='" + sourceIp + '\'' +
+                ", targetIp='" + targetIp + '\'' +
+                ", domainOrMessage='" + domainOrMessage + '\'' +
                 '}';
     }
 }
