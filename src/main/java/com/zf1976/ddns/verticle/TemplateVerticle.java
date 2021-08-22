@@ -43,6 +43,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected static final String WORK_DIR_NAME = ".vertx_ddns";
     protected static final String DNS_CONFIG_FILENAME = "dns_config.json";
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
+    protected static final String WEBHOOK_CONFIG_FILENAME = "webhook_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected static final String AES_KEY_FILENAME = "aes_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
@@ -81,46 +82,50 @@ public abstract class TemplateVerticle extends AbstractVerticle {
      * @param vertx vertx
      */
      protected Future<Void> initConfig(Vertx vertx) {
-        final var fileSystem = vertx.fileSystem();
-        final var projectWorkPath = this.toAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
-        final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
-        final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
+         final var fileSystem = vertx.fileSystem();
+         final var projectWorkPath = this.toAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
+         final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
+         final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
+         final var webhookFilePath = this.toAbsolutePath(projectWorkPath, WEBHOOK_CONFIG_FILENAME);
          final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
          final var aesKeyPath = this.toAbsolutePath(projectWorkPath, AES_KEY_FILENAME);
          this.workDir = projectWorkPath;
-        return fileSystem.mkdirs(projectWorkPath)
-                         .compose(v -> fileSystem.exists(dnsConfigFilePath))
-                         .compose(bool -> createFile(fileSystem, bool, dnsConfigFilePath))
-                         .compose(v -> fileSystem.exists(secureFilePath))
-                         .compose(bool -> createFile(fileSystem, bool, secureFilePath))
-                         .compose(v -> {
-                             final var rsaKeyPairFuture = fileSystem.exists(rsaKeyPath)
-                                                                    .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
-                                                                    .compose(rsa -> this.readRsaKeyPair())
-                                                                    .onSuccess(key -> {
-                                                                        this.rsaKeyPair = key;
-                                                                    });
+         return fileSystem.mkdirs(projectWorkPath)
+                          .compose(v -> fileSystem.exists(dnsConfigFilePath))
+                          .compose(bool -> createFile(fileSystem, bool, dnsConfigFilePath))
+                          .compose(v -> fileSystem.exists(secureFilePath))
+                          .compose(bool -> createFile(fileSystem, bool, secureFilePath))
+                          .compose(v -> fileSystem.exists(webhookFilePath))
+                          .compose(bool -> createFile(fileSystem, bool, webhookFilePath))
+                          .compose(v -> {
+                              final var rsaKeyPairFuture = fileSystem.exists(rsaKeyPath)
+                                                                     .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
+                                                                     .compose(rsa -> this.readRsaKeyPair())
+                                                                     .onSuccess(key -> {
+                                                                         this.rsaKeyPair = key;
+                                                                     });
 
-                             final var aesKeyFuture = fileSystem.exists(aesKeyPath)
-                                                                .compose(bool -> createAesKeyFile(fileSystem, bool, aesKeyPath))
-                                                                .compose(aes -> this.readAesKey())
-                                                                .onSuccess(key -> {
-                                                                    this.aesKey = key;
-                                                                });
-                             return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture);
+                              final var aesKeyFuture = fileSystem.exists(aesKeyPath)
+                                                                 .compose(bool -> createAesKeyFile(fileSystem, bool, aesKeyPath))
+                                                                 .compose(aes -> this.readAesKey())
+                                                                 .onSuccess(key -> {
+                                                                     this.aesKey = key;
+                                                                 });
+                              return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture);
 
-                         })
-                         .compose(v -> {
-                             log.info("Initialize project working directory：" + projectWorkPath);
-                             log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
-                             log.info("Initialize secure configuration file：" + secureFilePath);
-                             log.info("Initialize rsa key configuration file：" + rsaKeyPath);
-                             log.info("Initialize aes key configuration file：" + aesKeyPath);
-                             log.info("RSA key has been initialized");
-                             log.info("AES key has been initialized");
-                             this.routeTemplateHandler(router, vertx);
-                             return this.initDnsServiceConfig(vertx.fileSystem());
-                         });
+                          })
+                          .compose(v -> {
+                              log.info("Initialize project working directory：" + projectWorkPath);
+                              log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
+                              log.info("Initialize secure configuration file：" + secureFilePath);
+                              log.info("Initialize webhook configuration file：" + webhookFilePath);
+                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
+                              log.info("Initialize aes key configuration file：" + aesKeyPath);
+                              log.info("RSA key has been initialized");
+                              log.info("AES key has been initialized");
+                              this.routeTemplateHandler(router, vertx);
+                              return this.initDnsServiceConfig(vertx.fileSystem());
+                          });
      }
 
     private void routeTemplateHandler(Router router, Vertx vertx) {

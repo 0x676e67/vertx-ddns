@@ -156,6 +156,16 @@ public class RsaUtil {
             return privateKey;
         }
 
+        public RsaKeyPair setPublicKey(String publicKey) {
+            this.publicKey = publicKey;
+            return this;
+        }
+
+        public RsaKeyPair setPrivateKey(String privateKey) {
+            this.privateKey = privateKey;
+            return this;
+        }
+
         @Override
         public String toString() {
             return "RsaKeyPair{" +

@@ -226,6 +226,16 @@ public class AesUtil {
             return iv;
         }
 
+        public AesKey setKey(String key) {
+            this.key = key;
+            return this;
+        }
+
+        public AesKey setIv(String iv) {
+            this.iv = iv;
+            return this;
+        }
+
         @Override
         public String toString() {
             return "AesKey{" +

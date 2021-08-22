@@ -387,11 +387,11 @@
                   <!--                  Webhook导航-->
                   <div>
                       <ul class="nav nav-pills mb-3" id="webhook-tab" role="tablist">
-                          <li class="nav-item" role="presentation">
+                          <li class="nav-item" onclick="selectWebhookProvider('DING_DING')" role="presentation">
                               <a aria-controls="pills-home" aria-selected="true" class="nav-link active"
                                  data-toggle="pill" href="#dingding" id="pills-home-tab" role="tab">DingDing</a>
                           </li>
-                          <li class="nav-item" role="presentation">
+                          <li class="nav-item" onclick="selectWebhookProvider('SERVER_J')" role="presentation">
                               <a aria-controls="pills-profile" aria-selected="false" class="nav-link" data-toggle="pill"
                                  href="#server_j" id="pills-profile-tab" role="tab">Server酱</a>
                           </li>
@@ -436,7 +436,7 @@
                                   </div>
                                   <div class="input-group" style="margin-top: 15px">
                                           <span class="input-group-btn">
-                                                  <button class="btn btn-info" onclick="sendWebhookTest('ServerJ')"
+                                                  <button class="btn btn-info" onclick="sendWebhookTest('SERVER_J')"
                                                           type="button">发送测试</button>
                                           </span>
                                       <input class="form-control" id="server_j_url" placeholder="Webhook URL"
@@ -454,7 +454,8 @@
 
               </div>
               <div class="card-footer">
-                  <button class="btn btn-primary submit_btn" onclick="" style="display:block;margin:0 auto">
+                  <button class="btn btn-primary submit_btn" onclick="storeWebhookConfig()"
+                          style="display:block;margin:0 auto">
                       保存Webhook配置
                   </button>
               </div>
@@ -670,9 +671,12 @@
     const huaweiType = "HUAWEI"
     const ipv4RecordType = "A"
     const ipv6RecordType = "AAAA"
+    const dingdingProviderType = "DING_DING"
+    const serverJProviderType = "SERVER_J"
     // 默认类型
     let selectDnsProviderType = aliyunType
     let selectDnsRecordType = ipv4RecordType
+    let selectWebhookProviderType = dingdingProviderType
     // 初始化调用
     selectIpv4ForApi()
     selectIpv6ForApi()
@@ -681,9 +685,34 @@
     setSecureConfig()
     initLogSockJs()
 
+    function storeWebhookConfig() {
+        if (selectWebhookProviderType == serverJProviderType) {
+            let title = document.getElementById('server_j_title').value
+            let content = document.getElementById('server_j_content').value
+            let url = document.getElementById('server_j_url').value
+            const data = {
+                "title": title,
+                "content": content,
+                "url": url ? encrypt(url) : ""
+            }
+            axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
+                .then(res => {
+                    confirm.show('Webhook配置保存成功')
+                })
+        }
+    }
+
+    function selectWebhookProvider(providerType) {
+        if (providerType == dingdingProviderType) {
+            selectWebhookProviderType = dingdingProviderType;
+        }
+        if (providerType == serverJProviderType) {
+            selectWebhookProviderType = serverJProviderType
+        }
+    }
 
     function sendWebhookTest(providerType) {
-        if (providerType == "ServerJ") {
+        if (providerType == serverJProviderType) {
             let title = document.getElementById('server_j_title').value
             if (title == '') {
                 confirm.show("Title cannot be empty")
@@ -697,7 +726,7 @@
                 .then(res => {
                     confirm.show(res.data.data)
                 })
-        } else if (providerType == 'DingDing') {
+        } else if (providerType == dingdingProviderType) {
 
         }
     }

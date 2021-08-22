@@ -117,9 +117,8 @@ public final class HttpUtil {
      */
     public static boolean isURL(String url) {
         try {
-            //noinspection ResultOfMethodCallIgnored
-            URI.create(url);
-            return true;
+            final var uri = URI.create(url);
+            return uri.getHost() != null && uri.getAuthority() != null;
         } catch (Exception e) {
             return false;
         }

@@ -4,6 +4,7 @@ import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
+import com.zf1976.ddns.config.ServerJMessage;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.WebhookProviderType;
@@ -110,6 +111,8 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
               .handler(this::clearDnsRecordLogHandler);
         // store webhook config
         router.post("/api/webhook/config")
+              .consumes("application/json")
+              .handler(BodyHandler.create())
               .handler(this::storeWebhookConfig);
         // send test webhook
         router.post("/api/webhook/test")
@@ -172,8 +175,22 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         final var request = ctx.request();
         try {
             final var providerType = WebhookProviderType.checkType(request.getParam("type"));
+            switch (providerType) {
+                case SERVER_J -> {
+                    final var serverJMessage = ctx.getBodyAsJson()
+                                                  .mapTo(ServerJMessage.class);
+                    Validator.of(serverJMessage)
+                             .withValidated(v -> !HttpUtil.isURL(v.getUrl()), "this is not url")
+                             .withValidated(v -> !StringUtil.isEmpty(v.getTitle()), "title cannot been empty")
+                             .withValidated(v -> !StringUtil.isEmpty(v.getContent()), "content cannot been empty");
+                    this.routeSuccessHandler(ctx);
+                }
+                case DING_DING -> {
+                    this.routeSuccessHandler(ctx);
+                }
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            this.routeBadRequestHandler(ctx, e.getMessage());
         }
     }
 
@@ -189,7 +206,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
             this.webClient.postAbs(url)
                           .send()
                           .onSuccess(event -> {
-                              this.routeSuccessHandler(ctx, "webhook test sent, return data: " + event.bodyAsString());
+                              this.routeSuccessHandler(ctx, "消息已发送成功，请注意查收");
                           })
                           .onFailure(err -> {
                               this.routeErrorHandler(ctx, err.getMessage());
@@ -355,17 +372,17 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         try {
             secureConfig = ctx.getBodyAsJson()
                               .mapTo(SecureConfig.class);
-            Assert.notNull(secureConfig, "body cannot been null!");
-            Assert.hasLength(secureConfig.getUsername(), "username cannot been empty!");
-            Assert.hasLength(secureConfig.getPassword(), "username cannot been empty!");
+            Validator.of(secureConfig)
+                     .withValidated(v -> !StringUtil.hasLength(v.getUsername()), "username cannot been empty!")
+                     .withValidated(v -> StringUtil.hasLength(v.getPassword()), "username cannot been empty!");
             this.secureConfigDecryptHandler(secureConfig)
-                    .compose(this::storeSecureConfig)
-                    .onSuccess(success -> {
-                        ctx.clearUser();
-                        // return login url
-                        this.routeSuccessHandler(ctx, DataResult.success(ApiConstants.LOGIN_PATH));
-                    })
-                    .onFailure(err -> this.routeErrorHandler(ctx, err));
+                .compose(this::storeSecureConfig)
+                .onSuccess(success -> {
+                    ctx.clearUser();
+                    // return login url
+                    this.routeSuccessHandler(ctx, DataResult.success(ApiConstants.LOGIN_PATH));
+                })
+                .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception e) {
             this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));
         }
@@ -459,8 +476,8 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
      * write config to file
      *
      * @param absolutePath path
-     * @param json JSON
-     * @return {@link Future< Void>
+     * @param json         JSON
+     * @return {@link Future<Void>
      */
     private Future<Void> writeJsonToFile(String absolutePath, String json) {
         return vertx.fileSystem()
