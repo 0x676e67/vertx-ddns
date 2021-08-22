@@ -1,17 +1,14 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.config.DnsConfig;
+import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DataResult;
-import com.zf1976.ddns.pojo.DnsConfig;
-import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.timer.service.DnsRecordService;
 import com.zf1976.ddns.verticle.timer.service.impl.DnsRecordServiceImpl;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.file.FileSystem;
@@ -47,7 +44,9 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected static final String DNS_CONFIG_FILENAME = "dns_config.json";
     protected static final String SECURE_CONFIG_FILENAME = "secure_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
+    protected static final String AES_KEY_FILENAME = "aes_key.json";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
+    protected AesUtil.AesKey aesKey;
     protected DnsRecordService dnsRecordService;
     protected Boolean notAllowWanAccess = Boolean.TRUE;
     protected SecureConfig defaultSecureConfig;
@@ -86,23 +85,39 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         final var projectWorkPath = this.toAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
         final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
         final var secureFilePath = this.toAbsolutePath(projectWorkPath, SECURE_CONFIG_FILENAME);
-        final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
+         final var rsaKeyPath = this.toAbsolutePath(projectWorkPath, RSA_KEY_FILENAME);
+         final var aesKeyPath = this.toAbsolutePath(projectWorkPath, AES_KEY_FILENAME);
          this.workDir = projectWorkPath;
         return fileSystem.mkdirs(projectWorkPath)
                          .compose(v -> fileSystem.exists(dnsConfigFilePath))
                          .compose(bool -> createFile(fileSystem, bool, dnsConfigFilePath))
                          .compose(v -> fileSystem.exists(secureFilePath))
                          .compose(bool -> createFile(fileSystem, bool, secureFilePath))
-                         .compose(v -> fileSystem.exists(rsaKeyPath))
-                         .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
-                         .compose(v -> readRsaKeyPair())
-                         .compose(rsaKeyPair -> {
+                         .compose(v -> {
+                             final var rsaKeyPairFuture = fileSystem.exists(rsaKeyPath)
+                                                                    .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
+                                                                    .compose(rsa -> this.readRsaKeyPair())
+                                                                    .onSuccess(key -> {
+                                                                        this.rsaKeyPair = key;
+                                                                    });
+
+                             final var aesKeyFuture = fileSystem.exists(aesKeyPath)
+                                                                .compose(bool -> createAesKeyFile(fileSystem, bool, aesKeyPath))
+                                                                .compose(aes -> this.readAesKey())
+                                                                .onSuccess(key -> {
+                                                                    this.aesKey = key;
+                                                                });
+                             return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture);
+
+                         })
+                         .compose(v -> {
                              log.info("Initialize project working directory：" + projectWorkPath);
                              log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
                              log.info("Initialize secure configuration file：" + secureFilePath);
                              log.info("Initialize rsa key configuration file：" + rsaKeyPath);
+                             log.info("Initialize aes key configuration file：" + aesKeyPath);
                              log.info("RSA key has been initialized");
-                             this.rsaKeyPair = rsaKeyPair;
+                             log.info("AES key has been initialized");
                              this.routeTemplateHandler(router, vertx);
                              return this.initDnsServiceConfig(vertx.fileSystem());
                          });
@@ -195,16 +210,36 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         }
     }
 
-    private Future<Void> createRsaKeyFile(FileSystem fileSystem, boolean bool, String path) {
-        if (!bool) {
-            return fileSystem.createFile(path).compose(v -> writeRsaKeyFile(fileSystem, path));
+    private Future<Void> writeAesKeyFile(FileSystem fileSystem, String aesKeyPath) {
+        try {
+            final var aesKey = AesUtil.generateKey();
+            this.aesKey = aesKey;
+            return fileSystem.writeFile(aesKeyPath, Buffer.buffer(Json.encodePrettily(aesKey)));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e.getCause());
+            return Future.failedFuture(e);
         }
-        return Future.succeededFuture();
     }
 
     private Future<Void> createFile(FileSystem fileSystem, boolean bool, String path) {
         if (!bool) {
             return fileSystem.createFile(path);
+        }
+        return Future.succeededFuture();
+    }
+
+    private Future<Void> createRsaKeyFile(FileSystem fileSystem, boolean bool, String path) {
+        if (!bool) {
+            return fileSystem.createFile(path)
+                             .compose(v -> writeRsaKeyFile(fileSystem, path));
+        }
+        return Future.succeededFuture();
+    }
+
+    private Future<Void> createAesKeyFile(FileSystem fileSystem, boolean bool, String path) {
+        if (!bool) {
+            return fileSystem.createFile(path)
+                             .compose(v -> writeAesKeyFile(fileSystem, path));
         }
         return Future.succeededFuture();
     }
@@ -216,6 +251,15 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         return vertx.fileSystem()
                     .readFile(toAbsolutePath(workDir, RSA_KEY_FILENAME))
                     .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, RsaUtil.RsaKeyPair.class)));
+    }
+
+    public Future<AesUtil.AesKey> readAesKey() {
+        if (Objects.nonNull(this.aesKey)) {
+            return Future.succeededFuture(this.aesKey);
+        }
+        return vertx.fileSystem()
+                    .readFile(toAbsolutePath(workDir, AES_KEY_FILENAME))
+                    .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, AesUtil.AesKey.class)));
     }
 
     public Future<SecureConfig> readSecureConfig() {

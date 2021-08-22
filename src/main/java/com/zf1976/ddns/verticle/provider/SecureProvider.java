@@ -1,6 +1,7 @@
 package com.zf1976.ddns.verticle.provider;
 
-import com.zf1976.ddns.pojo.SecureConfig;
+import com.zf1976.ddns.config.SecureConfig;
+import com.zf1976.ddns.util.AesUtil;
 import com.zf1976.ddns.util.RsaUtil;
 import io.vertx.core.Future;
 
@@ -23,4 +24,6 @@ public interface SecureProvider {
      * @return {@link Future<RsaUtil.RsaKeyPair>}
      */
     Future<RsaUtil.RsaKeyPair> readRsaKeyPair();
+
+    Future<AesUtil.AesKey> readAesKey();
 }

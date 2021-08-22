@@ -1,7 +1,7 @@
 package com.zf1976.ddns.verticle.handler;
 
+import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
-import com.zf1976.ddns.pojo.DnsConfig;
 
 /**
  * @author ant

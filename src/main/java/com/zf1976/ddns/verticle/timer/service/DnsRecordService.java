@@ -1,8 +1,8 @@
 package com.zf1976.ddns.verticle.timer.service;
 
+import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
-import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.vo.DnsRecord;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Future;

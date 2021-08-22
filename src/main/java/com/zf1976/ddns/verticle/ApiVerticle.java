@@ -2,13 +2,13 @@ package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
+import com.zf1976.ddns.config.DnsConfig;
+import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.WebhookProviderType;
 import com.zf1976.ddns.pojo.DataResult;
-import com.zf1976.ddns.pojo.DnsConfig;
 import com.zf1976.ddns.pojo.DnsRecordLog;
-import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.handler.WebhookHandler;
 import com.zf1976.ddns.verticle.provider.RedirectAuthenticationProvider;
@@ -185,12 +185,11 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
     protected void sendWebhookTest(RoutingContext ctx) {
         final var request = ctx.request();
         try {
-            final var url = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), request.getParam("url")
-                                                                                           .replaceAll(" +", "+"));
+            final var url = request.getParam("url");
             this.webClient.postAbs(url)
                           .send()
                           .onSuccess(event -> {
-                              this.routeSuccessHandler(ctx, "webhook test sent");
+                              this.routeSuccessHandler(ctx, "webhook test sent, return data: " + event.bodyAsString());
                           })
                           .onFailure(err -> {
                               this.routeErrorHandler(ctx, err.getMessage());

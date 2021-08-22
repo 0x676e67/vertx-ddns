@@ -1,4 +1,4 @@
-package com.zf1976.ddns.pojo;
+package com.zf1976.ddns.config;
 
 import com.zf1976.ddns.enums.DnsProviderType;
 

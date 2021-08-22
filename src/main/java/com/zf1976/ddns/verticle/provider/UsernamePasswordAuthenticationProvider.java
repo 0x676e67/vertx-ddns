@@ -1,6 +1,6 @@
 package com.zf1976.ddns.verticle.provider;
 
-import com.zf1976.ddns.pojo.SecureConfig;
+import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
 import io.vertx.core.AsyncResult;

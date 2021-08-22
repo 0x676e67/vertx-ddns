@@ -2,7 +2,6 @@ package com.zf1976.ddns.config;
 
 import com.zf1976.ddns.config.property.AliyunDnsProperties;
 import com.zf1976.ddns.config.property.DefaultProperties;
-import com.zf1976.ddns.pojo.SecureConfig;
 import com.zf1976.ddns.util.PropertyUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
