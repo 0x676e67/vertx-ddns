@@ -26,6 +26,8 @@
     <script src="/js/axios.min.js"></script>
     <!--    RSA-->
     <script src="/js/jsencrypt.js"></script>
+    <!--    AES-->
+    <script src="/js/aes.js"></script>
     <!--    SockJS-->
     <script src="https://unpkg.io/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
     <!--    Markdown-->
@@ -430,7 +432,7 @@
                                   <div>
                                       <textarea class="cur form-control" id="server_j_content"
                                                 placeholder="输入消息内容，支持 Markdown。注意Markdown语法中两次回车才是换行。"
-                                                style="height: 90px;"></textarea>
+                                                style="height: 120px;"></textarea>
                                   </div>
                                   <div class="input-group" style="margin-top: 15px">
                                           <span class="input-group-btn">
@@ -689,12 +691,61 @@
             }
             let content = document.getElementById('server_j_content').value
             let url = document.getElementById('server_j_url').value
-            let absUrl = url + "?title=" + title + "&desp=" + content
-            axiosInstance.post("/api/webhook/test?url=" + encrypt(absUrl))
+            let absUrl = url + "?title=" + encodeURI(title) + "&desp=" + encodeURI(content)
+            console.log(encryptByCBC(absUrl))
+            axiosInstance.post("/api/webhook/test?url=" + encryptByCBC(absUrl))
                 .then(res => {
                     confirm.show(res.data.data)
                 })
+        } else if (providerType == 'DingDing') {
+
         }
+    }
+
+    /**
+     * cbc模式
+     * @param data
+     **/
+    function encryptByCBC(data) {
+        let encrypted;
+        var aesKey = [[${aesKey}]]
+        var key = CryptoJS.enc.Utf8.parse(aesKey.key);
+        var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
+        if (typeof data == "string") {
+            const srcs = CryptoJS.enc.Utf8.parse(data);
+            encrypted = CryptoJS.AES.encrypt(srcs, key, {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+        } else if (typeof data == "object") {
+            //对象格式的转成json字符串
+            const result = JSON.stringify(data);
+            const srcs = CryptoJS.enc.Utf8.parse(result);
+            encrypted = CryptoJS.AES.encrypt(srcs,key, {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+        }
+        return encrypted.ciphertext.toString()
+    }
+
+    // aes解密
+    function decryptByCBC(data) {
+        var aesKey = [[${aesKey}]]
+        var key = CryptoJS.enc.Utf8.parse(aesKey.key);
+        var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
+        const encryptData = data
+        const encryptedHexStr = CryptoJS.enc.Hex.parse(encryptData);
+        const srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+        const content = CryptoJS.AES.decrypt(srcs, key, {
+            iv: iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        const decryptedStr = content.toString(CryptoJS.enc.Utf8);
+        return decryptedStr.toString();
     }
 
     function logout() {

@@ -145,7 +145,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                     if (!CollectionUtil.isEmpty(dnsConfigList)) {
                         for (DnsConfig dnsConfig : dnsConfigList) {
                             dnsConfig.setId(this.hideHandler(dnsConfig.getId()))
-                                      .setSecret(this.hideHandler(dnsConfig.getSecret()));
+                                     .setSecret(this.hideHandler(dnsConfig.getSecret()));
                         }
                     }
                     ctx.put("dnsConfigList", dnsConfigList);
@@ -154,6 +154,12 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                 .compose(rsaKeyPair -> {
                     if (rsaKeyPair != null) {
                         ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
+                    }
+                    return this.readAesKey();
+                })
+                .compose(aesKey -> {
+                    if (aesKey != null) {
+                        ctx.put("aesKey", aesKey);
                     }
                     return this.readSecureConfig();
                 })

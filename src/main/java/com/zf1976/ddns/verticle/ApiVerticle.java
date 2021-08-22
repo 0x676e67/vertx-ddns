@@ -185,7 +185,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
     protected void sendWebhookTest(RoutingContext ctx) {
         final var request = ctx.request();
         try {
-            final var url = request.getParam("url");
+            final var url = AesUtil.decodeByCBC(request.getParam("url"), aesKey.getKey(), aesKey.getIv());
             this.webClient.postAbs(url)
                           .send()
                           .onSuccess(event -> {
