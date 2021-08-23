@@ -172,17 +172,23 @@ public class ApiVerticle extends AbstractApiVerticle  {
             final var providerType = WebhookProviderType.checkType(request.getParam("type"));
             switch (providerType) {
                 case SERVER_J -> {
-                    final var serverJMessage = ctx.getBodyAsJson()
-                                                  .mapTo(ServerJMessage.class);
+                    final var serverJMessage = ctx.getBodyAsJson().mapTo(ServerJMessage.class);
                     final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), serverJMessage.getUrl());
                     serverJMessage.setUrl(decodeUrl);
                     Validator.of(serverJMessage)
                              .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
                              .withValidated(v -> !StringUtil.isEmpty(v.getTitle()), "title cannot been empty")
                              .withValidated(v -> !StringUtil.isEmpty(v.getContent()), "content cannot been empty");
+                    this.readWebhookConfig()
+                        .compose(webhookConfig -> {
+                            webhookConfig.setServerJMessage(serverJMessage);
+                            return this.writeWebhookConfig(webhookConfig);
+                        })
+                        .onSuccess(v -> this.routeSuccessHandler(ctx))
+                        .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
                 }
                 case DING_DING -> {
-                    this.routeSuccessHandler(ctx);
+
                 }
             }
         } catch (Exception e) {
@@ -378,8 +384,8 @@ public class ApiVerticle extends AbstractApiVerticle  {
             secureConfig = ctx.getBodyAsJson()
                               .mapTo(SecureConfig.class);
             Validator.of(secureConfig)
-                     .withValidated(v -> !StringUtil.hasLength(v.getUsername()), "username cannot been empty!")
-                     .withValidated(v -> StringUtil.hasLength(v.getPassword()), "username cannot been empty!");
+                     .withValidated(v -> StringUtil.hasLength(v.getUsername()), "username cannot been empty!")
+                     .withValidated(v -> StringUtil.hasLength(v.getPassword()), "password cannot been empty!");
             this.secureConfigDecrypt(secureConfig)
                 .compose(this::writeSecureConfig)
                 .onSuccess(success -> {
@@ -389,7 +395,7 @@ public class ApiVerticle extends AbstractApiVerticle  {
                 })
                 .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception e) {
-            this.routeErrorHandler(ctx, new RuntimeException("Parameter abnormal"));
+            this.routeErrorHandler(ctx, e.getMessage());
         }
     }
 

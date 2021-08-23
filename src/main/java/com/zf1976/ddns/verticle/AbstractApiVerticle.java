@@ -146,6 +146,10 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
     }
 
     protected void customTemplateHandler(RoutingContext ctx, TemplateHandler templateHandler) {
+        if (!ctx.request().absoluteURI().contains(ApiConstants.LOGIN_PATH) && ctx.user() == null) {
+            ctx.redirect(ApiConstants.LOGIN_PATH);
+            return;
+        }
         this.readDnsConfig()
             .compose(dnsConfigList -> {
                 if (!CollectionUtil.isEmpty(dnsConfigList)) {
@@ -158,20 +162,18 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                 return this.readRsaKeyPair();
             })
             .compose(rsaKeyPair -> {
-                if (rsaKeyPair != null) {
-                    ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
-                }
+                ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
                 return this.readAesKey();
             })
             .compose(aesKey -> {
-                if (aesKey != null) {
-                    ctx.put("aesKey", aesKey);
-                }
+                ctx.put("aesKey", aesKey);
                 return this.readSecureConfig();
             })
             .compose(secureConfig -> this.hidePasswordHandler(ctx, secureConfig))
-            .onSuccess(secureConfig -> {
+            .compose(v -> this.readWebhookConfig())
+            .onSuccess(webhookConfig -> {
                 ctx.put("common", ConfigProperty.getDefaultProperties())
+                   .put("webhookConfig", webhookConfig)
                    .put("ipv4", HttpUtil.getNetworkIpv4List())
                    .put("ipv6", HttpUtil.getNetworkIpv6List());
                 templateHandler.handle(ctx);
@@ -507,21 +509,16 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
         final var failure = routingContext.failure();
         final var result = DataResult.fail(errorCode, failure.getCause() != null? failure.getCause().getMessage() : failure.getMessage());
         try {
-            this.setCommonHeader(routingContext.response()
-                                               .setStatusCode(errorCode)
-                                               .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8"))
-                .end(Json.encodePrettily(result));
+            routingContext.response()
+                          .setStatusCode(errorCode)
+                          .putHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8")
+                          .putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                          .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                          .send(Json.encodeToBuffer(result));
+
         } catch (Exception e) {
             LogUtil.printDebug(log, e.getMessage(), e.getCause());
-            routingContext.response()
-                          .setStatusCode(500)
-                          .end();
         }
-    }
-
-    private HttpServerResponse setCommonHeader(HttpServerResponse response) {
-        return response.putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                       .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
     }
 
     protected void routeSuccessHandler(RoutingContext routingContext, Object object) {
@@ -558,6 +555,8 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
         final String message = cause == null? throwable.getMessage() : cause.getMessage();
         final var fail = DataResult.fail(message);
         fail.setErrCode(statusCode);
-        this.setCommonHeader(response).end(Json.encodePrettily(fail));
+        response.putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .putHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .end(Json.encodePrettily(fail));
     }
 }

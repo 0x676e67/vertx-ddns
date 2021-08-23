@@ -417,14 +417,33 @@
                           </div>
                           <!--                          server酱-->
                           <div aria-labelledby="pills-profile-tab" class="tab-pane fade" id="server_j" role="tabpanel">
-                              <div>
-                                  <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
-                                       width="16" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
-                                  </svg>
-                                  <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
-                              </div>
+
                               <div class="shadow-none p-3 bg-light rounded">
+                                  <div>
+                                      <form>
+                                          <fieldset class="row">
+                                              <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                              <div class="col-sm-10">
+                                                  <div class="form-check form-check-inline">
+                                                      <label for="ipv4Enable"></label>
+                                                      <input class="form-check-input" type="checkbox" checked id="server_j_enabled" >
+                                                      <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可在更改解析记录发送消息通知 </small>
+                                                  </div>
+                                              </div>
+                                          </fieldset>
+                                      </form>
+                                  </div>
+                                  <div style="margin-top: 10px">
+                                      <a href="https://sct.ftqq.com/sendkey" target="_blank">获取Webhook URL</a>
+                                  </div>
+                                  <div class="input-group" style="margin-top: 10px;margin-bottom: 15px">
+                                          <span class="input-group-btn">
+                                                  <button class="btn btn-secondary" onclick="sendWebhookTest('SERVER_J')"
+                                                          type="button">发送测试</button>
+                                          </span>
+                                      <input class="form-control" id="server_j_url" placeholder="Webhook URL"
+                                             type="text">
+                                  </div>
                                   <div class="input-group mb-3">
                                       <input class="form-control" id="server_j_title" placeholder="输入消息的标题" type="text"
                                              value="">
@@ -434,16 +453,12 @@
                                                 placeholder="输入消息内容，支持 Markdown。注意Markdown语法中两次回车才是换行。"
                                                 style="height: 120px;"></textarea>
                                   </div>
-                                  <div class="input-group" style="margin-top: 15px">
-                                          <span class="input-group-btn">
-                                                  <button class="btn btn-info" onclick="sendWebhookTest('SERVER_J')"
-                                                          type="button">发送测试</button>
-                                          </span>
-                                      <input class="form-control" id="server_j_url" placeholder="Webhook URL"
-                                             type="text">
-                                  </div>
-                                  <div style="margin-top: 10px">
-                                      <a href="https://sct.ftqq.com/sendkey" target="_blank">获取Webhook URL</a>
+                                  <div>
+                                      <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
+                                           width="16" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                                      </svg>
+                                      <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
                                   </div>
                               </div>
                               <div class="markdown-body" id="server_j_show"
@@ -664,7 +679,6 @@
 
     // 保存的配置
     const dnsConfigList = [[${dnsConfigList}]]
-    const secureConfig = [[${secureConfig}]]
     const aliyunType = "ALIYUN"
     const dnspodType = "DNSPOD"
     const cloudflareType = "CLOUDFLARE"
@@ -683,21 +697,35 @@
     setIpv4RecordType()
     setAliyunType()
     setSecureConfig()
+    setWebhookConfig()
     initLogSockJs()
+
+    function setWebhookConfig() {
+        let webhookConfig = [[${webhookConfig}]]
+        let serverJMessage = webhookConfig.serverJMessage
+        document.getElementById('server_j_enabled').checked = serverJMessage.enabled
+        document.getElementById('server_j_url').value = serverJMessage.url
+        document.getElementById('server_j_title').value = serverJMessage.title
+        document.getElementById('server_j_content').value = serverJMessage.content
+    }
 
     function storeWebhookConfig() {
         if (selectWebhookProviderType == serverJProviderType) {
             let title = document.getElementById('server_j_title').value
             let content = document.getElementById('server_j_content').value
             let url = document.getElementById('server_j_url').value
+            let enabled = document.getElementById('server_j_enabled').checked
             const data = {
                 "title": title,
                 "content": content,
-                "url": url ? encrypt(url) : ""
+                "url": url ? encrypt(url) : "",
+                "enabled" : enabled
             }
             axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
                 .then(res => {
-                    confirm.show('Webhook配置保存成功')
+                    confirm.show('Webhook配置保存成功', function () {
+                        window.location.reload()
+                    })
                 })
         }
     }
@@ -898,6 +926,7 @@
     }
 
     function passwordIsHide(password) {
+        let secureConfig = [[${secureConfig}]]
         if (secureConfig == null || secureConfig == undefined) {
             return false
         }
@@ -974,7 +1003,7 @@
         axiosInstance.post("/api/store/dns/config",data)
             .then(res => {
                 confirm.show("Successfully saved!", function () {
-                    location.reload()
+                    window.location.reload()
                 })
             })
     }
@@ -1144,6 +1173,7 @@
     }
 
     function setSecureConfig() {
+        let secureConfig = [[${secureConfig}]]
         document.getElementById("notAllowWanAccess").checked = secureConfig? secureConfig.notAllowWanAccess : true
         document.getElementById("username").value = secureConfig? secureConfig.username : ""
         document.getElementById("password").value = secureConfig? secureConfig.password : ""
