@@ -4,7 +4,6 @@ import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
-import com.zf1976.ddns.config.webhook.BaseMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
@@ -181,7 +180,6 @@ public class ApiVerticle extends AbstractApiVerticle  {
                              .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
                              .withValidated(v -> !StringUtil.isEmpty(v.getTitle()), "title cannot been empty")
                              .withValidated(v -> !StringUtil.isEmpty(v.getContent()), "content cannot been empty");
-                    this.routeSuccessHandler(ctx);
                 }
                 case DING_DING -> {
                     this.routeSuccessHandler(ctx);
@@ -190,11 +188,6 @@ public class ApiVerticle extends AbstractApiVerticle  {
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());
         }
-    }
-
-    private Future<BaseMessage> webhookMessageHandler(BaseMessage abstractMessage) {
-
-        return null;
     }
 
     /**
@@ -387,7 +380,7 @@ public class ApiVerticle extends AbstractApiVerticle  {
             Validator.of(secureConfig)
                      .withValidated(v -> !StringUtil.hasLength(v.getUsername()), "username cannot been empty!")
                      .withValidated(v -> StringUtil.hasLength(v.getPassword()), "username cannot been empty!");
-            this.secureConfigDecryptHandler(secureConfig)
+            this.secureConfigDecrypt(secureConfig)
                 .compose(this::writeSecureConfig)
                 .onSuccess(success -> {
                     ctx.clearUser();
@@ -421,7 +414,7 @@ public class ApiVerticle extends AbstractApiVerticle  {
                              .withValidated(v -> !StringUtil.isEmpty(v.getSecret()) && !v.getSecret().isBlank(), "The Secret cannot be empty");
                 default:
             }
-            this.dnsConfigDecryptHandler(dnsConfig)
+            this.dnsConfigDecrypt(dnsConfig)
                 .compose(this::writeDnsConfig)
                 .onSuccess(success -> this.routeSuccessHandler(ctx))
                 .onFailure(err -> this.routeErrorHandler(ctx, err));

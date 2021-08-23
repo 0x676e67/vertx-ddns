@@ -146,37 +146,37 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
     }
 
     protected void customTemplateHandler(RoutingContext ctx, TemplateHandler templateHandler) {
-        readDnsConfig(vertx.fileSystem())
-                .compose(dnsConfigList -> {
-                    if (!CollectionUtil.isEmpty(dnsConfigList)) {
-                        for (DnsConfig dnsConfig : dnsConfigList) {
-                            dnsConfig.setId(this.hideHandler(dnsConfig.getId()))
-                                     .setSecret(this.hideHandler(dnsConfig.getSecret()));
-                        }
+        this.readDnsConfig()
+            .compose(dnsConfigList -> {
+                if (!CollectionUtil.isEmpty(dnsConfigList)) {
+                    for (DnsConfig dnsConfig : dnsConfigList) {
+                        dnsConfig.setId(this.hideHandler(dnsConfig.getId()))
+                                 .setSecret(this.hideHandler(dnsConfig.getSecret()));
                     }
-                    ctx.put("dnsConfigList", dnsConfigList);
-                    return this.readRsaKeyPair();
-                })
-                .compose(rsaKeyPair -> {
-                    if (rsaKeyPair != null) {
-                        ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
-                    }
-                    return this.readAesKey();
-                })
-                .compose(aesKey -> {
-                    if (aesKey != null) {
-                        ctx.put("aesKey", aesKey);
-                    }
-                    return this.readSecureConfig();
-                })
-                .compose(secureConfig -> this.hidePasswordHandler(ctx, secureConfig))
-                .onSuccess(secureConfig -> {
-                    ctx.put("common", ConfigProperty.getDefaultProperties())
-                       .put("ipv4", HttpUtil.getNetworkIpv4List())
-                       .put("ipv6", HttpUtil.getNetworkIpv6List());
-                    templateHandler.handle(ctx);
-                })
-                .onFailure(err -> this.routeErrorHandler(ctx, err));
+                }
+                ctx.put("dnsConfigList", dnsConfigList);
+                return this.readRsaKeyPair();
+            })
+            .compose(rsaKeyPair -> {
+                if (rsaKeyPair != null) {
+                    ctx.put("rsaPublicKey", rsaKeyPair.getPublicKey());
+                }
+                return this.readAesKey();
+            })
+            .compose(aesKey -> {
+                if (aesKey != null) {
+                    ctx.put("aesKey", aesKey);
+                }
+                return this.readSecureConfig();
+            })
+            .compose(secureConfig -> this.hidePasswordHandler(ctx, secureConfig))
+            .onSuccess(secureConfig -> {
+                ctx.put("common", ConfigProperty.getDefaultProperties())
+                   .put("ipv4", HttpUtil.getNetworkIpv4List())
+                   .put("ipv6", HttpUtil.getNetworkIpv6List());
+                templateHandler.handle(ctx);
+            })
+            .onFailure(err -> this.routeErrorHandler(ctx, err));
     }
 
     protected Future<Void> hidePasswordHandler(RoutingContext ctx, SecureConfig secureConfig) {
@@ -192,7 +192,7 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
     }
 
     protected Future<Void> initDnsServiceConfig(FileSystem fileSystem) {
-        return this.readDnsConfig(fileSystem)
+        return this.readDnsConfig()
                    .compose(this::newDnsRecordService);
     }
 
@@ -244,6 +244,10 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                     .writeFile(absolutePath, Buffer.buffer(json));
     }
 
+    protected Future<Void> writeWebhookConfig(WebhookConfig webhookConfig) {
+        final var absolutePath = this.toAbsolutePath(workDir, WEBHOOK_CONFIG_FILENAME);
+        return this.writeJsonToFile(absolutePath, Json.encodePrettily(webhookConfig));
+    }
 
     /**
      * store DDNS config to file
@@ -252,9 +256,8 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
      * @return {@link Future<Void>}
      */
     protected Future<Void> writeDnsConfig(DnsConfig dnsConfig) {
-        final var fileSystem = vertx.fileSystem();
         final String absolutePath = this.toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
-        return this.readDnsConfig(fileSystem)
+        return this.readDnsConfig()
                    .compose(dnsConfigList -> {
                        // 读取配置为空
                        if (CollectionUtil.isEmpty(dnsConfigList)) {
@@ -364,42 +367,45 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                 });
     }
 
-    protected Future<WebhookConfig> readWebhookConfig(FileSystem fileSystem) {
+    protected Future<WebhookConfig> readWebhookConfig() {
         String absolutePath = toAbsolutePath(workDir, WEBHOOK_CONFIG_FILENAME);
-        return fileSystem.readFile(absolutePath)
-                         .compose(buffer -> {
-                             if (StringUtil.isEmpty(buffer.toString())) {
-                                 return Future.succeededFuture(new WebhookConfig());
-                             } else {
-                                 final var webhookConfig = Json.decodeValue(buffer, WebhookConfig.class);
-                                 return Future.succeededFuture(webhookConfig);
-                             }
-                         });
+        return vertx.fileSystem()
+                    .readFile(absolutePath)
+                    .compose(buffer -> {
+                        if (StringUtil.isEmpty(buffer.toString())) {
+                            return Future.succeededFuture(new WebhookConfig());
+                        } else {
+                            final var webhookConfig = Json.decodeValue(buffer, WebhookConfig.class);
+                            return Future.succeededFuture(webhookConfig);
+                        }
+                    });
     }
 
-    protected Future<List<DnsConfig>> readDnsConfig(FileSystem fileSystem) {
+    protected Future<List<DnsConfig>> readDnsConfig() {
         String absolutePath = toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
-        return fileSystem.readFile(absolutePath)
-                         .compose(buffer -> {
-                             try {
-                                 List<DnsConfig> dnsConfigList = new ArrayList<>();
-                                 // config is empty
-                                 if (StringUtil.isEmpty(buffer.toString())) {
-                                     return Future.succeededFuture(dnsConfigList);
-                                 }
-                                 var list = Json.decodeValue(buffer, List.class);
-                                 if (CollectionUtil.isEmpty(list)) {
-                                     return Future.succeededFuture(dnsConfigList);
-                                 }
-                                 for (Object o : list) {
-                                     dnsConfigList.add(JsonObject.mapFrom(o).mapTo(DnsConfig.class));
-                                 }
-                                 return Future.succeededFuture(dnsConfigList);
-                             } catch (Exception e) {
-                                 log.error(e.getMessage(), e.getCause());
-                                 return Future.failedFuture(e);
-                             }
-                         });
+        return vertx.fileSystem()
+                    .readFile(absolutePath)
+                    .compose(buffer -> {
+                        try {
+                            List<DnsConfig> dnsConfigList = new ArrayList<>();
+                            // config is empty
+                            if (StringUtil.isEmpty(buffer.toString())) {
+                                return Future.succeededFuture(dnsConfigList);
+                            }
+                            var list = Json.decodeValue(buffer, List.class);
+                            if (CollectionUtil.isEmpty(list)) {
+                                return Future.succeededFuture(dnsConfigList);
+                            }
+                            for (Object o : list) {
+                                dnsConfigList.add(JsonObject.mapFrom(o)
+                                                            .mapTo(DnsConfig.class));
+                            }
+                            return Future.succeededFuture(dnsConfigList);
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e.getCause());
+                            return Future.failedFuture(e);
+                        }
+                    });
     }
 
     protected String toAbsolutePath(String first, String ...more) {
@@ -408,12 +414,12 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                     .getAbsolutePath();
     }
 
-    protected Future<DnsConfig> dnsConfigDecryptHandler(DnsConfig dnsConfig) {
+    protected Future<DnsConfig> dnsConfigDecrypt(DnsConfig dnsConfig) {
         return this.readRsaKeyPair()
                    .compose(keyPair -> this.dnsConfigDecrypt(keyPair, dnsConfig));
     }
 
-    protected Future<SecureConfig> secureConfigDecryptHandler(SecureConfig secureConfig) {
+    protected Future<SecureConfig> secureConfigDecrypt(SecureConfig secureConfig) {
         return this.readRsaKeyPair()
                 .compose(rsaKeyPair -> {
                     if (rsaKeyPair == null) {
@@ -451,7 +457,7 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
             dnsConfig.setSecret(secret);
             return Future.succeededFuture(dnsConfig);
         } catch (Exception e) {
-            return readDnsConfig(vertx.fileSystem())
+            return readDnsConfig()
                     .compose(ddnsConfigList -> {
                         for (DnsConfig rawConfig : ddnsConfigList) {
                             if (dnsConfig.getDnsProviderType().equals(rawConfig.getDnsProviderType())) {
