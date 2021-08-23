@@ -4,20 +4,18 @@ import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
-import com.zf1976.ddns.config.ServerJMessage;
+import com.zf1976.ddns.config.webhook.BaseMessage;
+import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
 import com.zf1976.ddns.enums.WebhookProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.handler.WebhookHandler;
 import com.zf1976.ddns.verticle.provider.RedirectAuthenticationProvider;
-import com.zf1976.ddns.verticle.provider.SecureProvider;
 import com.zf1976.ddns.verticle.provider.UsernamePasswordAuthenticationProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.CookieSameSite;
 import io.vertx.core.http.HttpServerRequest;
@@ -32,15 +30,13 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author mac
  * 2021/7/6
  */
-public class ApiVerticle extends TemplateVerticle implements SecureProvider, WebhookHandler {
+public class ApiVerticle extends AbstractApiVerticle  {
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
     private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
@@ -113,7 +109,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         router.post("/api/webhook/config")
               .consumes("application/json")
               .handler(BodyHandler.create())
-              .handler(this::storeWebhookConfig);
+              .handler(this::storeWebhookConfigHandler);
         // send test webhook
         router.post("/api/webhook/test")
               .handler(this::sendWebhookTest);
@@ -171,7 +167,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         });
     }
 
-    protected void storeWebhookConfig(RoutingContext ctx) {
+    protected void storeWebhookConfigHandler(RoutingContext ctx) {
         final var request = ctx.request();
         try {
             final var providerType = WebhookProviderType.checkType(request.getParam("type"));
@@ -179,8 +175,10 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                 case SERVER_J -> {
                     final var serverJMessage = ctx.getBodyAsJson()
                                                   .mapTo(ServerJMessage.class);
+                    final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), serverJMessage.getUrl());
+                    serverJMessage.setUrl(decodeUrl);
                     Validator.of(serverJMessage)
-                             .withValidated(v -> !HttpUtil.isURL(v.getUrl()), "this is not url")
+                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
                              .withValidated(v -> !StringUtil.isEmpty(v.getTitle()), "title cannot been empty")
                              .withValidated(v -> !StringUtil.isEmpty(v.getContent()), "content cannot been empty");
                     this.routeSuccessHandler(ctx);
@@ -192,6 +190,11 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());
         }
+    }
+
+    private Future<BaseMessage> webhookMessageHandler(BaseMessage abstractMessage) {
+
+        return null;
     }
 
     /**
@@ -338,7 +341,11 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         }
     }
 
-
+    /**
+     * clear log
+     *
+     * @param ctx routing context
+     */
     protected void clearDnsRecordLogHandler(RoutingContext ctx) {
         final var type = ctx.request()
                             .getParam("type");
@@ -357,6 +364,11 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
 
     }
 
+    /**
+     * resolve dns record
+     *
+     * @param ctx routing context
+     */
     protected void resolveDnsRecordHandler(RoutingContext ctx) {
         this.dnsRecordService.update();
         this.routeSuccessHandler(ctx);
@@ -376,7 +388,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                      .withValidated(v -> !StringUtil.hasLength(v.getUsername()), "username cannot been empty!")
                      .withValidated(v -> StringUtil.hasLength(v.getPassword()), "username cannot been empty!");
             this.secureConfigDecryptHandler(secureConfig)
-                .compose(this::storeSecureConfig)
+                .compose(this::writeSecureConfig)
                 .onSuccess(success -> {
                     ctx.clearUser();
                     // return login url
@@ -410,7 +422,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
                 default:
             }
             this.dnsConfigDecryptHandler(dnsConfig)
-                .compose(this::storeDnsConfig)
+                .compose(this::writeDnsConfig)
                 .onSuccess(success -> this.routeSuccessHandler(ctx))
                 .onFailure(err -> this.routeErrorHandler(ctx, err));
         } catch (Exception exception) {
@@ -418,70 +430,7 @@ public class ApiVerticle extends TemplateVerticle implements SecureProvider, Web
         }
     }
 
-    /**
-     * store DDNS config to file
-     *
-     * @param dnsConfig DDNS config
-     * @return {@link Future<Void>}
-     */
-    private Future<Void> storeDnsConfig(DnsConfig dnsConfig) {
-        final var fileSystem = vertx.fileSystem();
-        final String absolutePath = this.toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
-        return this.readDnsConfig(fileSystem)
-                   .compose(configList -> this.writeDnsConfig(configList, dnsConfig, absolutePath)
-                                              .compose(v -> newDnsRecordService(configList)));
-    }
 
-    /**
-     * store secure config to file
-     *
-     * @param secureConfig secure config
-     * @return {@link Future<Void>}
-     */
-    private Future<Void> storeSecureConfig(SecureConfig secureConfig) {
-        String absolutePath = this.toAbsolutePath(workDir, SECURE_CONFIG_FILENAME);
-        return this.writeJsonToFile(absolutePath, Json.encodePrettily(secureConfig))
-                .compose(v -> {
-                    this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
-                    return Future.succeededFuture();
-                });
-    }
 
-    /**
-     * write DDNS config
-     *
-     * @param dnsConfigList DDNS config list
-     * @param dnsConfig new DDNS config
-     * @param absolutePath file absolute path
-     * @return {@link Future<Void>}
-     */
-    private Future<Void> writeDnsConfig(List<DnsConfig> dnsConfigList, DnsConfig dnsConfig, String absolutePath) {
-        // 读取配置为空
-        if (CollectionUtil.isEmpty(dnsConfigList)) {
-            List<DnsConfig> newDnsConfigList = new ArrayList<>();
-            newDnsConfigList.add(dnsConfig);
-            return this.writeJsonToFile(absolutePath, Json.encodePrettily(newDnsConfigList));
-        } else {
-            try {
-                dnsConfigList.removeIf(config -> dnsConfig.getDnsProviderType().equals(config.getDnsProviderType()));
-                dnsConfigList.add(dnsConfig);
-                return this.writeJsonToFile(absolutePath, Json.encodePrettily(dnsConfigList));
-            } catch (Exception e) {
-                return Future.failedFuture(new RuntimeException("Server Error"));
-            }
-        }
-    }
-
-    /**
-     * write config to file
-     *
-     * @param absolutePath path
-     * @param json         JSON
-     * @return {@link Future<Void>
-     */
-    private Future<Void> writeJsonToFile(String absolutePath, String json) {
-        return vertx.fileSystem()
-                    .writeFile(absolutePath, Buffer.buffer(json));
-    }
 
 }

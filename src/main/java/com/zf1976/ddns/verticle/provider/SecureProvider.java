@@ -1,9 +1,11 @@
 package com.zf1976.ddns.verticle.provider;
 
 import com.zf1976.ddns.config.SecureConfig;
-import com.zf1976.ddns.util.AesUtil;
+import com.zf1976.ddns.util.AesUtil.AesKey;
 import com.zf1976.ddns.util.RsaUtil;
 import io.vertx.core.Future;
+
+import java.util.Map;
 
 /**
  * @author ant
@@ -16,7 +18,7 @@ public interface SecureProvider {
      *
      * @return {@link Future<SecureConfig>}
      */
-    Future<SecureConfig> readSecureConfig();
+    Future<Map<String, String>> readLoginConfig();
 
     /**
      * Read RSA key
@@ -25,5 +27,11 @@ public interface SecureProvider {
      */
     Future<RsaUtil.RsaKeyPair> readRsaKeyPair();
 
-    Future<AesUtil.AesKey> readAesKey();
+    /**
+     * read aes key
+     *
+     * @return {@link Future<AesKey>}
+     */
+    Future<AesKey> readAesKey();
+
 }

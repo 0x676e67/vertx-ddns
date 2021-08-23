@@ -1,6 +1,5 @@
 package com.zf1976.ddns.verticle.provider;
 
-import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.util.ObjectUtil;
 import com.zf1976.ddns.util.RsaUtil;
 import io.vertx.core.AsyncResult;
@@ -10,6 +9,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.impl.UserImpl;
+
+import java.util.Map;
 
 /**
  * @author ant
@@ -45,8 +46,8 @@ public record UsernamePasswordAuthenticationProvider(
     public void authenticate(JsonObject credentials, Handler<AsyncResult<User>> resultHandler) {
         final var user = new UserImpl(credentials);
         this.secureProvider.readRsaKeyPair()
-                           .compose(rsaKeyPair -> this.secureProvider.readSecureConfig()
-                                                                     .compose(secureConfig -> this.checkAuthentication(secureConfig, user, rsaKeyPair)))
+                           .compose(rsaKeyPair -> this.secureProvider.readLoginConfig()
+                                                                     .compose(loginConfig -> this.checkAuthentication(loginConfig, user, rsaKeyPair)))
                            .onComplete(event -> {
                                if (event.succeeded()) {
                                    resultHandler.handle(Future.succeededFuture(user));
@@ -56,7 +57,7 @@ public record UsernamePasswordAuthenticationProvider(
                            });
     }
 
-    private Future<User> checkAuthentication(SecureConfig secureConfig, User user, RsaUtil.RsaKeyPair rsaKeyPair) {
+    private Future<User> checkAuthentication(Map<String, String> usernamePassword, User user, RsaUtil.RsaKeyPair rsaKeyPair) {
 
         try {
             final var decodeUsername = RsaUtil.decryptByPrivateKey(rsaKeyPair.getPrivateKey(), user.get(usernameKey));
@@ -64,16 +65,17 @@ public record UsernamePasswordAuthenticationProvider(
             final var jsonObject = new JsonObject()
                     .put(usernameKey, decodeUsername.trim())
                     .put(passwordKey, decodePassword.trim());
-            return this.checkUser(secureConfig, new UserImpl(jsonObject));
+            return this.checkUser(usernamePassword, new UserImpl(jsonObject));
         } catch (Exception e) {
             return Future.failedFuture("server decryption verification error!");
         }
     }
 
-    private Future<User> checkUser(SecureConfig secureConfig, User user) {
+    private Future<User> checkUser(Map<String, String> usernamePassword, User user) {
         final var username = (String) user.get(usernameKey);
         final var password = (String) user.get(passwordKey);
-        if (ObjectUtil.nullSafeEquals(secureConfig.getUsername(), username) && ObjectUtil.nullSafeEquals(secureConfig.getPassword(), password)) {
+        if (ObjectUtil.nullSafeEquals(usernamePassword.get(usernameKey), username)
+                && ObjectUtil.nullSafeEquals(usernamePassword.get(passwordKey), password)) {
             return Future.succeededFuture(user);
         }
         return Future.failedFuture("wrong user name or password!");

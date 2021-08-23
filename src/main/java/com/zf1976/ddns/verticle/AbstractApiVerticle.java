@@ -3,9 +3,12 @@ package com.zf1976.ddns.verticle;
 import com.zf1976.ddns.config.ConfigProperty;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
+import com.zf1976.ddns.config.WebhookConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.handler.WebhookHandler;
+import com.zf1976.ddns.verticle.provider.SecureProvider;
 import com.zf1976.ddns.verticle.timer.service.DnsRecordService;
 import com.zf1976.ddns.verticle.timer.service.impl.DnsRecordServiceImpl;
 import io.vertx.core.*;
@@ -27,15 +30,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author mac
  * 2021/7/7
  */
-public abstract class TemplateVerticle extends AbstractVerticle {
+public abstract class AbstractApiVerticle extends AbstractVerticle implements SecureProvider, WebhookHandler {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
@@ -52,7 +53,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     protected Boolean notAllowWanAccess = Boolean.TRUE;
     protected SecureConfig defaultSecureConfig;
 
-    public TemplateVerticle() {
+    public AbstractApiVerticle() {
         this.defaultSecureConfig = ConfigProperty.getDefaultSecureConfig();
     }
 
@@ -67,7 +68,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
     @Override
     public void init(Vertx vertx, Context context) {
         if (router == null) {
-            synchronized (TemplateVerticle.class) {
+            synchronized (AbstractApiVerticle.class) {
                 if (router == null) {
                     router = Router.router(vertx);
                 }
@@ -81,7 +82,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
      *
      * @param vertx vertx
      */
-     protected Future<Void> initConfig(Vertx vertx) {
+    protected Future<Void> initConfig(Vertx vertx) {
          final var fileSystem = vertx.fileSystem();
          final var projectWorkPath = this.toAbsolutePath(System.getProperty("user.home"), WORK_DIR_NAME);
          final var dnsConfigFilePath = this.toAbsolutePath(projectWorkPath, DNS_CONFIG_FILENAME);
@@ -209,7 +210,6 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         }
     }
 
-
     private Future<Void> writeRsaKeyFile(FileSystem fileSystem, String rsaKeyPath) {
         try {
             final var rsaKeyPair = RsaUtil.generateKeyPair();
@@ -230,6 +230,64 @@ public abstract class TemplateVerticle extends AbstractVerticle {
             log.error(e.getMessage(), e.getCause());
             return Future.failedFuture(e);
         }
+    }
+
+    /**
+     * write config to file
+     *
+     * @param absolutePath path
+     * @param json         JSON
+     * @return {@link Future<Void>
+     */
+    protected Future<Void> writeJsonToFile(String absolutePath, String json) {
+        return vertx.fileSystem()
+                    .writeFile(absolutePath, Buffer.buffer(json));
+    }
+
+
+    /**
+     * store DDNS config to file
+     *
+     * @param dnsConfig DDNS config
+     * @return {@link Future<Void>}
+     */
+    protected Future<Void> writeDnsConfig(DnsConfig dnsConfig) {
+        final var fileSystem = vertx.fileSystem();
+        final String absolutePath = this.toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
+        return this.readDnsConfig(fileSystem)
+                   .compose(dnsConfigList -> {
+                       // 读取配置为空
+                       if (CollectionUtil.isEmpty(dnsConfigList)) {
+                           List<DnsConfig> newDnsConfigList = new ArrayList<>();
+                           newDnsConfigList.add(dnsConfig);
+                           return this.writeJsonToFile(absolutePath, Json.encodePrettily(newDnsConfigList));
+                       } else {
+                           try {
+                               dnsConfigList.removeIf(config -> dnsConfig.getDnsProviderType()
+                                                                         .equals(config.getDnsProviderType()));
+                               dnsConfigList.add(dnsConfig);
+                               return this.writeJsonToFile(absolutePath, Json.encodePrettily(dnsConfigList))
+                                          .compose(v -> newDnsRecordService(dnsConfigList));
+                           } catch (Exception e) {
+                               return Future.failedFuture("Server Error");
+                           }
+                       }
+                   });
+    }
+
+    /**
+     * store secure config to file
+     *
+     * @param secureConfig secure config
+     * @return {@link Future<Void>}
+     */
+    protected Future<Void> writeSecureConfig(SecureConfig secureConfig) {
+        String absolutePath = this.toAbsolutePath(workDir, SECURE_CONFIG_FILENAME);
+        return this.writeJsonToFile(absolutePath, Json.encodePrettily(secureConfig))
+                   .compose(v -> {
+                       this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
+                       return Future.succeededFuture();
+                   });
     }
 
     private Future<Void> createFile(FileSystem fileSystem, boolean bool, String path) {
@@ -255,15 +313,7 @@ public abstract class TemplateVerticle extends AbstractVerticle {
         return Future.succeededFuture();
     }
 
-    public Future<RsaUtil.RsaKeyPair> readRsaKeyPair() {
-        if (Objects.nonNull(this.rsaKeyPair)) {
-            return Future.succeededFuture(this.rsaKeyPair);
-        }
-        return vertx.fileSystem()
-                    .readFile(toAbsolutePath(workDir, RSA_KEY_FILENAME))
-                    .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, RsaUtil.RsaKeyPair.class)));
-    }
-
+    @Override
     public Future<AesUtil.AesKey> readAesKey() {
         if (Objects.nonNull(this.aesKey)) {
             return Future.succeededFuture(this.aesKey);
@@ -273,7 +323,28 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                     .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, AesUtil.AesKey.class)));
     }
 
-    public Future<SecureConfig> readSecureConfig() {
+    @Override
+    public Future<RsaUtil.RsaKeyPair> readRsaKeyPair() {
+        if (Objects.nonNull(this.rsaKeyPair)) {
+            return Future.succeededFuture(this.rsaKeyPair);
+        }
+        return vertx.fileSystem()
+                    .readFile(toAbsolutePath(workDir, RSA_KEY_FILENAME))
+                    .compose(buffer -> Future.succeededFuture(Json.decodeValue(buffer, RsaUtil.RsaKeyPair.class)));
+    }
+
+    @Override
+    public Future<Map<String, String>> readLoginConfig() {
+        return this.readSecureConfig()
+                   .compose(secureConfig -> {
+                       final var usernamePasswordMap = new HashMap<String, String>();
+                       usernamePasswordMap.put("username", secureConfig.getUsername());
+                       usernamePasswordMap.put("password", secureConfig.getPassword());
+                       return Future.succeededFuture(usernamePasswordMap);
+                   });
+    }
+
+    protected Future<SecureConfig> readSecureConfig() {
         String absolutePath = this.toAbsolutePath(workDir, SECURE_CONFIG_FILENAME);
         return vertx.fileSystem()
                     .readFile(absolutePath)
@@ -293,24 +364,37 @@ public abstract class TemplateVerticle extends AbstractVerticle {
                 });
     }
 
+    protected Future<WebhookConfig> readWebhookConfig(FileSystem fileSystem) {
+        String absolutePath = toAbsolutePath(workDir, WEBHOOK_CONFIG_FILENAME);
+        return fileSystem.readFile(absolutePath)
+                         .compose(buffer -> {
+                             if (StringUtil.isEmpty(buffer.toString())) {
+                                 return Future.succeededFuture(new WebhookConfig());
+                             } else {
+                                 final var webhookConfig = Json.decodeValue(buffer, WebhookConfig.class);
+                                 return Future.succeededFuture(webhookConfig);
+                             }
+                         });
+    }
+
     protected Future<List<DnsConfig>> readDnsConfig(FileSystem fileSystem) {
         String absolutePath = toAbsolutePath(workDir, DNS_CONFIG_FILENAME);
         return fileSystem.readFile(absolutePath)
                          .compose(buffer -> {
                              try {
-                                 List<DnsConfig> configArrayList = new ArrayList<>();
+                                 List<DnsConfig> dnsConfigList = new ArrayList<>();
                                  // config is empty
                                  if (StringUtil.isEmpty(buffer.toString())) {
-                                     return Future.succeededFuture(configArrayList);
+                                     return Future.succeededFuture(dnsConfigList);
                                  }
                                  var list = Json.decodeValue(buffer, List.class);
                                  if (CollectionUtil.isEmpty(list)) {
-                                     return Future.succeededFuture(configArrayList);
+                                     return Future.succeededFuture(dnsConfigList);
                                  }
                                  for (Object o : list) {
-                                     configArrayList.add(JsonObject.mapFrom(o).mapTo(DnsConfig.class));
+                                     dnsConfigList.add(JsonObject.mapFrom(o).mapTo(DnsConfig.class));
                                  }
-                                 return Future.succeededFuture(configArrayList);
+                                 return Future.succeededFuture(dnsConfigList);
                              } catch (Exception e) {
                                  log.error(e.getMessage(), e.getCause());
                                  return Future.failedFuture(e);

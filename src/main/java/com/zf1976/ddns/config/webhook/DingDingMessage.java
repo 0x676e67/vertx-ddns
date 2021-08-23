@@ -1,10 +1,11 @@
-package com.zf1976.ddns.config;
+package com.zf1976.ddns.config.webhook;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zf1976.ddns.enums.DingDingMessageType;
+import com.zf1976.ddns.enums.WebhookProviderType;
 
 import java.io.Serializable;
 
@@ -15,7 +16,7 @@ import java.io.Serializable;
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DingDingMessage implements Serializable {
+public class DingDingMessage extends BaseMessage implements Serializable {
 
     @JsonProperty(value = "msgtype")
     private DingDingMessageType msgType;
@@ -29,21 +30,24 @@ public class DingDingMessage implements Serializable {
     private DingDingMessage.Data text;
 
     public DingDingMessage() {
-
+        super(WebhookProviderType.DING_DING);
     }
 
     private DingDingMessage(LinkMessageBuilder linkMessage) {
+        this();
         this.msgType = DingDingMessageType.LINK;
         this.link = linkMessage;
     }
 
     private DingDingMessage(TextMessageBuildr textMessage) {
+        this();
         this.msgType = DingDingMessageType.TEXT;
         this.at = textMessage.at;
         this.text = textMessage.text;
     }
 
     private DingDingMessage(MarkdownMessageBuilder markdownMessage) {
+        this();
         this.msgType = DingDingMessageType.MARKDOWN;
         this.at = markdownMessage.at;
         this.markdown = markdownMessage;

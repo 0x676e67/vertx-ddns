@@ -1,7 +1,10 @@
-package com.zf1976.ddns.config;
+package com.zf1976.ddns.config.webhook;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.zf1976.ddns.enums.WebhookProviderType;
+
+import java.io.Serializable;
 
 /**
  * @author mac
@@ -9,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ServerJMessage {
+public class ServerJMessage extends BaseMessage implements Serializable {
 
     private String title;
 
@@ -18,7 +21,7 @@ public class ServerJMessage {
     private String url;
 
     public ServerJMessage() {
-
+        super(WebhookProviderType.SERVER_J);
     }
 
     public String getTitle() {
@@ -46,5 +49,14 @@ public class ServerJMessage {
     public ServerJMessage setUrl(String url) {
         this.url = url;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "ServerJMessage{" +
+                "title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", url='" + url + '\'' +
+                '}';
     }
 }
