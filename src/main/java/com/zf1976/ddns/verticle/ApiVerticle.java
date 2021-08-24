@@ -177,9 +177,7 @@ public class ApiVerticle extends AbstractApiVerticle  {
                     final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), serverJMessage.getUrl());
                     serverJMessage.setUrl(decodeUrl);
                     Validator.of(serverJMessage)
-                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
-                             .withValidated(v -> !StringUtil.isEmpty(v.getTitle()), "title cannot been empty")
-                             .withValidated(v -> !StringUtil.isEmpty(v.getContent()), "content cannot been empty");
+                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url");
                     this.readWebhookConfig()
                         .compose(webhookConfig -> {
                             webhookConfig.setServerJMessage(serverJMessage);
@@ -190,9 +188,14 @@ public class ApiVerticle extends AbstractApiVerticle  {
                 }
                 case DING_DING -> {
                     final var dingDingMessage = ctx.getBodyAsJson().mapTo(DingDingMessage.class);
+                    Validator.of(dingDingMessage)
+                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
+                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()), "title webhook url secret cannot been empty");
                     this.readWebhookConfig()
                         .compose(webhookConfig -> {
-                            webhookConfig.getDingDingMessageList().add(dingDingMessage);
+                            final var dingDingMessageList = webhookConfig.getDingDingMessageList();
+                            dingDingMessageList.removeIf(v -> v.getMsgType().equals(dingDingMessage.getMsgType()));
+                            dingDingMessageList.add(dingDingMessage);
                             return this.writeWebhookConfig(webhookConfig);
                         })
                         .onSuccess(v -> this.routeSuccessHandler(ctx))

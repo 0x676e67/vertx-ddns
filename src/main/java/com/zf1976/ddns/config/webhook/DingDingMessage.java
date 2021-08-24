@@ -8,6 +8,7 @@ import com.zf1976.ddns.enums.DingDingMessageType;
 import com.zf1976.ddns.enums.WebhookProviderType;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author mac
@@ -18,7 +19,9 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DingDingMessage extends BaseMessage implements Serializable {
 
-    protected String url;
+    private String url;
+
+    private String secret;
 
     @JsonProperty(value = "msgtype")
     private DingDingMessageType msgType;
@@ -78,6 +81,24 @@ public class DingDingMessage extends BaseMessage implements Serializable {
 
     public DingDingMessageType getMsgType() {
         return msgType;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public DingDingMessage setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public DingDingMessage setSecret(String secret) {
+        this.secret = secret;
+        return this;
     }
 
     public DingDingMessage setMsgType(DingDingMessageType msgType) {
@@ -212,12 +233,12 @@ public class DingDingMessage extends BaseMessage implements Serializable {
             return this;
         }
 
-        public TextMessageBuildr setAtMobiles(String atMobiles) {
+        public TextMessageBuildr setAtMobiles(List<String> atMobiles) {
             this.at.atMobiles = atMobiles;
             return this;
         }
 
-        public TextMessageBuildr setAtUserIds(String atUserIds) {
+        public TextMessageBuildr setAtUserIds(List<String> atUserIds) {
             this.at.atUserIds = atUserIds;
             return this;
         }
@@ -271,24 +292,24 @@ public class DingDingMessage extends BaseMessage implements Serializable {
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class At {
-        private String atMobiles;
-        private String atUserIds;
+        private List<String> atMobiles;
+        private List<String> atUserIds;
         private Boolean isAtAll;
 
-        public String getAtMobiles() {
+        public List<String> getAtMobiles() {
             return atMobiles;
         }
 
-        public At setAtMobiles(String atMobiles) {
+        public At setAtMobiles(List<String> atMobiles) {
             this.atMobiles = atMobiles;
             return this;
         }
 
-        public String getAtUserIds() {
+        public List<String> getAtUserIds() {
             return atUserIds;
         }
 
-        public At setAtUserIds(String atUserIds) {
+        public At setAtUserIds(List<String> atUserIds) {
             this.atUserIds = atUserIds;
             return this;
         }
@@ -348,12 +369,12 @@ public class DingDingMessage extends BaseMessage implements Serializable {
             return this;
         }
 
-        public MarkdownMessageBuilder setAtMobiles(String atMobiles) {
+        public MarkdownMessageBuilder setAtMobiles(List<String> atMobiles) {
             this.at.atMobiles = atMobiles;
             return this;
         }
 
-        public MarkdownMessageBuilder setAtUserIds(String atUserIds) {
+        public MarkdownMessageBuilder setAtUserIds(List<String> atUserIds) {
             this.at.atUserIds = atUserIds;
             return this;
         }

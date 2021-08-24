@@ -27,10 +27,10 @@ public enum DingDingMessageType {
         this.value = value;
     }
 
-
     @Override
     @JsonValue
     public String toString() {
         return this.value;
     }
+
 }

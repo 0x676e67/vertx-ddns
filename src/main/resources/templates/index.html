@@ -938,6 +938,21 @@
 
 
     function selectDingDingMessageType(type) {
+        document.getElementById('dingding_enabled').checked =  false
+        document.getElementById('dingding_url_secret').value = ""
+        document.getElementById('dingding_url').value = ""
+        let webhookConfig = [[${webhookConfig}]]
+        let dingdingMessageList = webhookConfig.dingDingMessageList
+        if (dingdingMessageList) {
+            for (let i = 0; i < dingdingMessageList.length; i++) {
+                let dingdingMessage = dingdingMessageList[i]
+                if (dingdingMessage.msgtype == type) {
+                    document.getElementById('dingding_enabled').checked = dingdingMessage.enabled? dingdingMessage.enabled : false
+                    document.getElementById('dingding_url_secret').value = dingdingMessage.secret? dingdingMessage.secret : ""
+                    document.getElementById('dingding_url').value = dingdingMessage.url? dingdingMessage.url : ""
+                }
+            }
+        }
         if (type == 'text') {
             document.getElementById('dingding_text').hidden = false
             document.getElementById('dingding_link').hidden = true
@@ -960,10 +975,37 @@
     function setWebhookConfig() {
         let webhookConfig = [[${webhookConfig}]]
         let serverJMessage = webhookConfig.serverJMessage
+        let dingdingMessageList = webhookConfig.dingDingMessageList
         document.getElementById('server_j_enabled').checked = serverJMessage.enabled
         document.getElementById('server_j_url').value = serverJMessage.url
         document.getElementById('server_j_title').value = serverJMessage.title
         document.getElementById('server_j_content').value = serverJMessage.content
+        console.log(dingdingMessageList)
+        if (dingdingMessageList) {
+            for (let i = 0; i < dingdingMessageList.length; i++) {
+                let dingdingMessage = dingdingMessageList[i]
+                if (dingdingMessage.msgtype == 'text') {
+                    document.getElementById('dingding_text_isAtAll').checked = dingdingMessage.at.isAtAll? dingdingMessage.at.isAtAll.toString() : ""
+                    document.getElementById('dingding_text_content').value = dingdingMessage.at.content? dingdingMessage.at.content : ""
+                    document.getElementById('dingding_text_atMobiles').value = dingdingMessage.at.atMobiles? dingdingMessage.at.atMobiles.toString() : ""
+                    document.getElementById('dingding_text_atUserIds').value = dingdingMessage.at.atUserIds? dingdingMessage.at.atUserIds.toString() : ""
+                }
+                if (dingdingMessage.msgtype == 'link') {
+                    document.getElementById('dingding_link_title').value = dingdingMessage.link.title? dingdingMessage.link.title : ""
+                    document.getElementById('dingding_link_picUrl').value = dingdingMessage.link.picUrl? dingdingMessage.link.picUrl : ""
+                    document.getElementById('dingding_link_messageUrl').value = dingdingMessage.link.messageUrl? dingdingMessage.link.messageUrl : ""
+                    document.getElementById('dingding_link_text').value = dingdingMessage.link.text? dingdingMessage.link.text : ""
+                }
+                if (dingdingMessage.msgtype == 'markdown') {
+                    document.getElementById('dingding_markdown_isAtAll').checked = dingdingMessage.at.isAtAll? dingdingMessage.at.isAtAll.toString() : ""
+                    document.getElementById('dingding_markdown_atMobiles').value = dingdingMessage.at.atMobiles? dingdingMessage.at.atMobiles.toString() : ""
+                    document.getElementById('dingding_markdown_atUserIds').value = dingdingMessage.at.atUserIds? dingdingMessage.at.atUserIds.toString() : ""
+                    document.getElementById('dingding_markdown_text').value = dingdingMessage.markdown.text? dingdingMessage.markdown.text : ""
+                    document.getElementById('dingding_markdown_title').value = dingdingMessage.markdown.title? dingdingMessage.markdown.title : ""
+                }
+            }
+        }
+
     }
 
     function storeWebhookConfig() {
@@ -984,6 +1026,82 @@
                         window.location.reload()
                     })
                 })
+        }
+
+        if (selectWebhookProviderType = dingdingProviderType) {
+            var linkChecked = document.getElementById('dingding_link_type').checked;
+            var textChecked = document.getElementById('dingding_text_type').checked;
+            var markdownChecked = document.getElementById('dingding_markdown_type').checked;
+            var enabled = document.getElementById('dingding_enabled').checked
+            var url = document.getElementById('dingding_url').value
+            var secret = document.getElementById('dingding_url_secret').value
+            if (linkChecked) {
+                let data = {
+                    "url": url,
+                    'secret': secret,
+                    "enabled" : enabled,
+                    "link" : {
+                        "text" : document.getElementById('dingding_link_text').value,
+                        "title" : document.getElementById('dingding_link_title').value,
+                        "picUrl" : document.getElementById('dingding_link_picUrl').value,
+                        "messageUrl" : document.getElementById('dingding_link_messageUrl').value
+                    },
+                    "msgtype" : "link"
+                }
+                axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
+                    .then(res => {
+                        confirm.show('Webhook配置保存成功', function () {
+                            window.location.reload()
+                        })
+                    })
+            }
+
+            if (textChecked) {
+                let data = {
+                    "url": url,
+                    'secret': secret,
+                    "enabled" : enabled,
+                    "at" : {
+                        "atMobiles" : document.getElementById('dingding_text_atMobiles').value.split(','),
+                        "atUserIds" : document.getElementById('dingding_text_atUserIds').value.split(','),
+                        "isAtAll" : document.getElementById('dingding_text_isAtAll').checked
+                    },
+                    "text" : {
+                        "content" : document.getElementById('dingding_text_content').value
+                    },
+                    "msgtype" : "text"
+                }
+                axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
+                    .then(res => {
+                        confirm.show('Webhook配置保存成功', function () {
+                            window.location.reload()
+                        })
+                    })
+            }
+
+            if (markdownChecked) {
+                let data = {
+                    "url": url,
+                    'secret': secret,
+                    "enabled" : enabled,
+                    "markdown" : {
+                        "title" : document.getElementById('dingding_markdown_title').value,
+                        "text" : document.getElementById('dingding_markdown_text').value
+                    },
+                    "at" : {
+                        "atMobiles" : document.getElementById('dingding_markdown_atMobiles').value.split(','),
+                        "atUserIds" : document.getElementById('dingding_markdown_atUserIds').value.split(','),
+                        "isAtAll" : document.getElementById('dingding_markdown_isAtAll').checked
+                    },
+                    "msgtype" : "markdown"
+                }
+                axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
+                    .then(res => {
+                        confirm.show('Webhook配置保存成功', function () {
+                            window.location.reload()
+                        })
+                    })
+            }
         }
     }
 
