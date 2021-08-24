@@ -56,3 +56,7 @@
 ## 注
 - 默认登录的用户名密码：**vertx**
 <img src="./img/img.png"/>
+
+## License
+
+[MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
