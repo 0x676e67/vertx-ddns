@@ -14,11 +14,11 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServerJMessage extends BaseMessage implements Serializable {
 
+    private String url;
+
     private String title;
 
     private String content;
-
-    private String url;
 
     public ServerJMessage() {
         super(WebhookProviderType.SERVER_J);
@@ -54,9 +54,12 @@ public class ServerJMessage extends BaseMessage implements Serializable {
     @Override
     public String toString() {
         return "ServerJMessage{" +
-                "title='" + title + '\'' +
+                "url='" + url + '\'' +
+                ", webhookProviderType=" + webhookProviderType +
+                ", enabled=" + enabled +
+                ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
-                ", url='" + url + '\'' +
                 '}';
     }
+
 }

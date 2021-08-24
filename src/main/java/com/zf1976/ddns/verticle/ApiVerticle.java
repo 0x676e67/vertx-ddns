@@ -4,6 +4,7 @@ import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
+import com.zf1976.ddns.config.webhook.DingDingMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
@@ -188,7 +189,14 @@ public class ApiVerticle extends AbstractApiVerticle  {
                         .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
                 }
                 case DING_DING -> {
-
+                    final var dingDingMessage = ctx.getBodyAsJson().mapTo(DingDingMessage.class);
+                    this.readWebhookConfig()
+                        .compose(webhookConfig -> {
+                            webhookConfig.getDingDingMessageList().add(dingDingMessage);
+                            return this.writeWebhookConfig(webhookConfig);
+                        })
+                        .onSuccess(v -> this.routeSuccessHandler(ctx))
+                        .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
                 }
             }
         } catch (Exception e) {
@@ -207,12 +215,8 @@ public class ApiVerticle extends AbstractApiVerticle  {
             final var url = AesUtil.decodeByCBC(request.getParam("url"), aesKey.getKey(), aesKey.getIv());
             this.webClient.postAbs(url)
                           .send()
-                          .onSuccess(event -> {
-                              this.routeSuccessHandler(ctx, "消息已发送成功，请注意查收");
-                          })
-                          .onFailure(err -> {
-                              this.routeErrorHandler(ctx, err.getMessage());
-                          });
+                          .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送成功，请注意查收"))
+                          .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());
         }
@@ -225,32 +229,30 @@ public class ApiVerticle extends AbstractApiVerticle  {
      * @return {@link Router}
      */
     private Router dnsRecordLogHandler(SockJSHandler sockJSHandler) {
-        return sockJSHandler.socketHandler(socket -> {
-            vertx.sharedData()
-                 .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
-                 .compose(shareMap -> {
-                     socket.handler(providerType -> {
-                               final DnsProviderType dnsProviderType;
-                               try {
-                                   dnsProviderType = DnsProviderType.checkType(providerType.toString());
-                               } catch (Exception e) {
-                                   socket.write(e.getMessage());
-                                   return;
-                               }
-                               final var completableFuture = this.cache.get(dnsProviderType);
-                               Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
-                                     .compose(collection -> shareMap.put(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE, dnsProviderType)
-                                                                    .compose(v -> socket.write(Json.encodePrettily(collection))))
-                                     .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-                           })
-                           .exceptionHandler(log::error);
-                     if (socket.writeHandlerID() != null) {
-                         return shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, socket.writeHandlerID());
-                     }
-                     return Future.failedFuture("No authentication, please log in for authentication");
-                 })
-                 .onFailure(err -> log.error(err.getMessage(), err.getCause()));
-        });
+        return sockJSHandler.socketHandler(socket -> vertx.sharedData()
+                                                      .getLocalAsyncMap(ApiConstants.SHARE_MAP_ID)
+                                                      .compose(shareMap -> {
+                                                          socket.handler(providerType -> {
+                                                                    final DnsProviderType dnsProviderType;
+                                                                    try {
+                                                                        dnsProviderType = DnsProviderType.checkType(providerType.toString());
+                                                                    } catch (Exception e) {
+                                                                        socket.write(e.getMessage());
+                                                                        return;
+                                                                    }
+                                                                    final var completableFuture = this.cache.get(dnsProviderType);
+                                                                    Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
+                                                                          .compose(collection -> shareMap.put(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE, dnsProviderType)
+                                                                                                         .compose(v -> socket.write(Json.encodePrettily(collection))))
+                                                                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                                                                })
+                                                                .exceptionHandler(log::error);
+                                                          if (socket.writeHandlerID() != null) {
+                                                              return shareMap.put(ApiConstants.SOCKJS_WRITE_HANDLER_ID, socket.writeHandlerID());
+                                                          }
+                                                          return Future.failedFuture("No authentication, please log in for authentication");
+                                                      })
+                                                      .onFailure(err -> log.error(err.getMessage(), err.getCause())));
     }
 
     /**

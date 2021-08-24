@@ -10,7 +10,7 @@ public class BaseMessage {
 
     protected WebhookProviderType webhookProviderType;
 
-    protected Boolean enabled = Boolean.TRUE;
+    protected Boolean enabled = Boolean.FALSE;
 
     protected BaseMessage(WebhookProviderType webhookProviderType) {
         this.webhookProviderType = webhookProviderType;
@@ -33,4 +33,5 @@ public class BaseMessage {
         this.enabled = enabled;
         return this;
     }
+
 }

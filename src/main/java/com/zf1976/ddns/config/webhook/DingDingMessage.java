@@ -18,6 +18,8 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DingDingMessage extends BaseMessage implements Serializable {
 
+    protected String url;
+
     @JsonProperty(value = "msgtype")
     private DingDingMessageType msgType;
 
@@ -113,7 +115,10 @@ public class DingDingMessage extends BaseMessage implements Serializable {
     @Override
     public String toString() {
         return "DingDingMessage{" +
-                "msgType=" + msgType +
+                "url='" + url + '\'' +
+                ", webhookProviderType=" + webhookProviderType +
+                ", enabled=" + enabled +
+                ", msgType=" + msgType +
                 ", link=" + link +
                 ", markdown=" + markdown +
                 ", at=" + at +

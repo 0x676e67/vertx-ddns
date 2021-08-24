@@ -79,11 +79,11 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cursor-fill" viewBox="0 0 16 16">
                       <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z"/>
                   </svg>
-                  DNS服务商配置
+                  DDNS服务配置
               </div>
 <!--            DNS服务商Body-->
           <div class="card-body">
-            <ul class="nav nav-pills" id="DDNSul">
+            <ul class="nav nav-tabs" id="DDNSul">
               <li class="nav-item" onclick="setAliyunType()">
                 <a class="nav-link active" data-toggle="tab" href="#aliyun">Alidns(阿里云)</a>
               </li>
@@ -163,7 +163,7 @@
           </div>
               <!--            IP类型Body-->
               <div class="card-body">
-                  <ul class="nav nav-pills" id="IpType">
+                  <ul class="nav nav-tabs" id="IpType">
                       <li class="nav-item" onclick="setIpv4RecordType()">
                           <a class="nav-link active" data-toggle="tab" href="#ipv4">Ipv4</a>
                       </li>
@@ -280,8 +280,7 @@
                   </div>
               </div>
 <!--            域名查询Body-->
-            <div class="card-body">
-
+            <div class="card-body p-3 rounded">
                 <div class="input-group mb-1" style="margin-top: 5px;width: auto">
 
                     <span class="input-group-text" id="basic-addon8">
@@ -338,33 +337,35 @@
                   安全配置
               </div>
               <div class="card-body">
-                  <form>
-                      <fieldset class="row mb-1">
-                          <legend class="col-form-label col-sm-2 pt-0">禁止公网访问</legend>
-                          <div class="col-sm-10">
-                              <div class="form-check form-check-inline">
-                                  <label for="ipv4Enable"></label>
-                                  <input class="form-check-input" type="checkbox" checked id="notAllowWanAccess" >
-                                  <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可禁止从公网访问本页面</small>
-                              </div>
-                          </div>
-                      </fieldset>
-                      <fieldset class="row mb" style="margin-top: 15px">
-                          <legend class="col-form-label col-sm-2 pt-0">登录用户名</legend>
-                          <div class="col-sm-10">
-                              <input class="form-control" name="username" id="username" style="width: 90%" aria-describedby="Username_help">
-                              <small id="Username_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
-                          </div>
-                      </fieldset>
-                      <fieldset class="row mb">
-                          <legend class="col-form-label col-sm-2 pt-0">登录密码</legend>
-                          <div class="col-sm-10">
-                              <input class="form-control" type="password" style="width: 90%" name="password"
-                                     id="password" aria-describedby="password_help">
-                              <small id="password_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
-                          </div>
-                      </fieldset>
-                  </form>
+                <div class="p-3 rounded">
+                    <form>
+                        <fieldset class="row mb-1">
+                            <legend class="col-form-label col-sm-2 pt-0">禁止公网访问</legend>
+                            <div class="col-sm-10">
+                                <div class="form-check form-check-inline">
+                                    <label for="ipv4Enable"></label>
+                                    <input class="form-check-input" type="checkbox" checked id="notAllowWanAccess" >
+                                    <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可禁止从公网访问本页面</small>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="row mb" style="margin-top: 15px">
+                            <legend class="col-form-label col-sm-2 pt-0">登录用户名</legend>
+                            <div class="col-sm-10">
+                                <input class="form-control" name="username" id="username" style="width: 90%" aria-describedby="Username_help">
+                                <small id="Username_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                            </div>
+                        </fieldset>
+                        <fieldset class="row mb" style="margin-top: 15px">
+                            <legend class="col-form-label col-sm-2 pt-0">登录密码</legend>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="password" style="width: 90%" name="password"
+                                       id="password" aria-describedby="password_help">
+                                <small id="password_help" class="form-text text-muted">为保护你的信息安全, 建议输入</small>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
               </div>
               <div class="card-footer">
                   <button class="btn btn-primary submit_btn" style="display:block;margin:0 auto"
@@ -383,86 +384,247 @@
                   Webhook配置
               </div>
               <div class="card-body">
-
                   <!--                  Webhook导航-->
                   <div>
-                      <ul class="nav nav-pills mb-3" id="webhook-tab" role="tablist">
-                          <li class="nav-item" onclick="selectWebhookProvider('DING_DING')" role="presentation">
-                              <a aria-controls="pills-home" aria-selected="true" class="nav-link active"
-                                 data-toggle="pill" href="#dingding" id="pills-home-tab" role="tab">DingDing</a>
-                          </li>
+                      <ul class="nav nav-tabs mb-3" id="webhook-tab" role="tablist">
                           <li class="nav-item" onclick="selectWebhookProvider('SERVER_J')" role="presentation">
-                              <a aria-controls="pills-profile" aria-selected="false" class="nav-link" data-toggle="pill"
+                              <a aria-controls="pills-profile" aria-selected="false" class="nav-link active" data-toggle="pill"
                                  href="#server_j" id="pills-profile-tab" role="tab">Server酱</a>
+                          </li>
+                          <li class="nav-item" onclick="selectWebhookProvider('DING_DING')" role="presentation">
+                              <a aria-controls="pills-home" aria-selected="true" class="nav-link"
+                                 data-toggle="pill" href="#dingding" id="pills-home-tab" role="tab">DingDing</a>
                           </li>
                       </ul>
                       <div class="tab-content" id="pills-tabContent">
-                          <div aria-labelledby="pills-home-tab" class="tab-pane fade show active" id="dingding"
-                               role="tabpanel">
-                              <div class="form-check form-check-inline">
-                                  <input class="form-check-input" id="dingding-text" name="dingding-model" type="radio"
-                                         value="option1">
-                                  <label class="form-check-label" for="dingding-text">Text消息</label>
-                              </div>
-                              <div class="form-check form-check-inline">
-                                  <input class="form-check-input" id="dingding-link" name="dingding-model" type="radio"
-                                         value="option2">
-                                  <label class="form-check-label" for="dingding-link">Link消息</label>
-                              </div>
-                              <div class="form-check form-check-inline">
-                                  <input class="form-check-input" id="dingding-markdown" name="dingding-model"
-                                         type="radio" value="option3">
-                                  <label class="form-check-label" for="dingding-markdown">Markdown消息</label>
-                              </div>
-                          </div>
                           <!--                          server酱-->
-                          <div aria-labelledby="pills-profile-tab" class="tab-pane fade" id="server_j" role="tabpanel">
-
-                              <div class="shadow-none p-3 bg-light rounded">
-                                  <div>
-                                      <form>
-                                          <fieldset class="row">
-                                              <legend class="col-form-label col-sm-2 pt-0">启用</legend>
-                                              <div class="col-sm-10">
-                                                  <div class="form-check form-check-inline">
-                                                      <label for="ipv4Enable"></label>
-                                                      <input class="form-check-input" type="checkbox" checked id="server_j_enabled" >
-                                                      <small id="ipv4_url_help" class="form-text text-muted">默认启用, 可在更改解析记录发送消息通知 </small>
-                                                  </div>
+                          <div aria-labelledby="pills-profile-tab" class="tab-pane fade show active" id="server_j" role="tabpanel">
+                              <div class="p-3 rounded">
+                                  <form>
+                                      <fieldset class="row mb-3">
+                                          <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                          <div class="col-sm-10">
+                                              <div class="form-check form-check-inline">
+                                                  <label for="server_j_enabled"></label>
+                                                  <input class="form-check-input" type="checkbox"  id="server_j_enabled" >
+                                                  <small id="ipv4_url_help" class="form-text text-muted">默认关闭, 可在更改解析记录发送消息通知 </small>
                                               </div>
-                                          </fieldset>
-                                      </form>
-                                  </div>
-                                  <div style="margin-top: 10px">
-                                      <a href="https://sct.ftqq.com/sendkey" target="_blank">获取Webhook URL</a>
-                                  </div>
-                                  <div class="input-group" style="margin-top: 10px;margin-bottom: 15px">
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3">
+                                          <div>
+                                              <a href="https://sct.ftqq.com/sendkey" target="_blank">获取Webhook URL</a>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb mb-3">
+                                          <div class="input-group">
                                           <span class="input-group-btn">
                                                   <button class="btn btn-secondary" onclick="sendWebhookTest('SERVER_J')"
                                                           type="button">发送测试</button>
                                           </span>
-                                      <input class="form-control" id="server_j_url" placeholder="Webhook URL"
-                                             type="text">
-                                  </div>
-                                  <div class="input-group mb-3">
-                                      <input class="form-control" id="server_j_title" placeholder="输入消息的标题" type="text"
-                                             value="">
-                                  </div>
-                                  <div>
-                                      <textarea class="cur form-control" id="server_j_content"
+                                              <input class="form-control" id="server_j_url" placeholder="Webhook URL"
+                                                     type="text">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">URL</span>
+                                              </div>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb">
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">标题</span>
+                                              </div>
+                                              <input class="form-control" id="server_j_title" placeholder="输入消息的标题" type="text"
+                                                     value="">
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb">
+                                          <div class="input-group">
+                                              <textarea class="cur form-control" id="server_j_content"
                                                 placeholder="输入消息内容，支持 Markdown。注意Markdown语法中两次回车才是换行。"
                                                 style="height: 120px;"></textarea>
-                                  </div>
-                                  <div>
-                                      <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
-                                           width="16" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
-                                      </svg>
-                                      <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
-                                  </div>
+                                          </div>
+                                          <div>
+                                              <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
+                                                   width="16" xmlns="http://www.w3.org/2000/svg">
+                                                  <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                                              </svg>
+                                              <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
+                                          </div>
+                                      </fieldset>
+                                  </form>
                               </div>
                               <div class="markdown-body" id="server_j_show"
                                    style="border-bottom: 1px solid #eee;margin-top: 10px; margin-bottom: 10px"></div>
+                          </div>
+<!--                          webhook tabs-->
+                          <div aria-labelledby="pills-home-tab" class="tab-pane fade" id="dingding"
+                               role="tabpanel">
+                              <div class="p-3 rounded">
+                                  <form>
+                                      <div class="mb-3">
+                                          <div class="form-check form-check-inline">
+                                              <input class="form-check-input" id="dingding_text_type" name="dingding-model"
+                                                     type="radio"
+                                                     checked
+                                                     onclick="selectDingDingMessageType('text')"
+                                                     value="option1">
+                                              <label class="form-check-label" for="dingding_text_type">Text消息</label>
+                                          </div>
+                                          <div class="form-check form-check-inline">
+                                              <input class="form-check-input" id="dingding_link_type" name="dingding-model"
+                                                     type="radio"
+                                                     onclick="selectDingDingMessageType('link')"
+                                                     value="option2">
+                                              <label class="form-check-label" for="dingding_link_type">Link消息</label>
+                                          </div>
+                                          <div class="form-check form-check-inline">
+                                              <input class="form-check-input" id="dingding_markdown_type" name="dingding-model"
+                                                     onclick="selectDingDingMessageType('markdown')"
+                                                     type="radio"
+                                                     value="option3">
+                                              <label class="form-check-label" for="dingding_markdown_type">Markdown消息</label>
+                                          </div>
+                                      </div>
+                                      <fieldset class="row mb-3">
+                                          <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                          <div class="col-sm-10">
+                                              <div class="form-check form-check-inline">
+                                                  <label for="dingding_enabled"></label>
+                                                  <input class="form-check-input" type="checkbox"  id="dingding_enabled" >
+                                                  <small class="form-text text-muted">默认关闭, 更改解析记录发送消息通知 </small>
+                                              </div>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb mb-3">
+                                          <div class="input-group">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">签名密钥</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_url_secret" placeholder="勾选加签选项后，复制Secret"
+                                                     type="text">
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3">
+                                          <div>
+                                              <a href="https://developers.dingtalk.com/document/robots/custom-robot-access" target="_blank">获取Webhook URL，只勾选Webhook加签选项即可</a>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb mb-3">
+                                          <div class="input-group">
+                                          <span class="input-group-btn">
+                                                  <button class="btn btn-secondary" onclick="sendWebhookTest('DING_DING')"
+                                                          type="button">发送测试</button>
+                                          </span>
+                                              <input class="form-control" id="dingding_url" placeholder="Webhook URL"
+                                                     type="text">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">URL</span>
+                                              </div>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3" id="dingding_text">
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">@用户的ID，请用","隔开</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_text_atUserIds" placeholder="@用户ID"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">@用户的手机号，请用","隔开</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_text_atMobiles" placeholder="@用户手机号"
+                                                     type="text">
+                                          </div>
+                                          <legend class="col-form-label col-sm-2 pt-0">@所有人</legend>
+                                          <div class="col-sm-10">
+                                              <div class="form-check form-check-inline">
+                                                  <label for="dingding_enabled"></label>
+                                                  <input class="form-check-input" type="checkbox"  id="dingding_text_isAtAll" >
+                                                  <small class="form-text text-muted">默认关闭, 发送消息@所有人 </small>
+                                              </div>
+                                          </div>
+                                          <div class="input-group">
+                                              <textarea class="form-control" id="dingding_text_content" placeholder="文本内容"
+                                                        type="text"></textarea>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3" id="dingding_link">
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">链接标题</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_link_title" placeholder="输入标题"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">图片地址</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_link_picUrl" placeholder="图片URL"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">消息地址</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_link_messageUrl" placeholder="消息URL"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group">
+                                              <textarea class="form-control" id="dingding_link_text" placeholder="链接文本"
+                                                        type="text"></textarea>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3" id="dingding_markdown">
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">@用户的ID，请用","隔开</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_markdown_atUserIds" placeholder="@用户ID"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">@用户的手机号，请用","隔开</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_markdown_atMobiles" placeholder="@用户手机号"
+                                                     type="text">
+                                          </div>
+                                          <legend class="col-form-label col-sm-2 pt-0">@所有人</legend>
+                                          <div class="col-sm-10">
+                                              <div class="form-check form-check-inline">
+                                                  <label for="dingding_enabled"></label>
+                                                  <input class="form-check-input" type="checkbox"  id="dingding_markdown_isAtAll" >
+                                                  <small class="form-text text-muted">默认关闭, 发送消息@所有人 </small>
+                                              </div>
+                                          </div>
+                                          <div class="input-group mb-3">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">标题</span>
+                                              </div>
+                                              <input class="form-control" id="dingding_markdown_title" placeholder="Markdown标题"
+                                                     type="text">
+                                          </div>
+                                          <div class="input-group">
+                                              <textarea class="cur form-control" id="dingding_markdown_text"
+                                                        placeholder="输入消息内容，支持 Markdown。注意Markdown语法中两次回车才是换行。"
+                                                        style="height: 120px;"></textarea>
+                                          </div>
+                                          <div>
+                                              <svg class="bi bi-book-half" fill="currentColor" height="16" viewBox="0 0 16 16"
+                                                   width="16" xmlns="http://www.w3.org/2000/svg">
+                                                  <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                                              </svg>
+                                              <a href="https://commonmark.org/help/" target="_blank">Markdown 语法参考</a>
+                                          </div>
+                                          <div class="markdown-body" id="dingding_markdown_show"
+                                               style="border-bottom: 1px solid #eee;margin-top: 10px; margin-bottom: 10px"></div>
+                                      </fieldset>
+                                  </form>
+                              </div>
                           </div>
                       </div>
                   </div>
@@ -487,7 +649,7 @@
                 </div>
                 <ul class="nav nav-tabs nav-fill" id="ddnsLogs">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" onclick="getLogs('ALIYUN')">Aliyun</a>
+                        <a class="nav-link active" data-toggle="tab" onclick="getLogs('ALIYUN')">Alidns</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" onclick="getLogs('DNSPOD')">Dnspod</a>
@@ -570,7 +732,7 @@
 
     </div>
 </main>
-<!--Markdown JS-->
+<!--ServerJ Markdown JS-->
 <script>
     let converter = new showdown.Converter(),
         container_edit = document.getElementById("server_j_content"),
@@ -622,6 +784,79 @@
         if (hasClass(container_show, "cur")) {
             let ratio = container_show.scrollTop / container_show.scrollHeight;
             container_edit.scrollTop = container_edit.scrollHeight * ratio;
+        }
+    });
+
+    // 判断 dom对象是否含有 指定 class 属性
+    var hasClass = (function () {
+        var div = document.createElement("div");
+        if ("classList" in div && typeof div.classList.contains === "function") {
+            return function (elem, className) {
+                return elem.classList.contains(className);
+            };
+        } else {
+            return function (elem, className) {
+                var classes = elem.className.split(/\s+/);
+                for (var i = 0; i < classes.length; i++) {
+                    if (classes[i] === className) return true;
+                }
+                return false;
+            };
+        }
+    })();
+</script>
+<!--DingDing Markdown JS-->
+<script>
+    let dingdingConverter = new showdown.Converter(),
+        dingdingContainer_edit = document.getElementById("dingding_markdown_text"),
+        dingdingContainer_show = document.getElementById("dingding_markdown_show");
+
+    // 将输入框中的 markdown 语句 转换为html 输出到 预览容器中
+    let dingdingTranslation = (function () {
+        return function () {
+            dingdingContainer_show.innerHTML = dingdingConverter.makeHtml(dingdingContainer_edit.value);
+            // 按比例调整 预览容器 的滚动条位置
+            let ratio = dingdingContainer_edit.scrollTop / dingdingContainer_edit.scrollHeight;
+            dingdingContainer_show.scrollTop = dingdingContainer_show.scrollHeight * ratio;
+        }
+    })();
+
+    // 监听输入框输入，实时将输入内容同步的右侧 预览框
+    dingdingContainer_edit.onkeyup = dingdingTranslation;
+
+    //监听鼠标进入 输入框范围 设置状态
+    dingdingContainer_edit.onmouseover = function () {
+        dingdingContainer_show.classList.remove('cur');
+        dingdingContainer_edit.classList.add('cur');
+    };
+    //监听鼠标离开 输入框范围 设置状态
+    dingdingContainer_edit.onmouseleave = function () {
+        dingdingContainer_edit.classList.remove('cur')
+    };
+    //监听鼠标进入 预览容器范围 设置状态
+    dingdingContainer_show.onmouseover = function () {
+        dingdingContainer_edit.classList.remove('cur')
+        dingdingContainer_show.classList.add('cur');
+    };
+    //监听鼠标离开 预览容器范围 设置状态
+    dingdingContainer_show.onmouseleave = function () {
+        dingdingContainer_show.classList.remove('cur')
+    };
+
+    // 监听 输入框 内容滚动
+    dingdingContainer_edit.addEventListener('scroll', function () {
+        // 若鼠标在 输入框范围内 则 以输入框为主 同步 预览容器内容滚动条高度
+        if (hasClass(dingdingContainer_edit, "cur")) {
+            let ratio = dingdingContainer_edit.scrollTop / dingdingContainer_edit.scrollHeight;
+            dingdingContainer_show.scrollTop = dingdingContainer_show.scrollHeight * ratio;
+        }
+    });
+    // 监听 预览容器 内容滚动
+    dingdingContainer_show.addEventListener('scroll', function () {
+        // 若鼠标在 预览范围内 则 以 预览容器为主 同步 输入框内容滚动条高度
+        if (hasClass(dingdingContainer_show, "cur")) {
+            let ratio = dingdingContainer_show.scrollTop / dingdingContainer_show.scrollHeight;
+            dingdingContainer_edit.scrollTop = dingdingContainer_edit.scrollHeight * ratio;
         }
     });
 
@@ -699,6 +934,28 @@
     setSecureConfig()
     setWebhookConfig()
     initLogSockJs()
+    selectDingDingMessageType('text')
+
+
+    function selectDingDingMessageType(type) {
+        if (type == 'text') {
+            document.getElementById('dingding_text').hidden = false
+            document.getElementById('dingding_link').hidden = true
+            document.getElementById('dingding_markdown').hidden = true
+        }
+
+        if (type == 'link') {
+            document.getElementById('dingding_text').hidden = true
+            document.getElementById('dingding_link').hidden = false
+            document.getElementById('dingding_markdown').hidden = true
+        }
+
+        if (type == 'markdown') {
+            document.getElementById('dingding_text').hidden = true
+            document.getElementById('dingding_link').hidden = true
+            document.getElementById('dingding_markdown').hidden = false
+        }
+    }
 
     function setWebhookConfig() {
         let webhookConfig = [[${webhookConfig}]]
