@@ -975,12 +975,14 @@
     function setWebhookConfig() {
         let webhookConfig = [[${webhookConfig}]]
         let serverJMessage = webhookConfig.serverJMessage
+
         let dingdingMessageList = webhookConfig.dingDingMessageList
-        document.getElementById('server_j_enabled').checked = serverJMessage.enabled
-        document.getElementById('server_j_url').value = serverJMessage.url
-        document.getElementById('server_j_title').value = serverJMessage.title
-        document.getElementById('server_j_content').value = serverJMessage.content
-        console.log(dingdingMessageList)
+        if (serverJMessage) {
+            document.getElementById('server_j_enabled').checked = serverJMessage.enabled? serverJMessage.enabled : false
+            document.getElementById('server_j_url').value = serverJMessage.url? serverJMessage.url : ""
+            document.getElementById('server_j_title').value = serverJMessage.title? serverJMessage.title : ""
+            document.getElementById('server_j_content').value = serverJMessage.content? serverJMessage.content : ""
+        }
         if (dingdingMessageList) {
             for (let i = 0; i < dingdingMessageList.length; i++) {
                 let dingdingMessage = dingdingMessageList[i]
