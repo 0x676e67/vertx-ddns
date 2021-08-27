@@ -7,8 +7,8 @@ import com.zf1976.ddns.config.WebhookConfig;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.util.*;
-import com.zf1976.ddns.verticle.handler.WebhookHandler;
 import com.zf1976.ddns.verticle.provider.SecureProvider;
+import com.zf1976.ddns.verticle.provider.WebhookProvider;
 import com.zf1976.ddns.verticle.timer.service.DnsRecordService;
 import com.zf1976.ddns.verticle.timer.service.impl.DnsRecordServiceImpl;
 import io.vertx.core.*;
@@ -36,7 +36,7 @@ import java.util.*;
  * @author mac
  * 2021/7/7
  */
-public abstract class AbstractApiVerticle extends AbstractVerticle implements SecureProvider, WebhookHandler {
+public abstract class AbstractApiVerticle extends AbstractVerticle implements SecureProvider, WebhookProvider {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
@@ -369,7 +369,8 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                 });
     }
 
-    protected Future<WebhookConfig> readWebhookConfig() {
+    @Override
+    public Future<WebhookConfig> readWebhookConfig() {
         String absolutePath = toAbsolutePath(workDir, WEBHOOK_CONFIG_FILENAME);
         return vertx.fileSystem()
                     .readFile(absolutePath)

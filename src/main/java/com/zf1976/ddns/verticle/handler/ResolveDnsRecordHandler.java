@@ -9,7 +9,7 @@ import com.zf1976.ddns.enums.DnsProviderType;
  */
 public interface ResolveDnsRecordHandler {
 
-    void parserDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config);
+    void resolveDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config);
 
     void resolveDnsRecordForIpv6(DnsProviderType dnsProviderType, DnsConfig.Ipv6Config ipv6Config);
 

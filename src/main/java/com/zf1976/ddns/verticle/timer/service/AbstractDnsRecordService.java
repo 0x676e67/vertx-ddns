@@ -214,14 +214,14 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
     public void update() {
         if (!CollectionUtil.isEmpty(this.dnsConfigList)) {
             for (DnsConfig config : dnsConfigList) {
-                this.parserDnsRecordForIpv4(config.getDnsProviderType(), config.getIpv4Config());
+                this.resolveDnsRecordForIpv4(config.getDnsProviderType(), config.getIpv4Config());
                 this.resolveDnsRecordForIpv6(config.getDnsProviderType(), config.getIpv6Config());
             }
         }
     }
 
     @Override
-    public void parserDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config) {
+    public void resolveDnsRecordForIpv4(DnsProviderType dnsProviderType, DnsConfig.Ipv4Config ipv4Config) {
         if (Objects.nonNull(ipv4Config) && ipv4Config.getEnable()) {
             // use ip api or network
             Future.succeededFuture(ipv4Config.getSelectIpMethod())

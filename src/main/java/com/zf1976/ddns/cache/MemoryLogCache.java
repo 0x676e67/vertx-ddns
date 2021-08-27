@@ -15,18 +15,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class MemoryLogCache extends AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> {
 
-    private static final AsyncCache<DnsProviderType, Collection<DnsRecordLog>> cache = Caffeine.newBuilder()
-                                                                                               .expireAfterWrite(24, TimeUnit.HOURS)
-                                                                                               .maximumSize(100_000)
-                                                                                               .buildAsync();
+    private final AsyncCache<DnsProviderType, Collection<DnsRecordLog>> cache;
 
-    private MemoryLogCache() {
-
+    public MemoryLogCache(long maximumSize) {
+        this.cache = Caffeine.newBuilder()
+                             .expireAfterWrite(24, TimeUnit.HOURS)
+                             .maximumSize(maximumSize)
+                             .buildAsync();
     }
 
-    public static AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> getInstance() {
-        return new MemoryLogCache();
-    }
 
     @Override
     public void store(DnsProviderType key, DnsRecordLog dnsRecordLog) {

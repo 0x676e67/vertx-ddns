@@ -1,7 +1,5 @@
 package com.zf1976.ddns.verticle;
 
-import com.zf1976.ddns.cache.AbstractMemoryLogCache;
-import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.config.webhook.DingDingMessage;
@@ -12,6 +10,8 @@ import com.zf1976.ddns.enums.WebhookProviderType;
 import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.util.*;
+import com.zf1976.ddns.verticle.handler.LogCacheHandler;
+import com.zf1976.ddns.verticle.handler.impl.LogCacheHandlerImpl;
 import com.zf1976.ddns.verticle.provider.RedirectAuthenticationProvider;
 import com.zf1976.ddns.verticle.provider.UsernamePasswordAuthenticationProvider;
 import io.vertx.core.Future;
@@ -36,11 +36,11 @@ import java.util.Map;
  * @author mac
  * 2021/7/6
  */
-public class ApiVerticle extends AbstractApiVerticle  {
+public class ApiVerticle extends AbstractApiVerticle {
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
-    private final AbstractMemoryLogCache<DnsProviderType, DnsRecordLog> cache = MemoryLogCache.getInstance();
     private WebClient webClient;
+    private LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler;
 
     @Override
     public void start(Promise<Void> startPromise) {
@@ -138,7 +138,8 @@ public class ApiVerticle extends AbstractApiVerticle  {
     @Override
     public void start() throws Exception {
         this.webClient = WebClient.create(vertx);
-        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService, this), event -> {
+        this.logCacheHandler = new LogCacheHandlerImpl(vertx);
+        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService, this.logCacheHandler), event -> {
             if (event.succeeded()) {
                 context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
                 log.info("PeriodicVerticle deploy complete!");
@@ -243,11 +244,10 @@ public class ApiVerticle extends AbstractApiVerticle  {
                                                                         socket.write(e.getMessage());
                                                                         return;
                                                                     }
-                                                                    final var completableFuture = this.cache.get(dnsProviderType);
-                                                                    Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
-                                                                          .compose(collection -> shareMap.put(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE, dnsProviderType)
-                                                                                                         .compose(v -> socket.write(Json.encodePrettily(collection))))
-                                                                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));
+                                                                    this.logCacheHandler.get(dnsProviderType)
+                                                                                        .compose(collection -> shareMap.put(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE, dnsProviderType)
+                                                                                                                          .compose(v -> socket.write(Json.encodePrettily(collection))))
+                                                                                        .onFailure(err -> log.error(err.getMessage(), err.getCause()));
                                                                 })
                                                                 .exceptionHandler(log::error);
                                                           if (socket.writeHandlerID() != null) {
@@ -355,13 +355,9 @@ public class ApiVerticle extends AbstractApiVerticle  {
                             .getParam("type");
         try {
             final var dnsProviderType = DnsProviderType.checkType(type);
-            final var completableFuture = this.cache.get(dnsProviderType);
-            Future.fromCompletionStage(completableFuture, vertx.getOrCreateContext())
-                  .onSuccess(event -> {
-                      event.clear();
-                      this.routeSuccessHandler(ctx);
-                  })
-                  .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+            this.logCacheHandler.clear(dnsProviderType)
+                                .onSuccess(event -> this.routeSuccessHandler(ctx))
+                                .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());
         }
@@ -433,8 +429,5 @@ public class ApiVerticle extends AbstractApiVerticle  {
             this.routeBadRequestHandler(ctx, "Parameter abnormal");
         }
     }
-
-
-
 
 }

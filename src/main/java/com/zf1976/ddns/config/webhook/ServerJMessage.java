@@ -24,6 +24,15 @@ public class ServerJMessage extends BaseMessage implements Serializable {
         super(WebhookProviderType.SERVER_J);
     }
 
+    public ServerJMessage(ServerJMessageBuilder builder) {
+        this();
+        this.url = builder.url;
+        this.title = builder.title;
+        this.content = builder.content;
+        this.enabled = builder.enabled;
+
+    }
+
     public String getTitle() {
         return title;
     }
@@ -51,6 +60,10 @@ public class ServerJMessage extends BaseMessage implements Serializable {
         return this;
     }
 
+    public static ServerJMessageBuilder newBuilder() {
+        return new ServerJMessageBuilder();
+    }
+
     @Override
     public String toString() {
         return "ServerJMessage{" +
@@ -62,4 +75,43 @@ public class ServerJMessage extends BaseMessage implements Serializable {
                 '}';
     }
 
+    public static final class ServerJMessageBuilder {
+        private Boolean enabled = Boolean.FALSE;
+        private String url;
+        private String title;
+        private String content;
+
+        private ServerJMessageBuilder() {
+        }
+
+
+        public ServerJMessageBuilder enabled(Boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public ServerJMessageBuilder url(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public ServerJMessageBuilder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public ServerJMessageBuilder content(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public ServerJMessage build() {
+            ServerJMessage serverJMessage = new ServerJMessage();
+            serverJMessage.setEnabled(enabled);
+            serverJMessage.setUrl(url);
+            serverJMessage.setTitle(title);
+            serverJMessage.setContent(content);
+            return serverJMessage;
+        }
+    }
 }

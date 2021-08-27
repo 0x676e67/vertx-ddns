@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class DnsRecordServiceImpl extends AbstractDnsRecordService {
 
-    private final Logger log = LogManager.getLogger("[DnsRecordService]");
+    private final Logger log = LogManager.getLogger("[DnsRecordServiceImpl]");
 
     public DnsRecordServiceImpl(List<DnsConfig> ddnsConfigList, Vertx vertx) {
         super(ddnsConfigList, vertx);

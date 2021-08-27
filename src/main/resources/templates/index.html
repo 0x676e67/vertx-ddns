@@ -1124,7 +1124,6 @@
             let content = document.getElementById('server_j_content').value
             let url = document.getElementById('server_j_url').value
             let absUrl = url + "?title=" + encodeURI(title) + "&desp=" + encodeURI(content)
-            console.log(encryptByCBC(absUrl))
             axiosInstance.post("/api/webhook/test?url=" + encryptByCBC(absUrl))
                 .then(res => {
                     confirm.show(res.data.data)
