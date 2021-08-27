@@ -5,19 +5,15 @@
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg" ></img>
 	</a>
-	
 </p>
 
 # vertx-ddns
-
-自动获得你的公网 IPv4 或 IPv6 地址或使用您的自定义IP地址，并解析到对应的域名服务。
-
-<!-- TOC -->
+自动获得机器公网 IPv4 或 IPv6 地址或使用您的自定义IP地址，并解析到对应的域名服务。
 
 - [vertx-ddns](#vertx-ddns)
   - [功能](#功能)
   - [系统中使用](#系统中使用)
-  - [Docker中使用](#docker中使用)
+  - [Docker中使用](#Docker中使用)
   - [使用IPv6](#使用ipv6)
   - [界面](#界面)
   - [开发&自行编译](#开发自行编译)
@@ -37,7 +33,8 @@
 - 支持域名自定义指向IP
 - 支持查询服务商域名解析记录  
 - 网页中配置，可设置 `登录用户名和密码` / `禁止从公网访问`
-- 支持Webhook
+- 支持Webhook，提供模版变量自定义消息内容
+- 支持24小时实时解析日志监控
 
 ## Docker中使用
 
