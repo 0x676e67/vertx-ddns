@@ -70,4 +70,4 @@
 
 感谢[Jetbrains](https://www.jetbrains.com/?from=mayi)制作的IDE，以及免费的开源许可证。
 
-![](./img/jetbraint.png)
+![](https://github.com/zf1976/vertx-ddns/blob/main/img/jetbrains.png)
