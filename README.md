@@ -57,6 +57,7 @@
   
 ## 注
 - 默认登录的用户名密码：**vertx**
+- Windows、macOS系统下Docker不支持Docker的host模式
 <img src="./img/img.png"/>
 
 ## License
