@@ -545,6 +545,7 @@
                                           </div>
                                           <div class="input-group">
                                               <textarea class="form-control" id="dingding_text_content" placeholder="文本内容"
+                                                        style="height: 120px;"
                                                         type="text"></textarea>
                                           </div>
                                       </fieldset>
@@ -572,6 +573,7 @@
                                           </div>
                                           <div class="input-group">
                                               <textarea class="form-control" id="dingding_link_text" placeholder="链接文本"
+                                                        style="height: 120px;"
                                                         type="text"></textarea>
                                           </div>
                                       </fieldset>
@@ -922,7 +924,7 @@
     // 默认类型
     let selectDnsProviderType = aliyunType
     let selectDnsRecordType = ipv4RecordType
-    let selectWebhookProviderType = dingdingProviderType
+    let selectWebhookProviderType = serverJProviderType
     // 初始化调用
     selectIpv4ForApi()
     selectIpv6ForApi()
@@ -988,6 +990,7 @@
                     document.getElementById('dingding_text_content').value = dingdingMessage.at.content? dingdingMessage.at.content : ""
                     document.getElementById('dingding_text_atMobiles').value = dingdingMessage.at.atMobiles? dingdingMessage.at.atMobiles.toString() : ""
                     document.getElementById('dingding_text_atUserIds').value = dingdingMessage.at.atUserIds? dingdingMessage.at.atUserIds.toString() : ""
+                    document.getElementById('dingding_text_content').value = dingdingMessage.text.content? dingdingMessage.text.content : ""
                 }
                 if (dingdingMessage.msgtype == 'link') {
                     document.getElementById('dingding_link_title').value = dingdingMessage.link.title? dingdingMessage.link.title : ""
@@ -1027,7 +1030,7 @@
                 })
         }
 
-        if (selectWebhookProviderType = dingdingProviderType) {
+        if (selectWebhookProviderType == dingdingProviderType) {
             var linkChecked = document.getElementById('dingding_link_type').checked;
             var textChecked = document.getElementById('dingding_text_type').checked;
             var markdownChecked = document.getElementById('dingding_markdown_type').checked;

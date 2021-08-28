@@ -4,6 +4,7 @@ import com.zf1976.ddns.config.webhook.DingDingMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +18,7 @@ public class WebhookConfig implements Serializable {
     private List<DingDingMessage> dingDingMessageList;
 
     public WebhookConfig() {
+        this.dingDingMessageList = new ArrayList<>(3);
     }
 
     public ServerJMessage getServerJMessage() {

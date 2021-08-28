@@ -379,6 +379,9 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
                             return Future.succeededFuture(new WebhookConfig());
                         } else {
                             final var webhookConfig = Json.decodeValue(buffer, WebhookConfig.class);
+                            if (webhookConfig.getDingDingMessageList() == null) {
+                                webhookConfig.setDingDingMessageList(new ArrayList<>(3));
+                            }
                             return Future.succeededFuture(webhookConfig);
                         }
                     });
