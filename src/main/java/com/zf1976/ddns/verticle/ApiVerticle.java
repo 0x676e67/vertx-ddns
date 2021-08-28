@@ -269,12 +269,20 @@ public class ApiVerticle extends AbstractApiVerticle {
      */
     protected void allowWanAccessHandler(RoutingContext ctx) {
         HttpServerRequest request = ctx.request();
-        String ipAddress = HttpUtil.getIpAddress(request);
-        if (HttpUtil.isInnerIp(ipAddress)) {
-            ctx.next();
-        } else {
-            this.routeBadRequestHandler(ctx, "Prohibit WAN access！");
-        }
+        // suspension request
+        request.pause();
+        this.readSecureConfig()
+            .onSuccess(webhookConfig -> {
+                // recovery request
+                request.resume();
+                String ipAddress = HttpUtil.getIpAddress(request);
+                if (!webhookConfig.getNotAllowWanAccess() || HttpUtil.isInnerIp(ipAddress)) {
+                    ctx.next();
+                } else {
+                    this.routeBadRequestHandler(ctx, "Prohibit WAN access！");
+                }
+            })
+            .onFailure(err -> log.error(err.getMessage(), err.getCause()));
     }
 
     /**
