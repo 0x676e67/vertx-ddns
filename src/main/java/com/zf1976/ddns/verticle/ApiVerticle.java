@@ -11,7 +11,8 @@ import com.zf1976.ddns.pojo.DataResult;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.util.*;
 import com.zf1976.ddns.verticle.handler.LogCacheHandler;
-import com.zf1976.ddns.verticle.handler.impl.LogCacheHandlerImpl;
+import com.zf1976.ddns.verticle.handler.LogCacheHandlerImpl;
+import com.zf1976.ddns.verticle.handler.webhook.CompositeWebhookHandler;
 import com.zf1976.ddns.verticle.provider.RedirectAuthenticationProvider;
 import com.zf1976.ddns.verticle.provider.UsernamePasswordAuthenticationProvider;
 import io.vertx.core.Future;
@@ -139,7 +140,10 @@ public class ApiVerticle extends AbstractApiVerticle {
     public void start() throws Exception {
         this.webClient = WebClient.create(vertx);
         this.logCacheHandler = new LogCacheHandlerImpl(vertx);
-        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService, this.logCacheHandler), event -> {
+        this.vertx.deployVerticle(new PeriodicVerticle(this.dnsRecordService,
+                this.logCacheHandler,
+                new CompositeWebhookHandler(vertx, this)
+        ), event -> {
             if (event.succeeded()) {
                 context.put(ApiConstants.VERTICLE_PERIODIC_DEPLOY_ID, event.result());
                 log.info("PeriodicVerticle deploy complete!");

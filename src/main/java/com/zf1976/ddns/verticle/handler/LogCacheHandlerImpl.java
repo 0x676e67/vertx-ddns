@@ -1,10 +1,9 @@
-package com.zf1976.ddns.verticle.handler.impl;
+package com.zf1976.ddns.verticle.handler;
 
 import com.zf1976.ddns.cache.AbstractMemoryLogCache;
 import com.zf1976.ddns.cache.MemoryLogCache;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.pojo.DnsRecordLog;
-import com.zf1976.ddns.verticle.handler.LogCacheHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 

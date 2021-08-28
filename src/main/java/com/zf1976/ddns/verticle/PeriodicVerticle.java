@@ -1,10 +1,12 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.enums.DnsProviderType;
+import com.zf1976.ddns.enums.LogStatus;
 import com.zf1976.ddns.pojo.DnsRecordLog;
 import com.zf1976.ddns.util.CollectionUtil;
 import com.zf1976.ddns.verticle.codec.DnsRecordLogMessageCodec;
 import com.zf1976.ddns.verticle.handler.LogCacheHandler;
+import com.zf1976.ddns.verticle.handler.webhook.CompositeWebhookHandler;
 import com.zf1976.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.zf1976.ddns.verticle.timer.DnsRecordObserver;
 import io.vertx.core.Future;
@@ -25,14 +27,21 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
     private static final long DEFAULT_PERIODIC_TIME = 5 * 60 * 1000;
     private final DnsRecordLogMessageCodec dnsRecordLogMessageCodec = new DnsRecordLogMessageCodec();
     private final LogCacheHandler<DnsProviderType, DnsRecordLog> consumerHandler;
+    private final CompositeWebhookHandler compositeWebhookHandler;
 
-    public PeriodicVerticle(DnsRecordObserver observer, LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler) {
+    public PeriodicVerticle(DnsRecordObserver observer,
+                            LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler,
+                            CompositeWebhookHandler compositeWebhookHandler) {
         this.addObserver(observer);
         this.consumerHandler = logCacheHandler;
+        this.compositeWebhookHandler = compositeWebhookHandler;
     }
 
-    public PeriodicVerticle(List<DnsRecordObserver> observers, LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler) {
+    public PeriodicVerticle(List<DnsRecordObserver> observers,
+                            LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler,
+                            CompositeWebhookHandler compositeWebhookHandler) {
         this.consumerHandler = logCacheHandler;
+        this.compositeWebhookHandler =compositeWebhookHandler;
         if (!CollectionUtil.isEmpty(observers)) {
             for (DnsRecordObserver observer : observers) {
                 this.addObserver(observer);
@@ -58,6 +67,17 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                          .onSuccess(writeHandlerId -> {
                              if (writeHandlerId != null) {
                                  eventBus.send(writeHandlerId, Json.encode(recordLog));
+                             }
+                             if (!(recordLog.getLogStatus() == LogStatus.RAW)) {
+                                 this.compositeWebhookHandler.send(recordLog)
+                                                             .onSuccess(compositeFuture -> {
+                                                                 compositeFuture.onComplete(event -> {
+                                                                     if (event.failed()) {
+                                                                         log.error(event.cause());
+                                                                         eventBus.send(writeHandlerId, Json.encode(event.cause().getMessage()));
+                                                                     }
+                                                                 });
+                                                             });
                              }
                          })
                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));

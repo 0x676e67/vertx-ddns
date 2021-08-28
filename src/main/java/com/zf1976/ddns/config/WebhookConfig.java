@@ -23,9 +23,8 @@ public class WebhookConfig implements Serializable {
         return serverJMessage;
     }
 
-    public WebhookConfig setServerJMessage(ServerJMessage serverJMessage) {
+    public void setServerJMessage(ServerJMessage serverJMessage) {
         this.serverJMessage = serverJMessage;
-        return this;
     }
 
     public List<DingDingMessage> getDingDingMessageList() {

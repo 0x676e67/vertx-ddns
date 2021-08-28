@@ -32,7 +32,7 @@ public class DingDingMessage extends BaseMessage implements Serializable {
 
     private At at;
 
-    private DingDingMessage.Data text;
+    private Text text;
 
     public DingDingMessage() {
         super(WebhookProviderType.DING_DING);
@@ -124,11 +124,11 @@ public class DingDingMessage extends BaseMessage implements Serializable {
         return this;
     }
 
-    public DingDingMessage.Data getText() {
+    public Text getText() {
         return text;
     }
 
-    public DingDingMessage setText(DingDingMessage.Data text) {
+    public DingDingMessage setText(Text text) {
         this.text = text;
         return this;
     }
@@ -213,7 +213,7 @@ public class DingDingMessage extends BaseMessage implements Serializable {
     public static class TextMessageBuildr {
 
         private DingDingMessage.At at = new At();
-        private DingDingMessage.Data text = new Data();
+        private Text text = new Text();
 
         public At getAt() {
             return at;
@@ -224,11 +224,11 @@ public class DingDingMessage extends BaseMessage implements Serializable {
             return this;
         }
 
-        public Data getText() {
+        public Text getText() {
             return text;
         }
 
-        public TextMessageBuildr setText(Data text) {
+        public TextMessageBuildr setText(Text text) {
             this.text = text;
             return this;
         }
@@ -269,14 +269,14 @@ public class DingDingMessage extends BaseMessage implements Serializable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Data {
+    public static class Text {
         private String content;
 
         public String getContent() {
             return content;
         }
 
-        public Data setContent(String content) {
+        public Text setContent(String content) {
             this.content = content;
             return this;
         }
