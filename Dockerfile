@@ -8,7 +8,7 @@ RUN $JAVA_HOME/bin/jlink \
 # Define your base image
 FROM alpine
 MAINTAINER zf1976 <verticle@foxmail.com>
-WORKDIR /app
+WORKDIR /root
 USER root
 LABEL name=vertx-ddns
 LABEL url=https://github.com/zf1976/vertx-ddns
@@ -19,11 +19,11 @@ ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # Continue with your application deployment
-RUN mkdir /app/logs
+RUN mkdir /root/logs
 ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
-COPY ${JAR_FILE} /app/vertx-ddns.jar
+COPY ${JAR_FILE} /root/vertx-ddns.jar
 EXPOSE 	8080
 ENV JVM_OPTS="-Xms128m -Xmx256m" \
     TZ=Asia/Shanghai
 
-CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/vertx-ddns.jar
+CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /root/vertx-ddns.jar
