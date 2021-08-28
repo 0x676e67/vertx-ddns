@@ -54,12 +54,28 @@
   ```bash
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:alpine
   ```
-  
+
+### Webhook
+- 解析记录日志状态发生变化（成功失败、错误），回调提供的Webhook API
+- 消息内容支持模版变量，若消息内容为空或系统发送错误，则默认发送解析日志内容
+
+  |  变量名   | 描述  |
+  |  ----  | ----  |
+  | #provider  | DNS服务商 (DNS Provider) |
+  | #sourceIp  | 原IP (Raw IP) |
+  | #targetIp  | 变化IP (Update IP) |
+  | #time  | 解析时间 (The resolution time) |
+  | #status  | 解析状态：`未改变` `失败` `成功` `错误` (Status) |
+  | #domain  | 域名 (Domain) |
+- 示例
+> DNS Provider：#provider，Status：#status   -----parser---->    DNS Provider：ALIYUN, Status：2021-08-28 15:14:01
+
+
 ## 注
 - 默认登录的用户名密码：**vertx**
 - Windows、macOS系统下Docker不支持Docker的host模式
 <img src="./img/img.png"/>
-
+<img src="./img/webhook.png"/>
 ## License
 
 [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
