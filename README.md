@@ -42,7 +42,7 @@
 > 其中`debian`,`alpine`为基础的镜像经过`jlink`生成的极简`JRE Runtime`，大大减少了镜像体积， 使用OpenJ9有效减少运行内存占用。
 > 三种镜像大小`alpine` < `debian` < `ubuntu`。
 
-- 使用host模式, 自行添加--net=host参数，并且不需要再做端口映射（同时支持IPv4/IPv6）
+- 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 如果不挂载主机目录, 删除容器同时会删除配置
 - 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
   ```bash
