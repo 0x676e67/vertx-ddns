@@ -18,7 +18,6 @@ public class ParameterHelper {
 
     public static String getTime(Date date) {
         SimpleDateFormat df = new SimpleDateFormat(FORMAT_DEFAULT);
-        df.setTimeZone(new SimpleTimeZone(0, TIME_ZONE));
         return df.format(date);
     }
 
