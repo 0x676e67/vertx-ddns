@@ -53,12 +53,12 @@
 - 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
   ```bash
   # 拉取镜像运行，并随系统重启
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:alpine
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
   ```bash
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:alpine
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
 
 ### Webhook
