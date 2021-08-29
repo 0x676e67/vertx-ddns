@@ -18,7 +18,7 @@
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
   - [使用IPv6](#使用ipv6)
-  - [界面](#界面)
+  - [响应式布局](#界面)
   - [开发&自行编译](#开发自行编译)
 
 <!-- /TOC -->
@@ -77,6 +77,8 @@
 ## 注
 - 默认登录的用户名密码：**vertx**
 - Windows、macOS系统下Docker不支持Docker的host模式
+
+## 界面
 <img src="./img/img.png"/>
 <img src="./img/webhook.png"/>
 ## License
