@@ -1,12 +1,12 @@
-# Alpine ---- OpenJDK-jlink
-FROM openjdk:16-jdk-alpine as jre-build
+# Debian ---- Openj9-jlink
+FROM adoptopenjdk:16-jdk-openj9 as jre-build
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
          --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
          --output /javaruntime
 
 # Define your base image
-FROM alpine
+FROM debian:buster-slim
 MAINTAINER zf1976 <verticle@foxmail.com>
 WORKDIR /root
 USER root
