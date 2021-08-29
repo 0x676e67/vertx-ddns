@@ -1,5 +1,6 @@
 package com.zf1976.ddns.verticle;
 
+import com.zf1976.ddns.api.signer.algorithm.Signer;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.config.webhook.DingDingMessage;
@@ -28,6 +29,8 @@ import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import io.vertx.ext.web.sstore.LocalSessionStore;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -113,6 +116,7 @@ public class ApiVerticle extends AbstractApiVerticle {
               .handler(this::storeWebhookConfigHandler);
         // send test webhook
         router.post("/api/webhook/test")
+              .handler(BodyHandler.create())
               .handler(this::sendWebhookTest);
         // obtain the RSA public key
         router.get("/common/rsa/public_key")
@@ -220,11 +224,32 @@ public class ApiVerticle extends AbstractApiVerticle {
     protected void sendWebhookTest(RoutingContext ctx) {
         final var request = ctx.request();
         try {
+            final var webhookProviderType = WebhookProviderType.checkType(request.getParam("type"));
             final var url = AesUtil.decodeByCBC(request.getParam("url"), aesKey.getKey(), aesKey.getIv());
-            this.webClient.postAbs(url)
-                          .send()
-                          .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送成功，请注意查收"))
-                          .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+            switch (webhookProviderType) {
+                case SERVER_J -> {
+                    this.webClient.postAbs(url)
+                                  .send()
+                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送，请注意查收"))
+                                  .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+                }
+                case DING_DING -> {
+                    final var secret = AesUtil.decodeByCBC(request.getParam("secret"), aesKey.getKey(), aesKey.getIv());
+                    long timestamp = System.currentTimeMillis();
+                    String stringToSign = timestamp + "\n" + secret;
+                    var signData = Signer.getSHA256Signer()
+                                         .signString(stringToSign, secret);
+                    String sign = ApiURLEncoderUtil.encode(new String(Base64.encodeBase64(signData)));
+                    final String completeUrl = url + "&timestamp=" + timestamp + "&sign=" + sign;
+                    this.webClient.postAbs(completeUrl)
+                                  .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                                  .sendBuffer(ctx.getBody())
+                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送，请注意查收"))
+                                  .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+                }
+                default -> throw new UnsupportedOperationException("不支持：" + webhookProviderType + "消息类型");
+            }
+
         } catch (Exception e) {
             this.routeBadRequestHandler(ctx, e.getMessage());
         }

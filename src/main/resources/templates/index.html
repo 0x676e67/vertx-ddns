@@ -1126,521 +1126,579 @@
             let content = document.getElementById('server_j_content').value
             let url = document.getElementById('server_j_url').value
             let absUrl = url + "?title=" + encodeURI(title) + "&desp=" + encodeURI(content)
-            axiosInstance.post("/api/webhook/test?url=" + encryptByCBC(absUrl))
+            axiosInstance.post("/api/webhook/test?url=" + encryptByCBC(absUrl) + "&type=" + selectWebhookProviderType)
                 .then(res => {
                     confirm.show(res.data.data)
                 })
+
         } else if (providerType == dingdingProviderType) {
-
-        }
-    }
-
-    /**
-     * cbc模式
-     * @param data
-     **/
-    function encryptByCBC(data) {
-        let encrypted;
-        var aesKey = [[${aesKey}]]
-        var key = CryptoJS.enc.Utf8.parse(aesKey.key);
-        var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
-        if (typeof data == "string") {
-            const srcs = CryptoJS.enc.Utf8.parse(data);
-            encrypted = CryptoJS.AES.encrypt(srcs, key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
-            });
-        } else if (typeof data == "object") {
-            //对象格式的转成json字符串
-            const result = JSON.stringify(data);
-            const srcs = CryptoJS.enc.Utf8.parse(result);
-            encrypted = CryptoJS.AES.encrypt(srcs,key, {
-                iv: iv,
-                mode: CryptoJS.mode.CBC,
-                padding: CryptoJS.pad.Pkcs7
-            });
-        }
-        return encrypted.ciphertext.toString()
-    }
-
-    // aes解密
-    function decryptByCBC(data) {
-        var aesKey = [[${aesKey}]]
-        var key = CryptoJS.enc.Utf8.parse(aesKey.key);
-        var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
-        const encryptData = data
-        const encryptedHexStr = CryptoJS.enc.Hex.parse(encryptData);
-        const srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
-        const content = CryptoJS.AES.decrypt(srcs, key, {
-            iv: iv,
-            mode: CryptoJS.mode.CBC,
-            padding: CryptoJS.pad.Pkcs7
-        });
-        const decryptedStr = content.toString(CryptoJS.enc.Utf8);
-        return decryptedStr.toString();
-    }
-
-    function logout() {
-        axiosInstance.post("/logout")
-            .then(res => {
-                window.location.href = 'login.html';
-            })
-    }
-
-    function clearLogs() {
-        axiosInstance.delete("/api/dns/record/log?type=" + selectLogType)
-            .then(res => {
-                confirm.show("当页日志已清除")
-                document.getElementById('logs').innerHTML = ''
-            })
-    }
-
-    function setIpv4RecordType() {
-        selectDnsRecordType = ipv4RecordType
-    }
-
-    function setIpv6RecordType() {
-        selectDnsRecordType = ipv6RecordType
-    }
-
-    function setDnsConfig() {
-        // 设置服务商Account
-        let targetConfig
-        if (dnsConfigList != undefined) {
-            for (let i = 0; i < dnsConfigList.length; i++) {
-                let dnsConfig = dnsConfigList[i]
-                if (selectDnsProviderType == dnsConfig.dnsProviderType) {
-                    targetConfig = dnsConfig
-                    document.getElementById("ipv4Enable").checked = dnsConfig.ipv4Config.enable
-                    document.getElementById("ipv6Enable").checked = dnsConfig.ipv6Config.enable
-                    if (dnsConfig.ipv4Config.selectIpMethod) {
-                        document.getElementById("ipv4Radios1").checked = true
-                        document.getElementById("ipv4Radios2").checked = false
-                        document.getElementById("ipv4Radios1").onclick()
-
-                    } else {
-                        document.getElementById("ipv4Radios1").checked = false
-                        document.getElementById("ipv4Radios2").checked = true
-                        document.getElementById("ipv4Radios2").onclick()
-                    }
-
-                    if (dnsConfig.ipv6Config.selectIpMethod) {
-                        document.getElementById("ipv6Radios1").checked = true
-                        document.getElementById("ipv6Radios2").checked = false
-                        document.getElementById("ipv6Radios1").onclick()
-
-                    } else {
-                        document.getElementById("ipv6Radios1").checked = false
-                        document.getElementById("ipv6Radios2").checked = true
-                        document.getElementById("ipv6Radios2").onclick()
-                    }
-                    let ipv4Domain = ""
-                    for (let j = 0; j < dnsConfig.ipv4Config.domainList.length; j++) {
-                        ipv4Domain += dnsConfig.ipv4Config.domainList[j]
-                        if ((j + 1) < dnsConfig.ipv4Config.domainList.length){
-                            ipv4Domain += "\n"
-                        }
-                    }
-                    let ipv6Domain = ""
-                    for (let j = 0; j < dnsConfig.ipv6Config.domainList.length; j++) {
-                        ipv6Domain += dnsConfig.ipv6Config.domainList[j]
-                        if ((j + 1) < dnsConfig.ipv6Config.domainList.length){
-                            ipv6Domain += "\n"
-                        }
-                    }
-                    document.getElementById("ipv4ApiInput").value = dnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv4_domains").value = ipv4Domain
-                    document.getElementById("ipv6ApiInput").value = dnsConfig.ipv4Config.inputIpApi
-                    document.getElementById("ipv6_domains").value = ipv6Domain
+            var linkChecked = document.getElementById('dingding_link_type').checked;
+            var textChecked = document.getElementById('dingding_text_type').checked;
+            var markdownChecked = document.getElementById('dingding_markdown_type').checked;
+            var enabled = document.getElementById('dingding_enabled').checked
+            var url = document.getElementById('dingding_url').value
+            var secret = document.getElementById('dingding_url_secret').value
+            if (linkChecked) {
+                let data = {
+                    "link": {
+                        "text": document.getElementById('dingding_link_text').value,
+                        "title": document.getElementById('dingding_link_title').value,
+                        "picUrl": document.getElementById('dingding_link_picUrl').value,
+                        "messageUrl": document.getElementById('dingding_link_messageUrl').value
+                    },
+                    "msgtype": "link"
                 }
-                switch (selectDnsProviderType) {
-                    case aliyunType:
-                        document.getElementById("aliyunAccount").value = targetConfig ? targetConfig.id : ""
-                        document.getElementById("aliyunSecret").value = targetConfig ? targetConfig.secret : ""
-                        break
-                    case dnspodType:
-                        document.getElementById("dnspodAccount").value = targetConfig ? targetConfig.id : ""
-                        document.getElementById("dnspodSecret").value = targetConfig ? targetConfig.secret : ""
-                        break
-                    case cloudflareType:
-                        document.getElementById("cloudflareSecret").value = targetConfig ? targetConfig.secret : ""
-                        break
-                    case huaweiType:
-                        document.getElementById("huaweiAccount").value = targetConfig ? targetConfig.id : ""
-                        document.getElementById("huaweiSecret").value = targetConfig ? targetConfig.secret : ""
-                        break
-                    default:
+                axiosInstance.post('/api/webhook/test?type=' + selectWebhookProviderType + "&url=" + encryptByCBC(url) + "&secret=" + encryptByCBC(secret), data)
+                    .then(res => {
+                        confirm.show(res.data.data)
+                    })
+            }
+
+            if (textChecked) {
+                let data = {
+                    "at": {
+                        "atMobiles": document.getElementById('dingding_text_atMobiles').value.split(','),
+                        "atUserIds": document.getElementById('dingding_text_atUserIds').value.split(','),
+                        "isAtAll": document.getElementById('dingding_text_isAtAll').checked
+                    },
+                    "text": {
+                        "content": document.getElementById('dingding_text_content').value
+                    },
+                    "msgtype": "text"
                 }
+                axiosInstance.post('/api/webhook/test?type=' + selectWebhookProviderType + "&url=" + encryptByCBC(url) + "&secret=" + encryptByCBC(secret), data)
+                    .then(res => {
+                        confirm.show(res.data.data)
+                    })
+            }
+
+            if (markdownChecked) {
+                let data = {
+                    "markdown": {
+                        "title": document.getElementById('dingding_markdown_title').value,
+                        "text": document.getElementById('dingding_markdown_text').value
+                    },
+                    "at": {
+                        "atMobiles": document.getElementById('dingding_markdown_atMobiles').value.split(','),
+                        "atUserIds": document.getElementById('dingding_markdown_atUserIds').value.split(','),
+                        "isAtAll": document.getElementById('dingding_markdown_isAtAll').checked
+                    },
+                    "msgtype": "markdown"
+                }
+                axiosInstance.post('/api/webhook/test?type=' + selectWebhookProviderType + "&url=" + encryptByCBC(url) + "&secret=" + encryptByCBC(secret), data)
+                    .then(res => {
+                        confirm.show(res.data.data)
+                    })
             }
         }
     }
 
-    function storeSecureConfig() {
-        var notAllowWanAccess = document.getElementById("notAllowWanAccess").checked
-        var username = document.getElementById("username").value
-        var password = document.getElementById("password").value
-        if (username == undefined || username == "") {
-            confirm.show("username cannot been empty!")
-            return
+        /**
+         * cbc模式
+         * @param data
+         **/
+        function encryptByCBC(data) {
+            let encrypted;
+            var aesKey = [[${aesKey}]]
+            var key = CryptoJS.enc.Utf8.parse(aesKey.key);
+            var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
+            if (typeof data == "string") {
+                const srcs = CryptoJS.enc.Utf8.parse(data);
+                encrypted = CryptoJS.AES.encrypt(srcs, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+            } else if (typeof data == "object") {
+                //对象格式的转成json字符串
+                const result = JSON.stringify(data);
+                const srcs = CryptoJS.enc.Utf8.parse(result);
+                encrypted = CryptoJS.AES.encrypt(srcs, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+            }
+            return encrypted.ciphertext.toString()
         }
-        if (password == undefined || password == "") {
-            confirm.show("password cannot been empty!")
-            return
-        }
-        let secureConfig = {
-            "notAllowWanAccess" : notAllowWanAccess,
-            "username" : encrypt(username),
-            "password" : passwordIsHide(password)? password : encrypt(password)
-        }
-        axiosInstance.post("/api/store/secure/config", secureConfig)
-                    .then(res => {
-                        confirm.show("Saved successfully, you need to log in again!", function () {
-                            location.reload()
-                        })
-                    })
-    }
 
-    function passwordIsHide(password) {
-        let secureConfig = [[${secureConfig}]]
-        if (secureConfig == null || secureConfig == undefined) {
+        // aes解密
+        function decryptByCBC(data) {
+            var aesKey = [[${aesKey}]]
+            var key = CryptoJS.enc.Utf8.parse(aesKey.key);
+            var iv = CryptoJS.enc.Utf8.parse(aesKey.iv);
+            const encryptData = data
+            const encryptedHexStr = CryptoJS.enc.Hex.parse(encryptData);
+            const srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+            const content = CryptoJS.AES.decrypt(srcs, key, {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            const decryptedStr = content.toString(CryptoJS.enc.Utf8);
+            return decryptedStr.toString();
+        }
+
+        function logout() {
+            axiosInstance.post("/logout")
+                .then(res => {
+                    window.location.href = 'login.html';
+                })
+        }
+
+        function clearLogs() {
+            axiosInstance.delete("/api/dns/record/log?type=" + selectLogType)
+                .then(res => {
+                    confirm.show("当页日志已清除")
+                    document.getElementById('logs').innerHTML = ''
+                })
+        }
+
+        function setIpv4RecordType() {
+            selectDnsRecordType = ipv4RecordType
+        }
+
+        function setIpv6RecordType() {
+            selectDnsRecordType = ipv6RecordType
+        }
+
+        function setDnsConfig() {
+            // 设置服务商Account
+            let targetConfig
+            if (dnsConfigList != undefined) {
+                for (let i = 0; i < dnsConfigList.length; i++) {
+                    let dnsConfig = dnsConfigList[i]
+                    if (selectDnsProviderType == dnsConfig.dnsProviderType) {
+                        targetConfig = dnsConfig
+                        document.getElementById("ipv4Enable").checked = dnsConfig.ipv4Config.enable
+                        document.getElementById("ipv6Enable").checked = dnsConfig.ipv6Config.enable
+                        if (dnsConfig.ipv4Config.selectIpMethod) {
+                            document.getElementById("ipv4Radios1").checked = true
+                            document.getElementById("ipv4Radios2").checked = false
+                            document.getElementById("ipv4Radios1").onclick()
+
+                        } else {
+                            document.getElementById("ipv4Radios1").checked = false
+                            document.getElementById("ipv4Radios2").checked = true
+                            document.getElementById("ipv4Radios2").onclick()
+                        }
+
+                        if (dnsConfig.ipv6Config.selectIpMethod) {
+                            document.getElementById("ipv6Radios1").checked = true
+                            document.getElementById("ipv6Radios2").checked = false
+                            document.getElementById("ipv6Radios1").onclick()
+
+                        } else {
+                            document.getElementById("ipv6Radios1").checked = false
+                            document.getElementById("ipv6Radios2").checked = true
+                            document.getElementById("ipv6Radios2").onclick()
+                        }
+                        let ipv4Domain = ""
+                        for (let j = 0; j < dnsConfig.ipv4Config.domainList.length; j++) {
+                            ipv4Domain += dnsConfig.ipv4Config.domainList[j]
+                            if ((j + 1) < dnsConfig.ipv4Config.domainList.length) {
+                                ipv4Domain += "\n"
+                            }
+                        }
+                        let ipv6Domain = ""
+                        for (let j = 0; j < dnsConfig.ipv6Config.domainList.length; j++) {
+                            ipv6Domain += dnsConfig.ipv6Config.domainList[j]
+                            if ((j + 1) < dnsConfig.ipv6Config.domainList.length) {
+                                ipv6Domain += "\n"
+                            }
+                        }
+                        document.getElementById("ipv4ApiInput").value = dnsConfig.ipv4Config.inputIpApi
+                        document.getElementById("ipv4_domains").value = ipv4Domain
+                        document.getElementById("ipv6ApiInput").value = dnsConfig.ipv4Config.inputIpApi
+                        document.getElementById("ipv6_domains").value = ipv6Domain
+                    }
+                    switch (selectDnsProviderType) {
+                        case aliyunType:
+                            document.getElementById("aliyunAccount").value = targetConfig ? targetConfig.id : ""
+                            document.getElementById("aliyunSecret").value = targetConfig ? targetConfig.secret : ""
+                            break
+                        case dnspodType:
+                            document.getElementById("dnspodAccount").value = targetConfig ? targetConfig.id : ""
+                            document.getElementById("dnspodSecret").value = targetConfig ? targetConfig.secret : ""
+                            break
+                        case cloudflareType:
+                            document.getElementById("cloudflareSecret").value = targetConfig ? targetConfig.secret : ""
+                            break
+                        case huaweiType:
+                            document.getElementById("huaweiAccount").value = targetConfig ? targetConfig.id : ""
+                            document.getElementById("huaweiSecret").value = targetConfig ? targetConfig.secret : ""
+                            break
+                        default:
+                    }
+                }
+            }
+        }
+
+        function storeSecureConfig() {
+            var notAllowWanAccess = document.getElementById("notAllowWanAccess").checked
+            var username = document.getElementById("username").value
+            var password = document.getElementById("password").value
+            if (username == undefined || username == "") {
+                confirm.show("username cannot been empty!")
+                return
+            }
+            if (password == undefined || password == "") {
+                confirm.show("password cannot been empty!")
+                return
+            }
+            let secureConfig = {
+                "notAllowWanAccess": notAllowWanAccess,
+                "username": encryptRSA(username),
+                "password": passwordIsHide(password) ? password : encryptRSA(password)
+            }
+            axiosInstance.post("/api/store/secure/config", secureConfig)
+                .then(res => {
+                    confirm.show("Saved successfully, you need to log in again!", function () {
+                        location.reload()
+                    })
+                })
+        }
+
+        function passwordIsHide(password) {
+            let secureConfig = [[${secureConfig}]]
+            if (secureConfig == null || secureConfig == undefined) {
+                return false
+            }
+            return secureConfig.password == password
+        }
+
+        function resovleDnsRecord() {
+            axiosInstance.post("/api/dns/record/resolve")
+                .then(res => {
+                    confirm.show("请求已经发送，请查看日志观察结果")
+                })
+        }
+
+        function storeDDNSConfig() {
+            let ipv4Address
+            let ipv6Address
+            // 从Api获取Ipv4
+            if (document.getElementsByName("ipv4Radios")[0].checked) {
+                ipv4Address = document.getElementById("ipv4ApiInput").value
+            } else {
+                ipv4Address = document.getElementById("selectIpv4Value") ? document.getElementById("selectIpv4Value").value : null
+            }
+
+            // 从Api获取Ipv6
+            if (document.getElementsByName("ipv6Radios")[0].checked) {
+                ipv6Address = document.getElementById("ipv6ApiInput").value
+            } else {
+                ipv6Address = document.getElementById("selectIpv6Value") ? document.getElementById("selectIpv6Value").value : null
+            }
+
+            let ipv4Config = {
+                "enable": document.getElementById("ipv4Enable").checked,
+                "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
+                "inputIpApi": document.getElementById("ipv4ApiInput").value,
+                "networkIp": ipv4Address ? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
+                "domainList": document.getElementById("ipv4_domains").value.split('\n')
+            }
+
+            let ipv6Config = {
+                "enable": document.getElementById("ipv6Enable").checked,
+                "selectIpMethod": document.getElementsByName("ipv6Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
+                "inputIpApi": document.getElementById("ipv6ApiInput").value,
+                "networkIp": ipv6Address ? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
+                "domainList": document.getElementById("ipv6_domains").value.split('\n')
+            }
+
+            let id
+            let secret
+            switch (selectDnsProviderType) {
+                case aliyunType:
+                    id = document.getElementById("aliyunAccount").value;
+                    secret = document.getElementById("aliyunSecret").value;
+
+                    break
+                case dnspodType:
+                    id = document.getElementById("dnspodAccount").value
+                    secret = document.getElementById("dnspodSecret").value
+                    break
+                case huaweiType:
+                    id = document.getElementById("huaweiAccount").value
+                    secret = document.getElementById("huaweiSecret").value
+                    break
+                case cloudflareType:
+                    secret = document.getElementById("cloudflareSecret").value
+                    break
+            }
+            let data = {
+                "id": id ? (idIsHide(id, selectDnsProviderType) ? id : encryptRSA(id)) : encryptRSA(""),
+                "secret": secret ? (secretIsHide(secret, selectDnsProviderType) ? secret : encryptRSA(secret)) : encryptRSA(""),
+                "dnsProviderType": selectDnsProviderType,
+                "ipv4Config": ipv4Config,
+                "ipv6Config": ipv6Config
+            }
+            axiosInstance.post("/api/store/dns/config", data)
+                .then(res => {
+                    confirm.show("Successfully saved!", function () {
+                        window.location.reload()
+                    })
+                })
+        }
+
+        function findDnsRecords(e) {
+            let evt = window.event || e;
+            if (evt.keyCode === 13) {
+                let inputDomain = document.getElementById("inputDomain");
+                if (inputDomain.value !== "") {
+                    //回车事件
+                    let param = "dnsProviderType=" + selectDnsProviderType + "&domain=" + inputDomain.value + "&dnsRecordType=" + selectDnsRecordType
+                    findDnsRecordsRequest(param)
+                } else {
+                    confirm.show("输入域名不能为空")
+                }
+            }
+        }
+
+        function clearTable() {
+            $("#inputDomain").val("")
+            $("#tbMain").empty()
+        }
+
+        function encryptRSA(txt) {
+            const publicKey = [[${rsaPublicKey}]]
+            const encrypt = new JSEncrypt()
+            // 设置公钥
+            encrypt.setPublicKey(publicKey)
+            // 对需要加密的数据进行加密
+            return encrypt.encrypt(txt)
+        }
+
+        function selectIpv4ForApi() {
+            document.getElementById("ipv4_netInterface_select").hidden = true
+            document.getElementById("ipv4ApiInputDiv").hidden = false
+        }
+
+        function selectIpv4vForNetwork() {
+            document.getElementById("ipv4_netInterface_select").hidden = false
+            document.getElementById("ipv4ApiInputDiv").hidden = true
+            var selectIpv4List = document.getElementById("selectIpv4Value");
+            let networkIpv4List = [[${ipv4}]]
+            if (networkIpv4List.length !== 0) {
+                document.getElementById("selectIpv4Value").options.length = 0
+                for (let i = 0; i < networkIpv4List.length; i++) {
+                    let selected
+                    for (let j = 0; j < dnsConfigList.length; j++) {
+                        if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
+                            selected = dnsConfigList[j].ipv4Config.networkIp
+                        }
+                    }
+                    if (selected == networkIpv4List[i].substring(networkIpv4List[i].indexOf('(') + 1, networkIpv4List[i].lastIndexOf(')'))) {
+                        $("#selectIpv4Value").append("<option selected value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+                    } else {
+                        $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+                    }
+                }
+            } else {
+                $("#ipv4_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+            }
+        }
+
+        function selectIpv6ForApi() {
+            document.getElementById("ipv6_netInterface_select").hidden = true
+            document.getElementById("ipv6ApiInputDiv").hidden = false
+        }
+
+        function selectIpv6ForNetwork(value) {
+            document.getElementById("ipv6_netInterface_select").hidden = false
+            document.getElementById("ipv6ApiInputDiv").hidden = true
+            var selectIpv6List = document.getElementById("selectIpv6Value");
+            let networkIpv6List = [[${ipv6}]]
+            if (networkIpv6List.length !== 0) {
+                document.getElementById("selectIpv6Value").options.length = 0
+                for (let i = 0; i < networkIpv6List.length; i++) {
+                    let selected
+                    for (let j = 0; j < dnsConfigList.length; j++) {
+                        if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
+                            selected = dnsConfigList[j].ipv6Config.networkIp
+                        }
+                    }
+                    if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
+                        $("#selectIpv4Value").append("<option selected value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+                    } else {
+                        $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+                    }
+                }
+            } else {
+                $("#ipv6_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+            }
+        }
+
+        function findDnsRecordsRequest(param) {
+            if (param !== undefined && param !== "") {
+                axiosInstance.post('/api/dns/record/list?' + param)
+                    .then(function (response) {
+                        setTable(response.data.data)
+                    })
+            }
+        }
+
+        function setTable(data) {
+            $("#tbMain").empty()
+            const tbody = document.getElementById('tbMain')
+            if (data instanceof Array) {
+                for (let i = 0; i < data.length; i++) { //遍历一下json数据
+                    const trow = getDataRow(data[i]) //定义一个方法,返回tr数据
+                    tbody.appendChild(trow);
+                }
+            } else {
+                confirm.show("No record")
+            }
+        }
+
+        function getDataRow(h) {
+            //创建行
+            const row = document.createElement('tr')
+
+            //创建第零列记录ID
+            let recordIdCell = document.createElement('td')
+            recordIdCell.innerHTML = h.id
+            row.appendChild(recordIdCell)
+
+            //创建第一列域名
+            const domainNameCell = document.createElement('td')
+            domainNameCell.innerHTML = h.domain
+            row.appendChild(domainNameCell)
+
+            //创建第二列记录
+            let rrCell = document.createElement('td')
+            rrCell.innerHTML = h.rr
+            row.appendChild(rrCell)
+
+            //创建第三列指向IP
+            let ipCell = document.createElement('td')
+            ipCell.innerHTML = h.value
+            row.appendChild(ipCell)
+
+            //到这里，json中的数据已经添加到表格中，下面为每行末尾添加删除按钮
+            const delCell = document.createElement('td')//创建第四列，操作列
+            row.appendChild(delCell)
+            const btnDel = document.createElement('input')
+            btnDel.setAttribute('type', 'button')
+            btnDel.setAttribute('value', '删除')
+            btnDel.setAttribute('class', 'btn btn-outline-danger')
+
+            //删除操作
+            btnDel.onclick = function () {
+                let tr = this.parentNode.parentNode;
+                let id = tr.childNodes[0].innerHTML
+                let domain = tr.childNodes[1].innerHTML
+                const TR = tr
+                axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&dnsProviderType=" + selectDnsProviderType)
+                    .then(res => {
+                        if (res.data.data == true) {
+                            confirm.show("successfully deleted")
+                            document.getElementById("tbMain").removeChild(TR)
+                        } else {
+                            confirm.show("failed to delete")
+                        }
+                    })
+            }
+            //把删除按钮加入td，别忘了
+            delCell.appendChild(btnDel);
+            //返回tr数据
+            return row;
+        }
+
+        function setSecureConfig() {
+            let secureConfig = [[${secureConfig}]]
+            document.getElementById("notAllowWanAccess").checked = secureConfig ? secureConfig.notAllowWanAccess : true
+            document.getElementById("username").value = secureConfig ? secureConfig.username : ""
+            document.getElementById("password").value = secureConfig ? secureConfig.password : ""
+        }
+
+        function setAliyunType() {
+            selectDnsProviderType = aliyunType;
+            document.getElementById("aliyunAccount").value = ""
+            document.getElementById("aliyunSecret").value = ""
+            clearForm()
+            setDnsConfig()
+        }
+
+        function setDnspodType() {
+            selectDnsProviderType = dnspodType
+            document.getElementById("dnspodAccount").value = ""
+            document.getElementById("dnspodSecret").value = ""
+            clearForm()
+            setDnsConfig()
+        }
+
+        function setCloudflareType() {
+            selectDnsProviderType = cloudflareType
+            document.getElementById("cloudflareSecret").value = ""
+            clearForm()
+            setDnsConfig()
+        }
+
+        function setHuaweiType() {
+            selectDnsProviderType = huaweiType
+            document.getElementById("huaweiAccount").value = ""
+            document.getElementById("huaweiSecret").value = ""
+            clearForm()
+            setDnsConfig()
+        }
+
+        function clearForm() {
+            document.getElementById("ipv4Enable").value = false
+            document.getElementById("ipv6Enable").value = false
+            document.getElementById("ipv6Radios1").checked = true
+            document.getElementById("ipv6Radios2").checked = false
+            document.getElementById("ipv4Radios1").checked = true
+            document.getElementById("ipv4Radios2").checked = false
+            document.getElementById("ipv4ApiInput").value = ""
+            document.getElementById("ipv4_domains").value = ""
+            document.getElementById("ipv6ApiInput").value = ""
+            document.getElementById("ipv6_domains").value = ""
+            this.clearTable()
+        }
+
+        function isHide(str, provider) {
+            for (let i = 0; i < dnsConfigList.length; i++) {
+                var config = dnsConfigList[i];
+                if (config.dnsProviderType == provider) {
+                    console.log(config)
+                    return true
+                }
+            }
             return false
         }
-        return secureConfig.password == password
-    }
 
-    function resovleDnsRecord() {
-        axiosInstance.post("/api/dns/record/resolve")
-            .then(res => {
-                confirm.show("请求已经发送，请查看日志观察结果")
-            })
-    }
-
-    function storeDDNSConfig() {
-        let ipv4Address
-        let ipv6Address
-        // 从Api获取Ipv4
-        if (document.getElementsByName("ipv4Radios")[0].checked) {
-            ipv4Address = document.getElementById("ipv4ApiInput").value
-        } else {
-            ipv4Address = document.getElementById("selectIpv4Value") ? document.getElementById("selectIpv4Value").value : null
-        }
-
-        // 从Api获取Ipv6
-        if (document.getElementsByName("ipv6Radios")[0].checked) {
-            ipv6Address = document.getElementById("ipv6ApiInput").value
-        } else {
-            ipv6Address = document.getElementById("selectIpv6Value")? document.getElementById("selectIpv6Value").value : null
-        }
-
-        let ipv4Config = {
-            "enable": document.getElementById("ipv4Enable").checked,
-            "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
-            "inputIpApi" : document.getElementById("ipv4ApiInput").value,
-            "networkIp": ipv4Address? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
-            "domainList" : document.getElementById("ipv4_domains").value.split('\n')
-        }
-
-        let ipv6Config = {
-            "enable": document.getElementById("ipv6Enable").checked,
-            "selectIpMethod": document.getElementsByName("ipv6Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
-            "inputIpApi": document.getElementById("ipv6ApiInput").value,
-            "networkIp": ipv6Address? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
-            "domainList": document.getElementById("ipv6_domains").value.split('\n')
-        }
-
-        let id
-        let secret
-        switch (selectDnsProviderType) {
-            case aliyunType:
-                id = document.getElementById("aliyunAccount").value;
-                secret = document.getElementById("aliyunSecret").value;
-
-                break
-            case dnspodType:
-                id = document.getElementById("dnspodAccount").value
-                secret = document.getElementById("dnspodSecret").value
-                break
-            case huaweiType:
-                id = document.getElementById("huaweiAccount").value
-                secret = document.getElementById("huaweiSecret").value
-                break
-            case cloudflareType:
-                secret = document.getElementById("cloudflareSecret").value
-                break
-        }
-        let data = {
-            "id": id ? (idIsHide(id, selectDnsProviderType)? id : encrypt(id)): encrypt("") ,
-            "secret": secret ? (secretIsHide(secret, selectDnsProviderType)? secret : encrypt(secret)) : encrypt(""),
-            "dnsProviderType" : selectDnsProviderType,
-            "ipv4Config": ipv4Config,
-            "ipv6Config": ipv6Config
-        }
-        axiosInstance.post("/api/store/dns/config",data)
-            .then(res => {
-                confirm.show("Successfully saved!", function () {
-                    window.location.reload()
-                })
-            })
-    }
-
-    function findDnsRecords(e) {
-        let evt = window.event || e;
-        if (evt.keyCode === 13) {
-            let inputDomain = document.getElementById("inputDomain");
-            if (inputDomain.value !== "") {
-                //回车事件
-                let param = "dnsProviderType=" + selectDnsProviderType + "&domain=" + inputDomain.value + "&dnsRecordType=" + selectDnsRecordType
-                findDnsRecordsRequest(param)
-            } else {
-                confirm.show("输入域名不能为空")
-            }
-        }
-    }
-
-    function clearTable() {
-        $("#inputDomain").val("")
-        $("#tbMain").empty()
-    }
-
-    function encrypt(txt) {
-        const publicKey = [[${rsaPublicKey}]]
-        const encrypt = new JSEncrypt()
-        // 设置公钥
-        encrypt.setPublicKey(publicKey)
-        // 对需要加密的数据进行加密
-        return encrypt.encrypt(txt)
-    }
-
-    function selectIpv4ForApi() {
-        document.getElementById("ipv4_netInterface_select").hidden = true
-        document.getElementById("ipv4ApiInputDiv").hidden = false
-    }
-
-    function selectIpv4vForNetwork() {
-        document.getElementById("ipv4_netInterface_select").hidden = false
-        document.getElementById("ipv4ApiInputDiv").hidden = true
-        var selectIpv4List = document.getElementById("selectIpv4Value");
-        let networkIpv4List = [[${ipv4}]]
-        if (networkIpv4List.length !== 0) {
-            document.getElementById("selectIpv4Value").options.length = 0
-            for (let i = 0; i < networkIpv4List.length; i++) {
-                let selected
-                for (let j = 0; j < dnsConfigList.length; j++) {
-                    if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
-                        selected = dnsConfigList[j].ipv4Config.networkIp
-                    }
-                }
-                if (selected == networkIpv4List[i].substring(networkIpv4List[i].indexOf('(') + 1, networkIpv4List[i].lastIndexOf(')'))) {
-                    $("#selectIpv4Value").append("<option selected value=" + networkIpv4List[i] +  ">" + networkIpv4List[i] + "</option>")
-                } else {
-                    $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
+        function idIsHide(id, provider) {
+            for (let i = 0; i < dnsConfigList.length; i++) {
+                var config = dnsConfigList[i];
+                if (config.dnsProviderType == provider) {
+                    return config.id == id;
                 }
             }
-        } else {
-            $("#ipv4_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+            return false
         }
-    }
 
-    function selectIpv6ForApi() {
-        document.getElementById("ipv6_netInterface_select").hidden = true
-        document.getElementById("ipv6ApiInputDiv").hidden = false
-    }
-
-    function selectIpv6ForNetwork(value) {
-        document.getElementById("ipv6_netInterface_select").hidden = false
-        document.getElementById("ipv6ApiInputDiv").hidden = true
-        var selectIpv6List = document.getElementById("selectIpv6Value");
-        let networkIpv6List = [[${ipv6}]]
-        if (networkIpv6List.length !== 0) {
-            document.getElementById("selectIpv6Value").options.length = 0
-            for (let i = 0; i < networkIpv6List.length; i++) {
-                let selected
-                for (let j = 0; j < dnsConfigList.length; j++) {
-                    if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
-                        selected = dnsConfigList[j].ipv6Config.networkIp
-                    }
-                }
-                if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
-                    $("#selectIpv4Value").append("<option selected value=" + networkIpv6List[i] +  ">" + networkIpv6List[i] + "</option>")
-                } else {
-                    $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+        function secretIsHide(secret, provider) {
+            for (let i = 0; i < dnsConfigList.length; i++) {
+                var config = dnsConfigList[i];
+                if (config.dnsProviderType == provider) {
+                    return config.secret == secret;
                 }
             }
-        } else {
-            $("#ipv6_netInterface_select").html("<span style='color: red'>没有找到可用的网卡</span>")
+            return false
         }
-    }
 
-    function findDnsRecordsRequest(param) {
-        if (param !== undefined && param !== "") {
-            axiosInstance.post('/api/dns/record/list?' + param)
-                .then(function (response) {
-                    setTable(response.data.data)
-                })
-        }
-    }
-
-    function setTable(data) {
-        $("#tbMain").empty()
-        const tbody = document.getElementById('tbMain')
-        if (data instanceof Array) {
-            for (let i = 0; i < data.length; i++) { //遍历一下json数据
-                const trow = getDataRow(data[i]) //定义一个方法,返回tr数据
-                tbody.appendChild(trow);
-            }
-        } else {
-            confirm.show("No record")
-        }
-    }
-
-    function getDataRow(h) {
-        //创建行
-        const row = document.createElement('tr')
-
-        //创建第零列记录ID
-        let recordIdCell = document.createElement('td')
-        recordIdCell.innerHTML = h.id
-        row.appendChild(recordIdCell)
-
-        //创建第一列域名
-        const domainNameCell = document.createElement('td')
-        domainNameCell.innerHTML = h.domain
-        row.appendChild(domainNameCell)
-
-        //创建第二列记录
-        let rrCell = document.createElement('td')
-        rrCell.innerHTML = h.rr
-        row.appendChild(rrCell)
-
-        //创建第三列指向IP
-        let ipCell = document.createElement('td')
-        ipCell.innerHTML = h.value
-        row.appendChild(ipCell)
-
-        //到这里，json中的数据已经添加到表格中，下面为每行末尾添加删除按钮
-        const delCell = document.createElement('td')//创建第四列，操作列
-        row.appendChild(delCell)
-        const btnDel = document.createElement('input')
-        btnDel.setAttribute('type','button')
-        btnDel.setAttribute('value','删除')
-        btnDel.setAttribute('class','btn btn-outline-danger')
-
-        //删除操作
-        btnDel.onclick = function() {
-            let tr = this.parentNode.parentNode;
-            let id = tr.childNodes[0].innerHTML
-            let domain = tr.childNodes[1].innerHTML
-            const TR = tr
-            axiosInstance.delete("/api/dns/record?recordId=" + id + "&domain=" + domain + "&dnsProviderType=" + selectDnsProviderType)
-                .then(res => {
-                    if (res.data.data == true) {
-                        confirm.show("successfully deleted")
-                        document.getElementById("tbMain").removeChild(TR)
-                    } else {
-                        confirm.show("failed to delete")
-                    }
-                })
-        }
-        //把删除按钮加入td，别忘了
-        delCell.appendChild(btnDel);
-        //返回tr数据
-        return row;
-    }
-
-    function setSecureConfig() {
-        let secureConfig = [[${secureConfig}]]
-        document.getElementById("notAllowWanAccess").checked = secureConfig? secureConfig.notAllowWanAccess : true
-        document.getElementById("username").value = secureConfig? secureConfig.username : ""
-        document.getElementById("password").value = secureConfig? secureConfig.password : ""
-    }
-
-    function setAliyunType() {
-        selectDnsProviderType = aliyunType;
-        document.getElementById("aliyunAccount").value = ""
-        document.getElementById("aliyunSecret").value = ""
-        clearForm()
-        setDnsConfig()
-    }
-
-    function setDnspodType() {
-        selectDnsProviderType = dnspodType
-        document.getElementById("dnspodAccount").value = ""
-        document.getElementById("dnspodSecret").value = ""
-        clearForm()
-        setDnsConfig()
-    }
-
-    function setCloudflareType() {
-        selectDnsProviderType = cloudflareType
-        document.getElementById("cloudflareSecret").value = ""
-        clearForm()
-        setDnsConfig()
-    }
-
-    function setHuaweiType() {
-        selectDnsProviderType = huaweiType
-        document.getElementById("huaweiAccount").value = ""
-        document.getElementById("huaweiSecret").value = ""
-        clearForm()
-        setDnsConfig()
-    }
-
-    function clearForm() {
-        document.getElementById("ipv4Enable").value = false
-        document.getElementById("ipv6Enable").value = false
-        document.getElementById("ipv6Radios1").checked = true
-        document.getElementById("ipv6Radios2").checked = false
-        document.getElementById("ipv4Radios1").checked = true
-        document.getElementById("ipv4Radios2").checked = false
-        document.getElementById("ipv4ApiInput").value = ""
-        document.getElementById("ipv4_domains").value = ""
-        document.getElementById("ipv6ApiInput").value = ""
-        document.getElementById("ipv6_domains").value = ""
-        this.clearTable()
-    }
-
-    function isHide(str, provider) {
-        for (let i = 0; i < dnsConfigList.length; i++) {
-            var config = dnsConfigList[i];
-            if (config.dnsProviderType == provider) {
-                console.log(config)
-                return true
-            }
-        }
-        return false
-    }
-
-    function idIsHide(id, provider) {
-        for (let i = 0; i < dnsConfigList.length; i++) {
-            var config = dnsConfigList[i];
-            if (config.dnsProviderType == provider) {
-                return config.id == id;
-            }
-        }
-        return false
-    }
-
-    function secretIsHide(secret, provider) {
-        for (let i = 0; i < dnsConfigList.length; i++) {
-            var config = dnsConfigList[i];
-            if (config.dnsProviderType == provider) {
-                return config.secret == secret;
-            }
-        }
-        return false
-    }
-
-    /**
-     * 确认框
-     */
-    const confirm = {
         /**
-         * 显示提示框
-         * @param message
+         * 确认框
          */
-        show: function (message, callback) {
-            const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+        const confirm = {
+            /**
+             * 显示提示框
+             * @param message
+             */
+            show: function (message, callback) {
+                const html = `<form class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
                      <div class="modal-dialog modal-sm">
                         <div class="modal-content">
                      <div class="modal-body">${message}</div>
@@ -1650,34 +1708,47 @@
                      </div>
                      </div>
                      </form>`;
-            $(document.body).append(html);
-            $('#confirmModal').modal('show').on('hide.bs.modal', function () {
-                if (typeof callback === 'function') {
-                    $(this).remove();
-                    callback();
-                } else {
-                    $(this).remove();
-                }
-            })
-        },
-        /**
-         * 移除提示框
-         */
-        remove: function () {
-            $('#confirmModal').modal('hide');
-        }
-    };
+                $(document.body).append(html);
+                $('#confirmModal').modal('show').on('hide.bs.modal', function () {
+                    if (typeof callback === 'function') {
+                        $(this).remove();
+                        callback();
+                    } else {
+                        $(this).remove();
+                    }
+                })
+            },
+            /**
+             * 移除提示框
+             */
+            remove: function () {
+                $('#confirmModal').modal('hide');
+            }
+        };
 
-    function initLogSockJs() {
-        var container = document.getElementById("logs");
-        sock.onmessage = function (res) {
-            var json = JSON.parse(res.data);
-            if (json instanceof Array) {
-                for (let i = 0; i < json.length; i++) {
-                    let data = json[i]
-                    let status = data.logStatus
-                    let content = data.content
-                    let timestamp = data.timestamp
+        function initLogSockJs() {
+            var container = document.getElementById("logs");
+            sock.onmessage = function (res) {
+                var json = JSON.parse(res.data);
+                if (json instanceof Array) {
+                    for (let i = 0; i < json.length; i++) {
+                        let data = json[i]
+                        let status = data.logStatus
+                        let content = data.content
+                        let timestamp = data.timestamp
+                        container.innerHTML = container.innerHTML
+                            + '<a  class="list-group-item list-group-item-action">'
+                            + '<div class="d-flex w-100 justify-content-between">'
+                            + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
+                            + '<small>' + getDate(timestamp) + '</small>'
+                            + '</div>'
+                            + '<p class="mb-1">' + content + '</p>'
+                            + '</a>'
+                    }
+                } else {
+                    let content = json.content
+                    let status = json.logStatus
+                    let timestamp = json.timestamp
                     container.innerHTML = container.innerHTML
                         + '<a  class="list-group-item list-group-item-action">'
                         + '<div class="d-flex w-100 justify-content-between">'
@@ -1687,53 +1758,40 @@
                         + '<p class="mb-1">' + content + '</p>'
                         + '</a>'
                 }
-            } else {
-                let content = json.content
-                let status = json.logStatus
-                let timestamp = json.timestamp
-                container.innerHTML = container.innerHTML
-                    + '<a  class="list-group-item list-group-item-action">'
-                    + '<div class="d-flex w-100 justify-content-between">'
-                    + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
-                    + '<small>' + getDate(timestamp) + '</small>'
-                    + '</div>'
-                    + '<p class="mb-1">' + content + '</p>'
-                    + '</a>'
-            }
-        };
+            };
 
-        sock.onclose = function () {
-            sock.close()
-        };
-        sock.onopen = function () {
-            sock.send('ALIYUN');
-        };
-    }
+            sock.onclose = function () {
+                sock.close()
+            };
+            sock.onopen = function () {
+                sock.send('ALIYUN');
+            };
+        }
 
 
-    function getLogs(providerType) {
-        document.getElementById("logs").innerHTML = ''
-        selectLogType = providerType
-        sock.send(providerType)
-    }
+        function getLogs(providerType) {
+            document.getElementById("logs").innerHTML = ''
+            selectLogType = providerType
+            sock.send(providerType)
+        }
 
 
-    function getDate(timestamp) {
-        var date = new Date(timestamp);
-        var year = date.getFullYear(),
-            month = date.getMonth() + 1,//月份是从0开始的
-            day = date.getDate(),
-            hour = date.getHours(),
-            min = date.getMinutes(),
-            sec = date.getSeconds();
-        var newTime = year + '-' +
-            month + '-' +
-            day + ' ' +
-            hour + ':' +
-            min + ':' +
-            sec;
-        return newTime;
-    }
+        function getDate(timestamp) {
+            var date = new Date(timestamp);
+            var year = date.getFullYear(),
+                month = date.getMonth() + 1,//月份是从0开始的
+                day = date.getDate(),
+                hour = date.getHours(),
+                min = date.getMinutes(),
+                sec = date.getSeconds();
+            var newTime = year + '-' +
+                month + '-' +
+                day + ' ' +
+                hour + ':' +
+                min + ':' +
+                sec;
+            return newTime;
+        }
 
 </script>
 </body>
