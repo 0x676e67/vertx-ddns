@@ -17,9 +17,9 @@
   - [功能](#功能)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
-  - [使用IPv6](#使用ipv6)
   - [响应式布局](#界面)
   - [开发&自行编译](#开发自行编译)
+  - [License](#Lisence)
 
 <!-- /TOC -->
 
@@ -81,7 +81,11 @@
 ## 界面
 <img src="./img/img.png"/>
 <img src="./img/webhook.png"/>
-<img src="./img/phone.png"/>
+<div style="width:50px;height:40px">
+	<img src="./img/phone.png"/>
+</div>
+
+
 ## License
 
 [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
