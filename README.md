@@ -97,4 +97,4 @@
 
 感谢[Jetbrains](https://www.jetbrains.com/?from=mayi)制作的IDE，以及免费的开源许可证。
 
-![](https://github.com/zf1976/vertx-ddns/blob/main/img/jetbrains.png)
+<img src="./img/jetbrains.png"/>
