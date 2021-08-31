@@ -17,9 +17,10 @@
   - [功能](#功能)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
-  - [使用IPv6](#使用ipv6)
-  - [界面](#界面)
+  - [Webhook](#Webhook)
+  - [响应式布局](#界面)
   - [开发&自行编译](#开发自行编译)
+  - [License](#License)
 
 <!-- /TOC -->
 
@@ -34,10 +35,13 @@
 - 支持多个域名同时解析，公司必备
 - 支持多级域名
 - 支持域名自定义指向IP
-- 支持查询服务商域名解析记录  
+- 支持查询、自动创建、删除DNS服务商域名解析记录  
 - 网页中配置，可设置 `登录用户名和密码` / `禁止从公网访问`
 - 支持Webhook，提供模版变量自定义消息内容
 - 支持24小时实时解析日志监控
+
+## 系统中使用
+- ...
 
 ## Docker中使用
 
@@ -50,12 +54,12 @@
 - 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
   ```bash
   # 拉取镜像运行，并随系统重启
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:alpine
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
   ```bash
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:alpine
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
 
 ### Webhook
@@ -74,11 +78,15 @@
 > DNS Provider：#provider，Status：#status   -----parser---->    DNS Provider：ALIYUN, Status：2021-08-28 15:14:01
 
 
+
+## 界面
+<img src="./img/img.png"/>
+<img src="./img/webhook.png"/>
+
 ## 注
 - 默认登录的用户名密码：**vertx**
 - Windows、macOS系统下Docker不支持Docker的host模式
-<img src="./img/img.png"/>
-<img src="./img/webhook.png"/>
+
 ## License
 
 [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
@@ -89,4 +97,4 @@
 
 感谢[Jetbrains](https://www.jetbrains.com/?from=mayi)制作的IDE，以及免费的开源许可证。
 
-![](https://github.com/zf1976/vertx-ddns/blob/main/img/jetbrains.png)
+<img src="./img/jetbrains.png"/>
