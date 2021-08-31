@@ -1,4 +1,13 @@
 # Debian ---- Openj9-jlink
+FROM gradle:jdk16-openj9 as gradle-build
+USER root
+WORKDIR /vertx-ddns
+ARG SOURCE_FILE=./
+COPY ${SOURCE_FILE} /vertx-ddns
+# Build project jar
+RUN gradle assemble --info
+RUN gradle shadowJar
+
 FROM adoptopenjdk:16-jdk-openj9 as jre-build
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
@@ -17,11 +26,11 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
-
+COPY --from=gradle-build /vertx-ddns/build/libs/vertx-ddns-latest-all.jar /root/vertx-ddns.jar
 # Continue with your application deployment
 RUN mkdir /root/logs
-ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
-COPY ${JAR_FILE} /root/vertx-ddns.jar
+#ARG JAR_FILE=build/libs/vertx-ddns-latest-all.jar
+#COPY ${JAR_FILE} /root/vertx-ddns.jar
 EXPOSE 	8080
 ENV JVM_OPTS="-Xms128m -Xmx256m" \
     TZ=Asia/Shanghai
