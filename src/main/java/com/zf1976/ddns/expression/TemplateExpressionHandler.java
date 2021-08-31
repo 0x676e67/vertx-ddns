@@ -65,8 +65,8 @@ public class TemplateExpressionHandler implements ExpressionParser{
         }
 
         if (dnsRecordLog.getLogStatus() == LogStatus.ERROR) {
-            content = "DNS provider: " + dnsRecordLog.getDnsProviderType() +
-                    "Status: " + dnsRecordLog.getLogStatus() +
+            content = "DNS provider: " + dnsRecordLog.getDnsProviderType() + "\n" +
+                    "Status: " + dnsRecordLog.getLogStatus() + "\n" +
                     "Message: " + dnsRecordLog.getDomainOrMessage();
         }
 

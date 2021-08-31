@@ -40,7 +40,7 @@ import java.util.Map;
  * @author mac
  * 2021/7/6
  */
-public class ApiVerticle extends AbstractApiVerticle {
+public class WebServerVerticle extends AbstractWebServerVerticle {
 
     private final Logger log = LogManager.getLogger("[ApiVerticle]");
     private WebClient webClient;
@@ -227,12 +227,10 @@ public class ApiVerticle extends AbstractApiVerticle {
             final var webhookProviderType = WebhookProviderType.checkType(request.getParam("type"));
             final var url = AesUtil.decodeByCBC(request.getParam("url"), aesKey.getKey(), aesKey.getIv());
             switch (webhookProviderType) {
-                case SERVER_J -> {
-                    this.webClient.postAbs(url)
-                                  .send()
-                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送，请注意查收"))
-                                  .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
-                }
+                case SERVER_J -> this.webClient.postAbs(url)
+                                           .send()
+                                           .onSuccess(event -> this.routeSuccessHandler(ctx, "the message has been sent, please check it"))
+                                           .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
                 case DING_DING -> {
                     final var secret = AesUtil.decodeByCBC(request.getParam("secret"), aesKey.getKey(), aesKey.getIv());
                     long timestamp = System.currentTimeMillis();
@@ -244,10 +242,10 @@ public class ApiVerticle extends AbstractApiVerticle {
                     this.webClient.postAbs(completeUrl)
                                   .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                                   .sendBuffer(ctx.getBody())
-                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "消息已发送，请注意查收"))
+                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "the message has been sent, please check it"))
                                   .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
                 }
-                default -> throw new UnsupportedOperationException("不支持：" + webhookProviderType + "消息类型");
+                default -> throw new UnsupportedOperationException("not support：" + webhookProviderType + "message type");
             }
 
         } catch (Exception e) {

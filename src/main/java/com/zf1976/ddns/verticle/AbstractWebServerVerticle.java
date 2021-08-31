@@ -36,7 +36,7 @@ import java.util.*;
  * @author mac
  * 2021/7/7
  */
-public abstract class AbstractApiVerticle extends AbstractVerticle implements SecureProvider, WebhookProvider {
+public abstract class AbstractWebServerVerticle extends AbstractVerticle implements SecureProvider, WebhookProvider {
 
     private final Logger log = LogManager.getLogger("[TemplateVerticle]");
     private volatile static Router router;
@@ -53,7 +53,7 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
     protected Boolean notAllowWanAccess = Boolean.TRUE;
     protected SecureConfig defaultSecureConfig;
 
-    public AbstractApiVerticle() {
+    public AbstractWebServerVerticle() {
         this.defaultSecureConfig = ConfigProperty.getDefaultSecureConfig();
     }
 
@@ -68,7 +68,7 @@ public abstract class AbstractApiVerticle extends AbstractVerticle implements Se
     @Override
     public void init(Vertx vertx, Context context) {
         if (router == null) {
-            synchronized (AbstractApiVerticle.class) {
+            synchronized (AbstractWebServerVerticle.class) {
                 if (router == null) {
                     router = Router.router(vertx);
                 }
