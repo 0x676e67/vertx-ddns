@@ -2,10 +2,16 @@
 FROM gradle:jdk16-openj9 as gradle-build
 USER root
 WORKDIR /vertx-ddns
+
+# dependencies cache
+COPY ./settings.gradle /vertx-ddns/settings.gradle
+COPY ./build.gradle /vertx-ddns/build.gradle
+RUN gradle assemble --info
+
+# Build project jar
 ARG SOURCE_FILE=./
 COPY ${SOURCE_FILE} /vertx-ddns
-# Build project jar
-RUN gradle assemble --info
+#RUN gradle assemble --info
 RUN gradle shadowJar
 
 FROM adoptopenjdk:16-jdk-openj9 as jre-build
