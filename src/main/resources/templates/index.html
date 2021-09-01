@@ -1019,7 +1019,7 @@
             const data = {
                 "title": title,
                 "content": content,
-                "url": url ? encrypt(url) : "",
+                "url": url ? encryptRSA(url) : "",
                 "enabled" : enabled
             }
             axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)

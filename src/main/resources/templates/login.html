@@ -74,8 +74,8 @@
           const username = document.getElementById("username").value;
           const password = document.getElementById("password").value;
           let form = new FormData()
-          form.append("username", encrypt(username))
-          form.append("password", encrypt(password))
+          form.append("username", encryptRSA(username))
+          form.append("password", encryptRSA(password))
           const options = {
               method: 'POST',
               headers: {'content-type': 'application/x-www-form-urlencoded'},
@@ -89,7 +89,7 @@
 
       }
 
-      function encrypt(txt) {
+      function encryptRSA(txt) {
           const encrypt = new JSEncrypt()
           // 设置公钥
           encrypt.setPublicKey(publicKey)
