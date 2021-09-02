@@ -1,5 +1,8 @@
+before_script:
+  # 登录到 docker hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_PASSWORD" --password-stdin
+
 script:
   - docker build -t vertx-ddns:debian .
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push zf1976/vertx-ddns:debian
 
