@@ -1,0 +1,3 @@
+script:
+  - docker build -t vertx-ddns:debian .
+  - docker push zf1976/vertx-ddns:debian
