@@ -4,5 +4,6 @@ before_script:
 
 script:
   - docker build -t vertx-ddns:debian .
+  - docker tag vertx-ddns:debian zf1976/vertx-ddns:debian
   - docker push "$DOCKER_USERNAME"/vertx-ddns:debian
 
