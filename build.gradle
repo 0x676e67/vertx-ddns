@@ -101,7 +101,6 @@ nativeImage {
         add '--initialize-at-run-time=io.netty.handler.codec.compression.BrotliDecoder$1'
         add '--initialize-at-run-time=io.netty.handler.codec.compression.BrotliDecoder'
         add '--initialize-at-run-time=io.netty.handler.ssl.JettyNpnSslEngine'
-
         add "--report-unsupported-elements-at-runtime"
         add '--allow-incomplete-classpath'
         add '-H:+PrintClassInitialization'
