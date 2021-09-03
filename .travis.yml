@@ -7,8 +7,8 @@ script:
   - docker build -f ./dockerfiles/alpine/Dockerfile -t vertx-ddns:alpine
   - docker build -f ./dockerfiles/default/Dockerfile -t vertx-ddns:ubuntu
   - docker tag vertx-ddns:debian "$DOCKER_USERNAME"/vertx-ddns:debian
-  - docker tag vertx-ddns:debian "$DOCKER_USERNAME"/vertx-ddns:alpine
-  - docker tag vertx-ddns:debian "$DOCKER_USERNAME"/vertx-ddns:ubuntu
+  - docker tag vertx-ddns:alpine "$DOCKER_USERNAME"/vertx-ddns:alpine
+  - docker tag vertx-ddns:ubuntu "$DOCKER_USERNAME"/vertx-ddns:ubuntu
   - docker push "$DOCKER_USERNAME"/vertx-ddns:debian
   - docker push "$DOCKER_USERNAME"/vertx-ddns:alpine
   - docker push "$DOCKER_USERNAME"/vertx-ddns:ubuntu
