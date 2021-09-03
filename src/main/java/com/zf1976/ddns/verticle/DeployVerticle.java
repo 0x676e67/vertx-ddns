@@ -53,7 +53,7 @@ public class DeployVerticle extends AbstractVerticle {
             return Future.succeededFuture(jsonObject);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            return Future.failedFuture(e);
         }
     }
 
