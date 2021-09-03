@@ -1,5 +1,5 @@
 before_script:
-  # 登录到 docker hub
+  # login in docker hub
    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
 script:
