@@ -2,6 +2,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'org.mikeneck.graalvm-native-image' version 'v1.4.0'
 }
 
 group 'com.zf1976'
@@ -46,7 +47,6 @@ dependencies {
 
 }
 
-
 jar {
     // MANIFEST.MF specifies the main class
     manifest {
@@ -56,4 +56,56 @@ jar {
         )
     }
 
+}
+
+
+import org.mikeneck.graalvm.BuildTypeSelector
+
+// test
+nativeImage {
+    graalVmHome = "/Users/mac/Desktop/graalvm/Contents/Home"
+    buildType { BuildTypeSelector build ->
+        build.executable {
+            main = 'com.zf1976.ddns.Application'
+        }
+    }
+    executableName = 'my-native-application'
+    outputDirectory = file("$buildDir/bin")
+    arguments {
+        add '--no-fallback'
+        add '--enable-all-security-services'
+        add '--trace-class-initialization=org.apache.logging.log4j.Level,org.apache.logging.log4j.util.StackLocatorUtil,org.slf4j.LoggerFactory,org.apache.logging.log4j.message.ReusableMessageFactory,org.apache.logging.log4j.spi.LoggerRegistry,org.apache.logging.log4j.status.StatusLogger,org.apache.logging.log4j.spi.AbstractLogger,org.apache.logging.log4j.util.LoaderUtil,org.apache.logging.log4j.spi.Provider,org.apache.logging.log4j.LogManager,org.apache.logging.log4j.util.PropertiesUtil,org.apache.logging.log4j.spi.ExtendedLoggerWrapper,org.apache.logging.log4j.util.StackLocator,io.netty.util.internal.logging.Log4J2Logger,org.apache.logging.log4j.util.ProviderUtil'
+        add '--initialize-at-build-time=org.apache.logging.log4j.core.config.LoggerConfig$LoggerConfigPredicate$3,org.apache.logging.log4j.util.SortedArrayStringMap,org.apache.logging.log4j.core.layout.AbstractStringLayout,org.apache.logging.log4j.core.layout.AbstractLayout,org.apache.logging.log4j.core.impl.ContextDataFactory,org.apache.logging.log4j.core.appender.AbstractManager,org.apache.logging.log4j.core.appender.OutputStreamManager,org.apache.logging.log4j.core.appender.ConsoleAppender,org.apache.logging.log4j.spi.CopyOnWriteSortedArrayThreadContextMap,org.apache.logging.log4j.core.config.LoggerConfig$LoggerConfigPredicate$1,org.apache.logging.log4j.core.config.LoggerConfig$LoggerConfigPredicate$2,org.apache.logging.log4j.core.appender.FileManager,org.apache.logging.log4j.core.config.LoggerConfig$LoggerConfigPredicate,org.apache.logging.log4j.core.util.ClockFactory,org.apache.logging.log4j.core.impl.Log4jLogEvent,org.apache.logging.log4j.core.config.ConfigurationFactory$Factory,org.apache.logging.log4j.core.config.ConfigurationFactory,org.apache.logging.log4j.core.config.plugins.util.PluginManager,org.apache.logging.log4j.core.util.ShutdownCallbackRegistry,org.apache.logging.log4j.core.appender.rolling.RollingFileManager,org.apache.logging.log4j.core.config.plugins.util.PluginRegistry,org.apache.logging.log4j.core.layout.PatternLayout,org.apache.logging.log4j.util.Strings,org.apache.logging.log4j.spi.DefaultThreadContextStack,org.apache.logging.log4j.core.util.BasicAuthorizationProvider,org.apache.logging.log4j.core.lookup.StrSubstitutor,org.apache.logging.log4j.core.config.Property,org.apache.logging.log4j.core.selector.ClassLoaderContextSelector,org.apache.logging.log4j.core.appender.DefaultErrorHandler,org.apache.logging.log4j.core.impl.ReusableLogEventFactory,org.apache.logging.log4j.core.util.Loader,org.apache.logging.log4j.ThreadContext,org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration,org.apache.logging.log4j.core.LoggerContext,org.apache.logging.log4j.util.Constants,org.apache.logging.log4j.core.filter.AbstractFilterable,org.apache.logging.log4j.core.config.LoggerConfig,org.apache.logging.log4j.core.config.properties.PropertiesConfiguration,org.apache.logging.log4j.core.config.AbstractConfiguration,org.apache.logging.log4j.util.PropertySource$Util,org.apache.logging.log4j.spi.ExtendedLoggerWrapper,org.apache.logging.log4j.message.ReusableMessageFactory,org.apache.logging.log4j.Level,org.apache.logging.log4j.util.StackLocator,org.apache.logging.log4j.util.LoaderUtil,org.apache.logging.log4j.Level,org.apache.logging.log4j.util.PropertiesUtil,org.apache.logging.log4j.util.ProviderUtil,org.apache.logging.log4j.util.StackLocatorUtil,org.apache.logging.log4j.spi.ExtendedLoggerWrapper,org.apache.logging.log4j.spi.AbstractLogger,org.apache.logging.log4j.spi.Provider,org.apache.logging.log4j.message.ReusableMessageFactory,org.apache.logging.log4j.spi.LoggerRegistry,org.slf4j.LoggerFactory,org.apache.logging.log4j.status.StatusLogger,org.apache.logging.log4j.LogManager,org.apache.logging.log4j.core.impl.Log4jContextFactory'
+        add '--initialize-at-build-time=org.apache.logging.log4j.core.jmx.Server,org.apache.logging.log4j.core.lookup.Interpolator,org.apache.logging.log4j.core.appender.rolling.action.IfLastModified,org.apache.logging.log4j.spi.DefaultThreadContextMap,org.apache.logging.log4j.core.lookup.JmxRuntimeInputArgumentsLookup,org.apache.logging.log4j.core.pattern.LoggerPatternConverter,org.apache.logging.log4j.core.impl.ThrowableProxy,org.apache.logging.log4j.core.lookup.ResourceBundleLookup,org.apache.logging.log4j.core.util.Patterns,org.apache.logging.log4j.core.config.ConfigurationSource,org.apache.logging.log4j.core.util.NetUtils,com.oracle.truffle.js.scriptengine.GraalJSEngineFactory,org.apache.logging.log4j.core.config.plugins.util.PluginBuilder,org.apache.logging.log4j.core.util.datetime.FastDateParser,org.apache.logging.log4j.core.lookup.JndiLookup,org.apache.logging.log4j.spi.GarbageFreeSortedArrayThreadContextMap,org.apache.logging.log4j.core.config.status.StatusConfiguration,org.apache.logging.log4j.core.lookup.Log4jLookup,org.apache.logging.log4j.util.PrivateSecurityManagerStackTraceUtil,org.apache.logging.log4j.core.util.OptionConverter,org.apache.logging.log4j.spi.ThreadContextMapFactory,org.apache.logging.log4j.core.pattern.ThreadNamePatternConverter,org.apache.logging.log4j.core.lookup.SystemPropertiesLookup,org.apache.logging.log4j.core.pattern.PatternParser,org.apache.logging.log4j.core.lookup.StrMatcher$StringMatcher,org.apache.logging.log4j.core.util.WatchManager,jdk.management.jfr.SettingDescriptorInfo,org.apache.logging.log4j.core.pattern.HighlightConverter,com.sun.jmx.defaults.JmxProperties,org.apache.logging.log4j.core.util.DefaultShutdownCallbackRegistry,org.apache.logging.log4j.core.pattern.PatternParser$1,org.apache.logging.log4j.core.pattern.LineSeparatorPatternConverter,org.apache.logging.log4j.core.pattern.StyleConverter,org.apache.logging.log4j.core.lookup.StrMatcher,org.apache.logging.log4j.core.impl.ThrowableFormatOptions,org.apache.logging.log4j.core.pattern.DatePatternConverter,org.apache.logging.log4j.core.config.plugins.visitors.PluginVisitors,com.sun.jmx.mbeanserver.Introspector,org.apache.logging.log4j.core.appender.rolling.PatternProcessor,org.apache.logging.log4j.core.impl.ThreadContextDataInjector,org.apache.logging.log4j.core.lookup.DateLookup,org.apache.logging.log4j.core.config.AppenderRef,org.apache.logging.log4j.core.config.plugins.convert.TypeConverters,org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy,org.apache.logging.log4j.core.script.ScriptManager,org.apache.logging.log4j.core.util.Constants,com.sun.jmx.mbeanserver.MXBeanLookup,org.apache.logging.log4j.core.appender.rolling.action.AbstractAction,com.sun.jmx.mbeanserver.MBeanInstantiator,org.apache.logging.log4j.core.appender.rolling.action.Duration,org.apache.logging.log4j.core.pattern.LevelPatternConverter,org.apache.logging.log4j.core.jmx.LoggerContextAdmin,org.apache.logging.log4j.core.util.FileUtils'
+        add '--initialize-at-build-time=org.apache.logging.log4j.core.config.ConfigurationScheduler'
+        add '--initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger'
+        add '--initialize-at-run-time=io.netty.channel.epoll.Epoll'
+        add '--initialize-at-run-time=io.netty.channel.epoll.Native'
+        add '--initialize-at-run-time=io.netty.channel.epoll.EpollEventLoop'
+        add '--initialize-at-run-time=io.netty.channel.epoll.EpollEventArray'
+        add '--initialize-at-run-time=io.netty.channel.DefaultFileRegion'
+        add '--initialize-at-run-time=io.netty.channel.kqueue.KQueueEventArray'
+        add '--initialize-at-run-time=io.netty.channel.kqueue.KQueueEventLoop'
+        add '--initialize-at-run-time=io.netty.channel.kqueue.Native'
+        add '--initialize-at-run-time=io.netty.channel.unix.Errors'
+        add '--initialize-at-run-time=io.netty.channel.unix.IovArray'
+        add '--initialize-at-run-time=io.netty.channel.unix.Limits'
+        add '--initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine'
+        add '--initialize-at-run-time=io.netty.handler.ssl.OpenSslSessionContext'
+        add '--initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslContext'
+        add '--initialize-at-run-time=io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator'
+        add '--initialize-at-run-time=io.netty.handler.ssl.ConscryptAlpnSslEngine'
+        add '--initialize-at-run-time=io.netty.util.internal.logging.Slf4JLoggerFactory'
+        add '--initialize-at-run-time=io.netty.handler.ssl.JettyAlpnSslEngine$ClientEngine'
+        add '--initialize-at-run-time=io.netty.handler.ssl.JettyAlpnSslEngine$ServerEngine'
+        add '--initialize-at-run-time=io.netty.handler.codec.compression.BrotliDecoder$1'
+        add '--initialize-at-run-time=io.netty.handler.codec.compression.BrotliDecoder'
+        add '--initialize-at-run-time=io.netty.handler.ssl.JettyNpnSslEngine'
+
+        add "--report-unsupported-elements-at-runtime"
+        add '--allow-incomplete-classpath'
+        add '-H:+PrintClassInitialization'
+
+
+    }
 }
