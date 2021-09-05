@@ -1,7 +1,4 @@
-package com.zf1976.ddns.verticle;/**
- * @author mac
- * Create by Ant on 2021/9/5 5:11 PM
- */
+package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.util.StringUtil;
 import io.vertx.core.Promise;
