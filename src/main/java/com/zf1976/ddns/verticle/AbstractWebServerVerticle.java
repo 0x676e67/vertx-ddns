@@ -510,8 +510,15 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
         if (routingContext.failure() instanceof ReplyException) {
             errorCode = ((ReplyException) routingContext.failure()).failureCode();
         }
+
         final var failure = routingContext.failure();
-        final var result = DataResult.fail(errorCode, failure.getCause() != null? failure.getCause().getMessage() : failure.getMessage());
+        //noinspection rawtypes
+        DataResult result;
+        if (failure != null) {
+            result = DataResult.fail(errorCode, failure.getCause() != null? failure.getCause().getMessage() : failure.getMessage());
+        } else {
+            result = DataResult.fail();
+        }
         try {
             routingContext.response()
                           .setStatusCode(errorCode)
