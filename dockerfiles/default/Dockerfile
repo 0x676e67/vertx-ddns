@@ -22,7 +22,7 @@ MAINTAINER zf1976 <verticle@foxmail.com>
 LABEL name=vertx-ddns
 LABEL url=https://github.com/zf1976/vertx-ddns
 
-
+ENV LANG C.UTF-8
 ENV JAR_FILE=/vertx-ddns/build/libs/vertx-ddns-latest-all.jar
 COPY --from=gradle-build ${JAR_FILE} /root/vertx-ddns.jar
 
