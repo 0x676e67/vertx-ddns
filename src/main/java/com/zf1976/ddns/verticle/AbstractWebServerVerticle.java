@@ -47,6 +47,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
     protected static final String WEBHOOK_CONFIG_FILENAME = "webhook_config.json";
     protected static final String RSA_KEY_FILENAME = "rsa_key.json";
     protected static final String AES_KEY_FILENAME = "aes_key.json";
+    protected static final String LOGS_FILENAME = "logs";
     protected RsaUtil.RsaKeyPair rsaKeyPair;
     protected AesUtil.AesKey aesKey;
     protected DnsRecordService dnsRecordService;
@@ -415,7 +416,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
     }
 
     protected String toAbsolutePath(String first, String ...more) {
-        return Paths.get(first,more)
+        return Paths.get(first, more)
                     .toFile()
                     .getAbsolutePath();
     }

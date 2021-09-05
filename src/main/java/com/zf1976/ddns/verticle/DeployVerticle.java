@@ -26,8 +26,12 @@ public class DeployVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         this.init()
-            .compose(json -> Future.<Void>succeededFuture()
-                                   .compose(v -> vertx.deployVerticle(new WebServerVerticle(), new DeploymentOptions().setConfig(json))))
+            .compose(json -> {
+                final var deploymentOptions = new DeploymentOptions().setConfig(json);
+                return Future.<Void>succeededFuture()
+                        .compose(v -> vertx.deployVerticle(new WebServerVerticle(), deploymentOptions))
+                        .compose(v -> vertx.deployVerticle(new LogVerticle(),deploymentOptions));
+            })
             .onSuccess(event -> {
                 startPromise.complete();
             })

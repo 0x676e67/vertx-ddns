@@ -29,6 +29,8 @@
     <script src="/js/sockjs.min.js"></script>
     <!--    Markdown-->
     <script src="/js/showdown.min.js"></script>
+    <!--    ANSI Color Log-->
+    <script src="/js/ansi_up.js"></script>
     <style>
         .markdown-body {
             box-sizing: border-box;
@@ -670,14 +672,14 @@
                             title="清空当前选项的解析记录日志">清空解析日志
                     </button>
                     <button class="btn btn-secondary" data-target="#staticBackdrop" data-toggle="modal"
-                            type="button">
-                        系统运行日志
+                            type="button" onclick="selectSystemLogFileList()">
+                        查看系统日志
                     </button>
                 </div>
                 <!-- Button trigger modal -->
 
 
-                <!-- Modal -->
+                <!-- System Log Modal -->
                 <div aria-hidden="true" aria-labelledby="staticBackdropLabel" class="modal fade" data-backdrop="static"
                      data-keyboard="false" id="staticBackdrop" tabindex="-1">
                     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -693,20 +695,14 @@
                                     <div class="row">
                                         <div class="col-md-12">
                                             <form class="form-inline">
-                                                <label class="my-1 mr-2" for="logLevel">日志级别</label>
-                                                <select class="custom-select my-1 mr-sm-2" id="logLevel">
-                                                    <option selected vaule="OFF">OFF</option>
-                                                    <option value="ALL">ALL</option>
-                                                    <option value="TRACE">TRACE</option>
-                                                    <option value="DEBUG">DEBUG</option>
-                                                    <option value="INFO">INFO</option>
-                                                    <option value="WARN">WARN</option>
-                                                    <option value="ERROR">ERROR</option>
+                                                <label class="my-0 mr-2" for="logFile">日志文件</label>
+                                                <select class="custom-select my-1 mr-sm-2" id="logFile" onchange="searchLog()">
                                                 </select>
-                                                <button class="btn btn-primary my-1" id="testBtn">测试</button>
                                                 &nbsp;&nbsp;
-                                                <button class="btn btn-primary my-1" id="clearBtn">清除</button>
                                             </form>
+                                            <div style="margin-bottom: 20px">
+                                                <button class="btn btn-warning my-1" onclick="deleteLog()">删除日志文件</button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -714,14 +710,14 @@
                                             <div class="card">
                                                 <h5 class="card-header">系统日志</h5>
                                                 <div class="card-body" id="messageBox"
-                                                     style="height:600px;overflow:scroll;"></div>
+                                                     style="height:450px;overflow:scroll;"></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" data-dismiss="modal" type="button">Close</button>
+                                <button class="btn btn-primary" data-dismiss="modal" type="button">Close</button>
                             </div>
                         </div>
                     </div>
@@ -910,7 +906,8 @@
             sock.close()
         }
     }
-
+    // ansi color
+    var ansi_up = new AnsiUp;
     // 保存的配置
     const dnsConfigList = [[${dnsConfigList}]]
     const aliyunType = "ALIYUN"
@@ -935,6 +932,54 @@
     initLogSockJs()
     selectDingDingMessageType('text')
 
+    function deleteLog() {
+        var logFileOptions = $('#logFile').children('option');
+        console.log(logFileOptions.length)
+        for (let index = 0; index < logFileOptions.length; index++) {
+            var logFileOption = logFileOptions[index];
+            if (logFileOption.selected) {
+                axiosInstance.delete('/api/log?filename=' + logFileOption.value)
+                    .then(res => {
+                        selectSystemLogFileList()
+                    })
+            }
+        }
+    }
+
+    function searchLog() {
+        document.getElementById('messageBox').innerHTML = ''
+        var logFileOptions = $('#logFile').children('option');
+        for (let index = 0; index < logFileOptions.length; index++) {
+            var logFileOption = logFileOptions[index];
+            if (logFileOption.selected) {
+                axiosInstance.post('/api/log?filename=' + logFileOption.value)
+                    .then(res => {
+                        var html = ansi_up.ansi_to_html(res.data);
+                        $('#messageBox').append('<p style="white-space: pre-wrap" id="logHtml">' + html +'</p>')
+                    })
+
+            }
+        }
+    }
+
+    function selectSystemLogFileList() {
+        document.getElementById('logFile').innerHTML = ''
+        axiosInstance.get("/api/log/list")
+                    .then(res => {
+                        let result = JSON.parse(res.data.data)
+                        if (result) {
+                            for (let i = 0; i < result.length; i++) {
+                                var resultElement = result[i];
+                                if (resultElement == 'app.log') {
+                                    $('#logFile').append('<option selected>' + resultElement + '</option>');
+                                } else {
+                                    $('#logFile').append('<option>' + resultElement + '</option>');
+                                }
+                            }
+                        }
+                        searchLog()
+                    })
+    }
 
     function selectDingDingMessageType(type) {
         document.getElementById('dingding_enabled').checked =  false
@@ -1727,7 +1772,7 @@
         };
 
         function initLogSockJs() {
-            var container = document.getElementById("logs");
+            var container = $('#logs')
             sock.onmessage = function (res) {
                 var json = JSON.parse(res.data);
                 if (json instanceof Array) {
@@ -1736,27 +1781,27 @@
                         let status = data.logStatus
                         let content = data.content
                         let timestamp = data.timestamp
-                        container.innerHTML = container.innerHTML
-                            + '<a  class="list-group-item list-group-item-action">'
+                        let html = '<a  class="list-group-item list-group-item-action">'
                             + '<div class="d-flex w-100 justify-content-between">'
                             + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
                             + '<small>' + getDate(timestamp) + '</small>'
                             + '</div>'
                             + '<p class="mb-1">' + content + '</p>'
                             + '</a>'
+                        container.append(html)
                     }
                 } else {
                     let content = json.content
                     let status = json.logStatus
                     let timestamp = json.timestamp
-                    container.innerHTML = container.innerHTML
-                        + '<a  class="list-group-item list-group-item-action">'
+                    let html = '<a  class="list-group-item list-group-item-action">'
                         + '<div class="d-flex w-100 justify-content-between">'
                         + '<h6 class="mb-1">' + '状态：' + status + '</h6>'
                         + '<small>' + getDate(timestamp) + '</small>'
                         + '</div>'
                         + '<p class="mb-1">' + content + '</p>'
                         + '</a>'
+                    container.append(html)
                 }
             };
 

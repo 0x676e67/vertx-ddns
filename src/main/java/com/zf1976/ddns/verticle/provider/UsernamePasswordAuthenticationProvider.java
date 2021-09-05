@@ -9,6 +9,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.impl.UserImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
@@ -19,6 +21,7 @@ import java.util.Map;
 public record UsernamePasswordAuthenticationProvider(
         SecureProvider secureProvider) implements AuthenticationProvider {
 
+    private static final Logger log = LogManager.getLogger("[UsernamePasswordAuthenticationProvider]");
     private static final String usernameKey = "username";
     private static final String passwordKey = "password";
 
@@ -76,8 +79,10 @@ public record UsernamePasswordAuthenticationProvider(
         final var password = (String) user.get(passwordKey);
         if (ObjectUtil.nullSafeEquals(usernamePassword.get(usernameKey), username)
                 && ObjectUtil.nullSafeEquals(usernamePassword.get(passwordKey), password)) {
+            log.info("login in username: {}", username);
             return Future.succeededFuture(user);
         }
+        log.error("wrong user name or password!");
         return Future.failedFuture("wrong user name or password!");
     }
 
