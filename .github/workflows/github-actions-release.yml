@@ -34,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.url_output }}
           asset_path: ./libs/vertx-ddns-latest-all.jar # to upload files
           asset_name: vertx-ddns.jar # file name after upload
           asset_content_type: application/jar
