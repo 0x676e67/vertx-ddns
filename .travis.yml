@@ -1,5 +1,5 @@
+language: java
 before_script:
-  # login in docker hub
    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 
 script:
