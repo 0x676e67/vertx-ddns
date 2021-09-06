@@ -86,6 +86,7 @@
 ## 界面
 <img src="./img/img.png"/>
 <img src="./img/webhook.png"/>
+<ima src="./img/log.png"/>
 
 ## 注
 - 默认登录的用户名密码：**vertx**
