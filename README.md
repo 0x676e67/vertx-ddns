@@ -85,7 +85,7 @@
 
 ## 界面
 <img src="./img/img.png"/>
-<ima src="./img/log.png"/>
+<img src="./img/log.png"/>
 <img src="./img/webhook.png"/>
 
 ## 注
