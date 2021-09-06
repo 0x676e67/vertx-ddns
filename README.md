@@ -9,12 +9,11 @@
 		<img src="https://app.travis-ci.com/zf1976/vertx-ddns.svg?branch=main"/>
 	</a>
 	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml">
-		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml/badge.svg?branch=v0.1.1"/>
+		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml/badge.svg"/>
 	</a>
 	<a target="_blank" href="https://hub.docker.com/repository/docker/zf1976/vertx-ddns">
 		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
 	</a>
-
 </p>
 
 # vertx-ddns
