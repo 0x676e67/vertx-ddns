@@ -18,16 +18,22 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Build with Gradle
         run: ./gradlew shadowJar
+        id: create_release
+      - name: Create Release
+        uses: actions/create-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-      - name: Create GitHub release
-        uses: marvinpinto/action-automatic-releases@latest
         with:
-          branch: main
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }} # (tag) name
           release_name: Release ${{ github.ref }}
-          automatic_release_tag: "latest"
           draft: false
           prerelease: false
-          files: |
-            libs/**.jar
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # upload address obtained by creating release
+          asset_path: ./libs/vertx-ddns-latest-all.jar # to upload files
+          asset_name: vertx-ddns.jar # file name after upload
