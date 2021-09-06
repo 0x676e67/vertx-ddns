@@ -18,12 +18,13 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Build with Gradle
         run: ./gradlew shadowJar
-        id: create_release
       - name: Create Release
+        id: create_release
         uses: actions/create-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           tag_name: ${{ github.ref }} # (tag) name
           release_name: Release ${{ github.ref }}
           draft: false
