@@ -21,3 +21,16 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Build with Gradle
         run: ./gradlew shadowJar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          branch: main
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          automatic_release_tag: "latest"
+          draft: false
+          prerelease: false
+          files: |
+            libs/**.jar
