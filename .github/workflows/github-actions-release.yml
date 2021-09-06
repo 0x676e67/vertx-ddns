@@ -35,6 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./libs/vertx-ddns-latest-all.jar # to upload files
+          asset_path: ./build/libs/*.jar # to upload files
           asset_name: vertx-ddns.jar # file name after upload
           asset_content_type: application/jar
+
