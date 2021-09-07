@@ -2,14 +2,17 @@
 	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/blob/main/LICENSE">
 		<img src="https://img.shields.io/badge/license-MIT-blue.svg" ></img>
 	</a>
+	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
+		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns">
+	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg" ></img>
 	</a>
-	<a target="_blank" href="https://app.travis-ci.com/zf1976/vertx-ddns">
-		<img src="https://app.travis-ci.com/zf1976/vertx-ddns.svg?branch=main"/>
-	</a>
 	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml">
 		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml/badge.svg"/>
+	</a>
+	<a target="_blank" href="https://app.travis-ci.com/zf1976/vertx-ddns">
+		<img src="https://app.travis-ci.com/zf1976/vertx-ddns.svg?branch=main"/>
 	</a>
 	<a target="_blank" href="https://hub.docker.com/repository/docker/zf1976/vertx-ddns">
 		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
