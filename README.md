@@ -3,7 +3,7 @@
 		<img src="https://img.shields.io/badge/license-MIT-blue.svg" ></img>
 	</a>
 	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
-		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns">
+		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg" ></img>
