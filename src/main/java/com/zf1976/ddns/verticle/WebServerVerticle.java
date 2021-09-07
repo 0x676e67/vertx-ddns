@@ -129,8 +129,8 @@ public class WebServerVerticle extends AbstractWebServerVerticle {
                                .listen(serverPort)
             )
             .onSuccess(event -> {
-                log.info("Vertx web server initialized with port(s): {}(http)", serverPort);
-                log.info("DDNS-Vertx is running at http://localhost:{}", serverPort);
+                log.info("Vertx web server initialized with port(s):{}(http)", serverPort);
+                log.info("Vertx-DDNS is running at http://localhost:{}", serverPort);
                 try {
                     super.start(startPromise);
                 } catch (Exception e) {
