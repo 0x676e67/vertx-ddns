@@ -193,7 +193,11 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
         if (dnspodDataResult != null && dnspodDataResult.getResponse() != null) {
             final var error = dnspodDataResult.getResponse()
                                               .getError();
+
             if (error != null) {
+                if ("ResourceNotFound.NoDataOfRecord".equals(error.getCode())) {
+                    return dnspodDataResult;
+                }
                 throw new DnsServiceResponseException(error.getMessage());
             }
         }
