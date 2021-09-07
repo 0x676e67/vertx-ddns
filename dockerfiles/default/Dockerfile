@@ -10,8 +10,8 @@ COPY ${GRADLE_BUILD} /vertx-ddns/build.gradle
 RUN gradle assemble --info
 
 # Build project jar
-ARG SOURCE_FILE=./
-COPY ${SOURCE_FILE} /vertx-ddns
+ARG SOURCE_FILE=./src
+COPY ${SOURCE_FILE} /vertx-ddns/src
 #RUN gradle assemble --info
 RUN gradle shadowJar
 
