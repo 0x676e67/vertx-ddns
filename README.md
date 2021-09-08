@@ -8,8 +8,8 @@
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg" ></img>
 	</a>
-	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml">
-		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/github-actions-release.yml/badge.svg"/>
+	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml">
+		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml/badge.svg"/>
 	</a>
 	<a target="_blank" href="https://app.travis-ci.com/zf1976/vertx-ddns">
 		<img src="https://app.travis-ci.com/zf1976/vertx-ddns.svg?branch=main"/>
