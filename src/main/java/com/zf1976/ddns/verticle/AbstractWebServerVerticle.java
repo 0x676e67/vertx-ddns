@@ -103,16 +103,12 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                               final var rsaKeyPairFuture = fileSystem.exists(rsaKeyPath)
                                                                      .compose(bool -> createRsaKeyFile(fileSystem, bool, rsaKeyPath))
                                                                      .compose(rsa -> this.readRsaKeyPair())
-                                                                     .onSuccess(key -> {
-                                                                         this.rsaKeyPair = key;
-                                                                     });
+                                                                     .onSuccess(key -> this.rsaKeyPair = key);
 
                               final var aesKeyFuture = fileSystem.exists(aesKeyPath)
                                                                  .compose(bool -> createAesKeyFile(fileSystem, bool, aesKeyPath))
                                                                  .compose(aes -> this.readAesKey())
-                                                                 .onSuccess(key -> {
-                                                                     this.aesKey = key;
-                                                                 });
+                                                                 .onSuccess(key -> this.aesKey = key);
                               return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture);
 
                           })
@@ -126,7 +122,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                               log.info("RSA key has been initialized");
                               log.info("AES key has been initialized");
                               this.routeTemplateHandler(router, vertx);
-                              return this.initDnsServiceConfig(vertx.fileSystem());
+                              return this.initDnsServiceConfig();
                           });
      }
 
@@ -194,7 +190,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
         }
     }
 
-    protected Future<Void> initDnsServiceConfig(FileSystem fileSystem) {
+    protected Future<Void> initDnsServiceConfig() {
         return this.readDnsConfig()
                    .compose(this::newDnsRecordService);
     }
