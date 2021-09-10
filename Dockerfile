@@ -35,7 +35,7 @@ ENV PATH "${JAVA_HOME}/bin:${PATH}"
 ENV JAR_FILE=/vertx-ddns/build/libs/vertx-ddns-latest-all.jar
 
 COPY --from=jre-build /javaruntime $JAVA_HOME
-COPY --from=gradle-build /vertx-ddns/build/libs/vertx-ddns-latest-all.jar /root/vertx-ddns.jar
+COPY --from=gradle-build ${JAR_FILE} /root/vertx-ddns.jar
 
 # Continue with your application deployment
 RUN mkdir /root/logs
