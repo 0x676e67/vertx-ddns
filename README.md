@@ -70,7 +70,7 @@
   ```bash
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
-
+- 若需要挂载日志文件到主机，则加上`-v /your_path:/root/logs`
 ### Webhook
 - 解析记录日志状态发生变化（成功失败、错误），回调提供的Webhook API
 - 消息内容支持模版变量，若消息内容为空或系统发送错误，则默认发送解析日志内容
