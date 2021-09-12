@@ -37,8 +37,7 @@ public class ConfigProperty {
         }
         try {
             final var bufferedInputStream = new BufferedInputStream(resourceAsStream);
-            final var decodeValue = Json.decodeValue(Buffer.buffer(bufferedInputStream.readAllBytes()));
-            return JsonObject.mapFrom(decodeValue);
+            return Buffer.buffer(bufferedInputStream.readAllBytes()).toJsonObject();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
