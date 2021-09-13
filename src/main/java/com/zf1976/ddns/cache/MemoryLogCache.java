@@ -17,9 +17,9 @@ public class MemoryLogCache extends AbstractMemoryLogCache<DnsProviderType, DnsR
 
     private final AsyncCache<DnsProviderType, Collection<DnsRecordLog>> cache;
 
-    public MemoryLogCache(long maximumSize) {
+    public MemoryLogCache(long maximumSize, int duration, TimeUnit unit) {
         this.cache = Caffeine.newBuilder()
-                             .expireAfterWrite(5, TimeUnit.HOURS)
+                             .expireAfterWrite(duration, unit)
                              .maximumSize(maximumSize)
                              .buildAsync();
     }

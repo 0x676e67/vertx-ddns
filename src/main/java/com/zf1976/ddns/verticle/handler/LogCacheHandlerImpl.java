@@ -8,6 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author mac
@@ -19,7 +20,7 @@ public class LogCacheHandlerImpl implements LogCacheHandler<DnsProviderType, Dns
     private final Vertx vertx;
 
     public LogCacheHandlerImpl(Vertx vertx) {
-        this.memoryLogCache = new MemoryLogCache(10000);
+        this.memoryLogCache = new MemoryLogCache(10_000, 5, TimeUnit.HOURS);
         this.vertx = vertx;
     }
 
