@@ -79,7 +79,7 @@
   # 下载最新的安装包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
   wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
   
-  #没有梯子的话加速可以使用加速镜像
+  # 没有梯子的话加速可以使用加速镜像
   wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
   
   # 启动测试
@@ -90,14 +90,14 @@
   
   如看到以下日志输出，则代表启动成功.
   ```shell
-  2021-09-15 11:45:17.656 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize project working directory：/Users/ant/.vertx_ddns
-  2021-09-15 11:45:17.658 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize DNS configuration file：/Users/ant/.vertx_ddns/dns_config.json
-  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize secure configuration file：/Users/ant/.vertx_ddns/secure_config.json
-  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize webhook configuration file：/Users/ant/.vertx_ddns/webhook_config.json
-  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize rsa key configuration file：/Users/ant/.vertx_ddns/rsa_key.json
-  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize aes key configuration file：/Users/ant/.vertx_ddns/aes_key.json
-  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - RSA key has been initialized
-  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - AES key has been initialized
+  2021-09-15 11:45:17.656 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize project working directory：/Users/ant/.vertx_ddns
+  2021-09-15 11:45:17.658 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize DNS configuration file：/Users/ant/.vertx_ddns/dns_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize secure configuration file：/Users/ant/.vertx_ddns/secure_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize webhook configuration file：/Users/ant/.vertx_ddns/webhook_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize rsa key configuration file：/Users/ant/.vertx_ddns/rsa_key.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize aes key configuration file：/Users/ant/.vertx_ddns/aes_key.json
+  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - RSA key has been initialized
+  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - AES key has been initialized
   2021-09-15 11:45:17.763 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx web server initialized with port(s):8080(http)
   2021-09-15 11:45:17.764 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx-DDNS is running at http://localhost:8080
   2021-09-15 11:45:17.786 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - PeriodicVerticle deploy complete!
@@ -208,6 +208,7 @@
 ## 注
 - 默认登录的用户名密码：**vertx**
 - Windows、macOS系统下Docker不支持Docker的host模式
+- 默认禁止外网访问，如启动需要请编辑$HOME/.vertx_ddns/secure_config.json文件中notAllowWanAccess字段值为false，并重启服务
 
 ## License
 

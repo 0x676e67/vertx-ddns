@@ -38,7 +38,7 @@ import java.util.*;
  */
 public abstract class AbstractWebServerVerticle extends AbstractVerticle implements SecureProvider, WebhookProvider {
 
-    private final Logger log = LogManager.getLogger("[TemplateVerticle]");
+    private final Logger log = LogManager.getLogger("[AbstractWebServerVerticle]");
     private volatile static Router router;
     protected String workDir = null;
     protected static final String WORK_DIR_NAME = ".vertx_ddns";
@@ -52,11 +52,6 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
     protected AesUtil.AesKey aesKey;
     protected DnsRecordService dnsRecordService;
     protected Boolean notAllowWanAccess = Boolean.TRUE;
-    protected SecureConfig defaultSecureConfig;
-
-    public AbstractWebServerVerticle() {
-        this.defaultSecureConfig = ConfigProperty.getDefaultSecureConfig();
-    }
 
     protected synchronized Router getRouter() {
         return router;
@@ -109,7 +104,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                                                                  .compose(bool -> createAesKeyFile(fileSystem, bool, aesKeyPath))
                                                                  .compose(aes -> this.readAesKey())
                                                                  .onSuccess(key -> this.aesKey = key);
-                              return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture);
+                              return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture, this.readSecureConfig());
 
                           })
                           .compose(v -> {
@@ -354,7 +349,10 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                         try {
                             // config is empty
                             if (StringUtil.isEmpty(buffer.toString())) {
-                                return Future.succeededFuture(this.defaultSecureConfig);
+                                final var defaultSecureConfig = ConfigProperty.getDefaultSecureConfig();
+                                this.notAllowWanAccess = defaultSecureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
+                                return this.writeSecureConfig(defaultSecureConfig)
+                                        .compose(v -> Future.succeededFuture(defaultSecureConfig));
                             }
                             SecureConfig secureConfig = Json.decodeValue(buffer, SecureConfig.class);
                             this.notAllowWanAccess = secureConfig.getNotAllowWanAccess() == null? Boolean.TRUE : Boolean.FALSE;
