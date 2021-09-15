@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class WebServerVerticle extends AbstractWebServerVerticle {
 
-    private final Logger log = LogManager.getLogger("[ApiVerticle]");
+    private final Logger log = LogManager.getLogger("[WebServerVerticle]");
     private WebClient webClient;
     private LogCacheHandler<DnsProviderType, DnsRecordLog> logCacheHandler;
 

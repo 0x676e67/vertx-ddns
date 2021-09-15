@@ -98,9 +98,9 @@
   2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - Initialize aes key configuration file：/Users/ant/.vertx_ddns/aes_key.json
   2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - RSA key has been initialized
   2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [AbstractWebServerVerticle] - AES key has been initialized
-  2021-09-15 11:45:17.763 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx web server initialized with port(s):8080(http)
-  2021-09-15 11:45:17.764 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx-DDNS is running at http://localhost:8080
-  2021-09-15 11:45:17.786 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - PeriodicVerticle deploy complete!
+  2021-09-15 11:45:17.763 [vert.x-eventloop-thread-2] INFO  [WebServerVerticle] - Vertx web server initialized with port(s):8080(http)
+  2021-09-15 11:45:17.764 [vert.x-eventloop-thread-2] INFO  [WebServerVerticle] - Vertx-DDNS is running at http://localhost:8080
+  2021-09-15 11:45:17.786 [vert.x-eventloop-thread-2] INFO  [WebServerVerticle] - PeriodicVerticle deploy complete!
   ```
   - 提示
   > 以上的启动仅仅为测试 vertx-ddns 是否可以正常运行，如果我们关闭 ssh 连接，vertx-ddns 也将被关闭。要想一直处于运行状态，请继续看下面的教程。
