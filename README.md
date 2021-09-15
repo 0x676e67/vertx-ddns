@@ -103,7 +103,7 @@
   2021-09-15 11:45:17.786 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - PeriodicVerticle deploy complete!
   ```
   - 提示
-  > 以上的启动仅仅为测试 Halo 是否可以正常运行，如果我们关闭 ssh 连接，vertx-ddns 也将被关闭。要想一直处于运行状态，请继续看下面的教程。
+  > 以上的启动仅仅为测试 vertx-ddns 是否可以正常运行，如果我们关闭 ssh 连接，vertx-ddns 也将被关闭。要想一直处于运行状态，请继续看下面的教程。
 - 进阶配置
   - 复制vertx-ddns.service 模板
   ```shell
