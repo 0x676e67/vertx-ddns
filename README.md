@@ -134,7 +134,7 @@
   USER：运行 vertx-ddns 的系统用户，修改为你的用户名称即可。反之请删除 User=USER。
   ```
   - 提示
-    1. 请确保 /usr/bin/java 是正确无误的
+    1. 如果你不是按照上面的方法安装的 JDK，请确保 /usr/bin/java 是正确无误的
     2. systemd 中的所有路径均要写为绝对路径，另外，~ 在 systemd 中也是无法被识别的，所以你不能写成类似 ~/vertx-ddns-latest.jar 这种路径。
     3. 如何检验是否修改正确：把 ExecStart 中的命令拿出来执行一遍。
   - 创建模版文件
