@@ -51,6 +51,26 @@
 
 ## 系统中使用
 > 这里只展示Linux系统安装部署，更多请查看[wiki](https://github.com/zf1976/vertx-ddns/wiki)
+- 环境要求
+  > 为了在使用过程中不出现意外的事故，给出下列推荐的配置
+   - Debian 10
+   - 512 MB 以上内存
+- 安装 Java 运行环境(Ubuntu/Debian 安装)
+  > 若已经存在 Java 运行环境的可略过这一步。
+  ```shell
+  # 导入 AdoptOpenJDK GPG key
+  wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
+   
+  # 导入 DEB Repository
+  sudo add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
+   
+  # 若 terminal 提示 Command not found, 运行
+  apt-get install -y software-properties-common
+   
+  # 安装目标 OpenJDK 版本
+  sudo apt-get install adoptopenjdk-16-hotspot
+  ```
+  当然，这只是其中一种比较简单的安装方式，你也可以用其他方式，并不是强制要求使用这种方式安装。
 - 运行vertx-ddns
   > vertx-ddns 的整个应用程序只有一个 Jar 包，且不包含用户的任何配置，它放在任何目录都是可行的。vertx-ddns 所有配置文件都存放在`~/.vertx_ddns`目录下。你完全不需要担心安装包的安危，它仅仅是个服务而已。	
   > 
@@ -67,7 +87,8 @@
   # 默认使用8080端口，如果需要更换端口
   java -jar vertx-ddns-latest.jar 8888
   ```
-  > 如看到以下日志输出，则代表启动成功.
+  
+  如看到以下日志输出，则代表启动成功.
   ```shell
   2021-09-15 11:45:17.656 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize project working directory：/Users/ant/.vertx_ddns
   2021-09-15 11:45:17.658 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize DNS configuration file：/Users/ant/.vertx_ddns/dns_config.json
