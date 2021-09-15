@@ -50,24 +50,115 @@
 - 支持24小时实时解析日志监控
 
 ## 系统中使用
-- ...
+> 这里只展示Linux系统安装部署，更多请查看[wiki](https://github.com/zf1976/vertx-ddns/wiki)
+- 运行vertx-ddns
+  > vertx-ddns 的整个应用程序只有一个 Jar 包，且不包含用户的任何配置，它放在任何目录都是可行的。vertx-ddns 所有配置文件都存放在`~/.vertx_ddns`目录下。你完全不需要担心安装包的安危，它仅仅是个服务而已。	
+  > 
+  > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
+  ```shell
+  # 下载最新的安装包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
+  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
+  
+  #没有梯子的话加速可以使用加速镜像
+  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
+  
+  # 启动测试
+  java -jar vertx-ddns-latest.jar
+  # 默认使用8080端口，如果需要更换端口
+  java -jar vertx-ddns-latest.jar 8888
+  ```
+  > 如看到以下日志输出，则代表启动成功.
+  ```shell
+  2021-09-15 11:45:17.656 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize project working directory：/Users/ant/.vertx_ddns
+  2021-09-15 11:45:17.658 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize DNS configuration file：/Users/ant/.vertx_ddns/dns_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize secure configuration file：/Users/ant/.vertx_ddns/secure_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize webhook configuration file：/Users/ant/.vertx_ddns/webhook_config.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize rsa key configuration file：/Users/ant/.vertx_ddns/rsa_key.json
+  2021-09-15 11:45:17.659 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - Initialize aes key configuration file：/Users/ant/.vertx_ddns/aes_key.json
+  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - RSA key has been initialized
+  2021-09-15 11:45:17.660 [vert.x-eventloop-thread-2] INFO  [TemplateVerticle] - AES key has been initialized
+  2021-09-15 11:45:17.763 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx web server initialized with port(s):8080(http)
+  2021-09-15 11:45:17.764 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - Vertx-DDNS is running at http://localhost:8080
+  2021-09-15 11:45:17.786 [vert.x-eventloop-thread-2] INFO  [ApiVerticle] - PeriodicVerticle deploy complete!
+  ```
+  - 提示
+  > 以上的启动仅仅为测试 Halo 是否可以正常运行，如果我们关闭 ssh 连接，vertx-ddns 也将被关闭。要想一直处于运行状态，请继续看下面的教程。
+- 进阶配置
+  - 复制vertx-ddns.service 模板
+  ```shell
+  [Unit]
+  Description=Vertx-DDNS Service
+  Documentation=https://github.com/zf1976/vertx-ddns/edit/main/README.md
+  After=network-online.target
+  Wants=network-online.target
+
+  [Service]
+  User=USER
+  Type=simple
+  ExecStart=/usr/bin/java -server -Xms128m -Xmx256m -jar YOUR_JAR_PATH
+  ExecStop=/bin/kill -s QUIT $MAINPID
+  Restart=always
+  StandOutput=syslog
+
+  StandError=inherit
+
+  [Install]
+  WantedBy=multi-user.target
+  ```
+  - 参数
+  ```shell
+  -Xms256m：为 JVM 启动时分配的内存，请按照服务器的内存做适当调整，512 M 内存的服务器推荐设置为 128，1G 内存的服务器推荐设置为 256，默认为 256。
+  -Xmx256m：为 JVM 运行过程中分配的最大内存，配置同上。
+  YOUR_JAR_PATH：vertx-ddns 安装包的绝对路径，例如 /www/wwwroot/vertx-ddns-latest.jar。
+  USER：运行 vertx-ddns 的系统用户，修改为你的用户名称即可。反之请删除 User=USER。
+  ```
+  - 提示
+    1. 请确保 /usr/bin/java 是正确无误的
+    2. systemd 中的所有路径均要写为绝对路径，另外，~ 在 systemd 中也是无法被识别的，所以你不能写成类似 ~/vertx-ddns-latest.jar 这种路径。
+    3. 如何检验是否修改正确：把 ExecStart 中的命令拿出来执行一遍。
+  - 创建模版文件
+  ```shell
+  # 将上面模版内容复制到文件内
+  sudo vim /etc/systemd/system/vertx-ddns.service
+  ```
+  - 测试运行
+  ```shell
+  # 修改 service 文件之后需要刷新 Systemd
+  sudo systemctl daemon-reload
+
+  # 使 vertx-ddns 开机自启
+  sudo systemctl enable vertx-ddns
+
+  # 启动 vertx-ddns
+  sudo service vertx-ddns start
+
+  # 重启 vertx-ddns
+  sudo service vertx-ddns restart
+
+  # 停止 vertx-ddns
+  sudo service vertx-ddns stop
+
+  # 查看 vertx-ddns 的运行状态
+  sudo service vertx-ddns status
+  ```
+  
 
 ## Docker中使用
 
-> docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
+> Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 其中`debian`,`alpine`为基础的镜像经过`jlink`生成的极简`JRE Runtime`，大大减少了镜像体积， 使用OpenJ9有效减少运行内存占用。
 > 三种镜像大小`alpine` < `debian` < `ubuntu`。
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 若不挂载主机目录, 删除容器同时会删除配置
 - 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
-  ```bash
+  ```shell
   # 拉取镜像运行，并随系统重启
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
-  ```bash
+  ```shell
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
 - 若需要挂载日志文件到主机，则加上`-v /your_path:/root/logs`
