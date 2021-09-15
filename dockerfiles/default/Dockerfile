@@ -15,21 +15,31 @@ COPY ${SOURCE_FILE} /vertx-ddns/src
 #RUN gradle assemble --info
 RUN gradle shadowJar
 
-FROM adoptopenjdk:16-jre-openj9 as build
+FROM adoptopenjdk:16-jdk-openj9 as jre-build
+# Create a custom Java runtime
+RUN $JAVA_HOME/bin/jlink \
+         --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
+         --output /javaruntime
+
+FROM ubuntu:latest as build
 WORKDIR /root
 USER root
 MAINTAINER zf1976 <verticle@foxmail.com>
 LABEL name=vertx-ddns
 LABEL url=https://github.com/zf1976/vertx-ddns
 
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
 ENV LANG C.UTF-8
 ENV JAR_FILE=/vertx-ddns/build/libs/vertx-ddns-latest-all.jar
+
+COPY --from=jre-build /javaruntime $JAVA_HOME
 COPY --from=gradle-build ${JAR_FILE} /root/vertx-ddns.jar
 
 # Continue with your application deployment
 RUN mkdir /root/logs
 EXPOSE 	8080
-ENV JVM_OPTS="-Xms128m -Xmx256m" \
+ENV JVM_OPTS="-Xms128m -Xmx128m" \
     TZ=Asia/Shanghai
 
 CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /root/vertx-ddns.jar

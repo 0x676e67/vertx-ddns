@@ -39,7 +39,7 @@ COPY --from=gradle-build ${JAR_FILE} /root/vertx-ddns.jar
 # Continue with your application deployment
 RUN mkdir /root/logs
 EXPOSE 	8080
-ENV JVM_OPTS="-Xms128m -Xmx256m" \
+ENV JVM_OPTS="-Xms128m -Xmx128m" \
     TZ=Asia/Shanghai
 
 CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /root/vertx-ddns.jar

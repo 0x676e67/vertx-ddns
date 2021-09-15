@@ -131,7 +131,7 @@
   -Xms256m：为 JVM 启动时分配的内存，请按照服务器的内存做适当调整，512 M 内存的服务器推荐设置为 128，1G 内存的服务器推荐设置为 256，默认为 256。
   -Xmx256m：为 JVM 运行过程中分配的最大内存，配置同上。
   YOUR_JAR_PATH：vertx-ddns 安装包的绝对路径，例如 /www/wwwroot/vertx-ddns-latest.jar。
-  USER：运行 vertx-ddns 的系统用户，修改为你的用户名称即可。反之请删除 User=USER。
+  USER：运行 vertx-ddns 的系统用户，修改为你的用户名称即可。使用默认用户请删除 User=USER。
   ```
   - 提示
     1. 如果你不是按照上面的方法安装的 JDK，请确保 /usr/bin/java 是正确无误的
@@ -167,7 +167,7 @@
 ## Docker中使用
 
 > Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
-> 其中`debian`,`alpine`为基础的镜像经过`jlink`生成的极简`JRE Runtime`，大大减少了镜像体积， 使用OpenJ9有效减少运行内存占用。
+> 并且都经过`jlink`极简化，大大减少了镜像体积， 使用OpenJ9有效减少运行内存占用。
 > 三种镜像大小`alpine` < `debian` < `ubuntu`。
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
