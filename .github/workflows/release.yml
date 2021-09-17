@@ -18,8 +18,10 @@ jobs:
         run: ./gradlew shadowJar
       - name: Build Runtime
         run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./javaruntime
-      - name: Package
+      - name: Copy Jar
         run: mv ./build/libs/vertx-ddns-latest-all.jar ./javaruntime/vertx-ddns.jar
+      - name: Copy install.sh
+        run: mv ./install.sh ./javaruntime
       - name: Create Zip
         run: |
             zip -q -r javaruntime.zip ./javaruntime/*
