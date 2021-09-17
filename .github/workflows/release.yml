@@ -16,7 +16,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew shadowJar
       - name: Build Runtime
-        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output /javaruntime
+        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./javaruntime
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
