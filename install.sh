@@ -36,7 +36,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=$ABS_COMMAND_PATH -server -Xms128m -Xmx256m -jar $ABS_JAR_PATH $PORT
+ExecStart=$ABS_COMMAND_PATH -server -Xms128m -Xmx128m -jar $ABS_JAR_PATH $PORT
 ExecStop=/bin/kill -s QUIT $C$MAINPID
 Restart=always
 StandOutput=syslog
