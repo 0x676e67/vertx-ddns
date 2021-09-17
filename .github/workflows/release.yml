@@ -2,7 +2,7 @@ name: Release
 on: push
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-for-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -10,9 +10,10 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '16'
-          distribution: 'adopt'
+          distribution: 'adopt-openj9'
+      - run: java -version
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+        uses: gradle/wrapper-validation-action@v1
       - name: Build with Gradle
         run: ./gradlew shadowJar
       - name: Build Runtime
@@ -40,6 +41,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
           asset_path: ./javaruntime.zip # to upload files
-          asset_name: javaruntime.zip # file name after upload
+          asset_name: javaruntime-linux.zip # file name after upload
           asset_content_type: application/zip
-
