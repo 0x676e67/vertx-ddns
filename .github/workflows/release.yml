@@ -1,12 +1,9 @@
 name: Release
-on:
-  push:
-    tags: # 提交代码为tag 是以'v'开头的时候触发自动部署到服务端 如 git push tag v0.1.0
-      - 'v*'
+on: push
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 16
@@ -18,6 +15,10 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Build with Gradle
         run: ./gradlew shadowJar
+      - name: Build Runtime
+        run: $JAVA_HOME/bin/jlink \
+          --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
+          --output /javaruntime
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

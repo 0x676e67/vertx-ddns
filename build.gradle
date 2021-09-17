@@ -55,15 +55,13 @@ jar {
                 'Main-Class': 'com.zf1976.ddns.Application'
         )
     }
-
 }
-
 
 import org.mikeneck.graalvm.BuildTypeSelector
 
 // test
 nativeImage {
-    graalVmHome = "/Users/mac/Desktop/graalvm/Contents/Home"
+    graalVmHome = System.getProperty("java.home")
     buildType { BuildTypeSelector build ->
         build.executable {
             main = 'com.zf1976.ddns.Application'
@@ -104,7 +102,5 @@ nativeImage {
         add "--report-unsupported-elements-at-runtime"
         add '--allow-incomplete-classpath'
         add '-H:+PrintClassInitialization'
-
-
     }
 }
