@@ -23,9 +23,9 @@
   - [功能](#功能)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
+  - [开发&自行编译](#开发自行编译)
   - [Webhook](#Webhook)
   - [响应式布局](#界面)
-  - [开发&自行编译](#开发自行编译)
   - [License](#License)
 
 <!-- /TOC -->
@@ -72,7 +72,13 @@
 	
   # 安装
   cd ddns-runtime
+  chmod +x ./install.sh
   sudo ./install.sh
+  
+  # 卸载
+  cd ddns-runtime
+  chmod +x ./uninstall.sh
+  sudo ./uninstall.sh
   ```
 </details>
 
@@ -209,6 +215,22 @@
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
 - 若需要挂载日志文件到主机，则加上`-v /your_path:/root/logs`
+
+### 开发自行编译
+> 确保拥有开发环境，以及Gradle包管理
+```shell
+# 进入项目根目录
+cd vertx-ddns
+
+# Linux/Unix
+./gradlew assemble --info
+./gradlew shadowJar
+
+# Windows，使用PowerShell，若使用cmd终端则把'/'替换为'\'
+./gradlew.bat assemble --info
+./gradlew shadowJar
+
+```
 ### Webhook
 - 解析记录日志状态发生变化（成功失败、错误），回调提供的Webhook API
 - 消息内容支持模版变量，若消息内容为空或系统发送错误，则默认发送解析日志内容
