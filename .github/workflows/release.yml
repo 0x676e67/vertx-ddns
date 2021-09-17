@@ -20,7 +20,8 @@ jobs:
       - name: Package  
         run: mv ./build/libs/vertx-ddns-latest-all.jar ./javaruntime
       - name: Create Zip
-        run: zip -q javaruntime ./javaruntime
+        run: |
+            zip -q -r javaruntime.zip ./javaruntime/*
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
