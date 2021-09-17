@@ -1,5 +1,8 @@
 name: Release
-on: push
+on:
+  push:
+    tags: # 提交代码为tag 是以'v'开头的时候触发自动部署到服务端 如 git push tag v0.1.0
+      - 'v*'
 
 jobs:
   build-and-deploy-for-linux:
@@ -17,14 +20,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew shadowJar
       - name: Build Runtime
-        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./javaruntime
+        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./ddns-runtime
       - name: Copy Jar
-        run: mv ./build/libs/vertx-ddns-latest-all.jar ./javaruntime/vertx-ddns.jar
+        run: mv ./build/libs/vertx-ddns-latest-all.jar ./ddns-runtime/vertx-ddns.jar
       - name: Copy install.sh
-        run: mv ./install.sh ./javaruntime
+        run: mv ./install.sh ./ddns-runtime
       - name: Create Zip
         run: |
-            zip -q -r javaruntime.zip ./javaruntime/*
+            zip -q -r ddns-runtime.zip ./ddns-runtime/*
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -42,6 +45,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./javaruntime.zip # to upload files
-          asset_name: javaruntime-linux.zip # file name after upload
+          asset_path: ./ddns-runtime.zip # to upload files
+          asset_name: ddns-runtime-linux.zip # file name after upload
           asset_content_type: application/zip
