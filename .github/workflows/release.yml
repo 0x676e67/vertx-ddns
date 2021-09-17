@@ -21,8 +21,10 @@ jobs:
         run: ./gradlew shadowJar
       - name: Build Runtime
         run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./ddns-runtime
+      - name: Rename Jar
+        run: mv ./build/libs/vertx-ddns-latest-all.jar ./build/libs/vertx-ddns.jar
       - name: Copy Jar
-        run: mv ./build/libs/vertx-ddns-latest-all.jar ./ddns-runtime/vertx-ddns.jar
+        run: cp ./build/libs/vertx-ddns.jar ./ddns-runtime/vertx-ddns.jar
       - name: Copy install.sh
         run: mv ./install.sh ./ddns-runtime
       - name: Copy uninstall.sh
@@ -40,8 +42,8 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset 
+      - name: Upload Release linux-runtime
+        id: upload-release-linux-runtime 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -50,3 +52,13 @@ jobs:
           asset_path: ./ddns-runtime.zip # to upload files
           asset_name: ddns-runtime-linux.zip # file name after upload
           asset_content_type: application/zip
+      - name: Upload Release jar
+        id: upload-release-jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./vertx-ddns.jar # to upload files
+          asset_name: vertx-ddns.jar # file name after upload
+          asset_content_type: application/jar
