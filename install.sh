@@ -35,7 +35,6 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=USER
 Type=simple
 ExecStart=$ABS_COMMAND_PATH -server -Xms128m -Xmx256m -jar $ABS_JAR_PATH $PORT
 ExecStop=/bin/kill -s QUIT $C$MAINPID
