@@ -41,7 +41,7 @@ jobs:
           file: ./Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/vertx-ddns:debian:debian
+          tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian:debian
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
@@ -55,7 +55,7 @@ jobs:
           file: ./dockerfiles/alpine/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/vertx-ddns:debian:alpine
+          tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian:alpine
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
@@ -69,7 +69,7 @@ jobs:
           file: ./dockerfiles/default/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/vertx-ddns:debian:ubuntu
+          tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian:ubuntu
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
