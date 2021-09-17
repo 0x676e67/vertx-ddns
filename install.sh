@@ -64,4 +64,4 @@ echo "Create a directory: /etc/systemd/system"
 # shellcheck disable=SC2093
 mkdir -p -v /etc/systemd/system
 echo -e "$VERTX_SERVICE_CONFIG" > "/etc/systemd/system/vertx-ddns.service"
-echo "Service configuration write to: /etc/systemd/system/vertx-ddns.service"
+echo "Service configuration write to: /etc/systemd/system/vertx-ddns.service Complate!"
