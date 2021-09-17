@@ -1,5 +1,3 @@
-on:
-   tags: true
 before_install:
    - export TZ='Asia/Shanghai'
 branches:
