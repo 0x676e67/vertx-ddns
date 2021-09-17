@@ -1,6 +1,6 @@
 #!/bin/bash
 JAVA_COMMAND_PATH="/bin/java"
-JAR_PATH="/vertx-ddns-latest-all.jar"
+JAR_PATH="/vertx-ddns.jar"
 PORT="8080"
 echo "Port 8080 is used by default. Are you sure you want to change the port?"
 # shellcheck disable=SC2162
