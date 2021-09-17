@@ -51,11 +51,36 @@
 
 ## 系统中使用
 > 这里只展示Linux系统安装部署，更多请查看[wiki](https://github.com/zf1976/vertx-ddns/wiki)
-- 环境要求
-  > 为了在使用过程中不出现意外的事故，给出下列推荐的配置
-   - Debian 10
-   - 512 MB 以上内存
-- 安装 Java 运行环境(Ubuntu/Debian 安装)
+<details> <summary>环境要求</summary>
+	
+> 为了在使用过程中不出现意外的事故，给出下列推荐的配置
+- Debian 10
+- 512 MB 以上内存
+</details>
+
+<details> <summary>使用已构建的安装包</summary>
+  
+  > 无需安装Java运行环境，若存在运行环境也不影响
+  >
+  > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
+  ```shell
+  # 下载最新的安装包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
+  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/ddns-runtime.zip
+  
+  # 没有梯子的话加速可以使用加速镜像
+  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/ddns-runtime.zip
+  
+  # 解压安装包
+  unzip ddns-runtime.zip
+	
+  # 安装
+  cd ddns-runtime
+  sudo ./install.sh
+  ```
+</details>
+
+<details> <summary>安装Java运行环境(Ubuntu/Debian)</summary>
+	
   > 若已经存在 Java 运行环境的可略过这一步。
   ```shell
   # 导入 AdoptOpenJDK GPG key
@@ -76,7 +101,7 @@
   > 
   > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的安装包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
+  # 下载最新的Jar包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
   wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
   
   # 没有梯子的话加速可以使用加速镜像
@@ -142,7 +167,11 @@
   # 将上面模版内容复制到文件内
   sudo vim /etc/systemd/system/vertx-ddns.service
   ```
-  - 测试运行
+
+</details>
+
+<details> <summary>测试运行</summary>
+	
   ```shell
   # 修改 service 文件之后需要刷新 Systemd
   sudo systemctl daemon-reload
@@ -162,7 +191,7 @@
   # 查看 vertx-ddns 的运行状态
   sudo service vertx-ddns status
   ```
-  
+ </details>
 
 ## Docker中使用
 
