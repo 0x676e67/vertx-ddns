@@ -25,6 +25,8 @@ jobs:
         run: mv ./build/libs/vertx-ddns-latest-all.jar ./ddns-runtime/vertx-ddns.jar
       - name: Copy install.sh
         run: mv ./install.sh ./ddns-runtime
+      - name: Copy uninstall.sh
+        run: mv ./uninstall.sh ./ddns-runtime
       - name: Create Zip
         run: |
             zip -q -r ddns-runtime.zip ./ddns-runtime/*
