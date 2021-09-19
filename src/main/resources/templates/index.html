@@ -319,11 +319,16 @@
             <div class="card-footer">
 
                 <div class="text-center">
-                    <div class="btn-group" id="button-container">
-                        <button class="btn btn-primary" onclick="storeDDNSConfig()" style="display:block;margin:0 auto">
+                    <div>
+                        <button class="btn btn-primary"
+                                onclick="storeDDNSConfig()"
+                                style="display: inline-block">
                             保存配置
                         </button>
-                        <button class="btn btn-info" data-toggle="tooltip" onclick="resovleDnsRecord()"
+                        <button class="btn btn-secondary"
+                                data-toggle="tooltip"
+                                onclick="resovleDnsRecord()"
+                                style="display: inline-block"
                                 title="发送请求，解析当前配置的域名记录列表"
                                 type="button">
                             实时解析
@@ -394,13 +399,19 @@
                   <div>
                       <ul class="nav nav-pills mb-3" id="webhook-tab" role="tablist">
                           <li class="nav-item" onclick="selectWebhookProvider('SERVER_J')" role="presentation">
-                              <a aria-controls="pills-profile" aria-selected="false" class="nav-link active" data-toggle="pill"
+                              <a aria-controls="pills-profile" aria-selected="false" class="nav-link active"
+                                 data-toggle="pill"
                                  href="#server_j" id="pills-profile-tab" role="tab">Server酱</a>
+                          </li>
+                          <li class="nav-item" onclick="selectWebhookProvider('LARK')" role="presentation">
+                              <a aria-controls="pills-home" aria-selected="true" class="nav-link"
+                                 data-toggle="pill" href="#lark" id="pills-home-tab" role="tab">飞书（Lark）</a>
                           </li>
                           <li class="nav-item" onclick="selectWebhookProvider('DING_DING')" role="presentation">
                               <a aria-controls="pills-home" aria-selected="true" class="nav-link"
                                  data-toggle="pill" href="#dingding" id="pills-home-tab" role="tab">DingDing</a>
                           </li>
+
                       </ul>
                       <div class="tab-content" id="pills-tabContent">
                           <!--                          server酱-->
@@ -424,15 +435,16 @@
                                       </fieldset>
                                       <fieldset class="row mb mb-3">
                                           <div class="input-group">
-                                          <span class="input-group-btn">
-                                                  <button class="btn btn-secondary" onclick="sendWebhookTest('SERVER_J')"
-                                                          type="button">发送测试</button>
-                                          </span>
-                                              <input class="form-control" id="server_j_url" placeholder="Webhook URL"
-                                                     type="text">
                                               <div class="input-group-prepend">
                                                   <span class="input-group-text">URL</span>
                                               </div>
+                                              <input class="form-control" id="server_j_url" placeholder="Webhook URL"
+                                                     type="text">
+                                              <span class="input-group-btn">
+                                                  <button class="btn btn-secondary"
+                                                          onclick="sendWebhookTest('SERVER_J')"
+                                                          type="button">发送测试</button>
+                                          </span>
                                           </div>
                                       </fieldset>
                                       <fieldset class="row mb">
@@ -463,14 +475,69 @@
                               <div class="markdown-body" id="server_j_show"
                                    style="border-bottom: 1px solid #eee;margin-top: 10px; margin-bottom: 10px"></div>
                           </div>
-<!--                          webhook tabs-->
+                          <!--                          Lark-->
+                          <div aria-labelledby="pills-profile-tab" class="tab-pane fade show" id="lark" role="tabpanel">
+                              <div class="p-3 rounded">
+                                  <form>
+                                      <fieldset class="row mb-3">
+                                          <legend class="col-form-label col-sm-2 pt-0">启用</legend>
+                                          <div class="col-sm-10">
+                                              <div class="form-check form-check-inline">
+                                                  <label for="lark_enabled"></label>
+                                                  <input class="form-check-input" type="checkbox" id="lark_enabled">
+                                                  <small id="ipv4_url_help" class="form-text text-muted">默认关闭,
+                                                      可在更改解析记录发送消息通知 </small>
+                                              </div>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3">
+                                          <div>
+                                              <a href="https://www.feishu.cn/hc/zh-CN/articles/360024984973"
+                                                 target="_blank">获取Webhook URL</a>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb mb-3">
+                                          <div class="input-group">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">签名密钥</span>
+                                              </div>
+                                              <input class="form-control" id="lark_url_secret"
+                                                     placeholder="勾选加签选项后，复制Secret"
+                                                     type="text">
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb mb-3">
+                                          <div class="input-group">
+                                              <div class="input-group-prepend">
+                                                  <span class="input-group-text">URL</span>
+                                              </div>
+                                              <input class="form-control" id="lark_url" placeholder="Webhook URL"
+                                                     type="text">
+                                              <span class="input-group-btn">
+                                                  <button class="btn btn-secondary" onclick="sendWebhookTest('LARK')"
+                                                          type="button">发送测试</button>
+                                              </span>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb">
+                                          <div class="input-group">
+                                              <textarea class="cur form-control" id="lark_content"
+                                                        placeholder="输入消息内容"
+                                                        style="height: 120px;"></textarea>
+                                          </div>
+                                      </fieldset>
+                                  </form>
+                              </div>
+                          </div>
+                          <!--                          webhook tabs-->
                           <div aria-labelledby="pills-home-tab" class="tab-pane fade" id="dingding"
                                role="tabpanel">
                               <div class="p-3 rounded">
                                   <form>
                                       <div class="mb-3">
                                           <div class="form-check form-check-inline">
-                                              <input class="form-check-input" id="dingding_text_type" name="dingding-model"
+                                              <input class="form-check-input" id="dingding_text_type"
+                                                     name="dingding-model"
                                                      type="radio"
                                                      checked
                                                      onclick="selectDingDingMessageType('text')"
@@ -497,9 +564,15 @@
                                           <div class="col-sm-10">
                                               <div class="form-check form-check-inline">
                                                   <label for="dingding_enabled"></label>
-                                                  <input class="form-check-input" type="checkbox"  id="dingding_enabled" >
+                                                  <input class="form-check-input" type="checkbox" id="dingding_enabled">
                                                   <small class="form-text text-muted">默认关闭, 更改解析记录发送消息通知 </small>
                                               </div>
+                                          </div>
+                                      </fieldset>
+                                      <fieldset class="row mb-3">
+                                          <div>
+                                              <a href="https://developers.dingtalk.com/document/robots/custom-robot-access"
+                                                 target="_blank">获取Webhook URL，只勾选Webhook加签选项即可</a>
                                           </div>
                                       </fieldset>
                                       <fieldset class="row mb mb-3">
@@ -507,26 +580,23 @@
                                               <div class="input-group-prepend">
                                                   <span class="input-group-text">签名密钥</span>
                                               </div>
-                                              <input class="form-control" id="dingding_url_secret" placeholder="勾选加签选项后，复制Secret"
+                                              <input class="form-control" id="dingding_url_secret"
+                                                     placeholder="勾选加签选项后，复制Secret"
                                                      type="text">
-                                          </div>
-                                      </fieldset>
-                                      <fieldset class="row mb-3">
-                                          <div>
-                                              <a href="https://developers.dingtalk.com/document/robots/custom-robot-access" target="_blank">获取Webhook URL，只勾选Webhook加签选项即可</a>
                                           </div>
                                       </fieldset>
                                       <fieldset class="row mb mb-3">
                                           <div class="input-group">
-                                          <span class="input-group-btn">
-                                                  <button class="btn btn-secondary" onclick="sendWebhookTest('DING_DING')"
-                                                          type="button">发送测试</button>
-                                          </span>
-                                              <input class="form-control" id="dingding_url" placeholder="Webhook URL"
-                                                     type="text">
                                               <div class="input-group-prepend">
                                                   <span class="input-group-text">URL</span>
                                               </div>
+                                              <input class="form-control" id="dingding_url" placeholder="Webhook URL"
+                                                     type="text">
+                                              <span class="input-group-btn">
+                                                  <button class="btn btn-secondary"
+                                                          onclick="sendWebhookTest('DING_DING')"
+                                                          type="button">发送测试</button>
+                                              </span>
                                           </div>
                                       </fieldset>
                                       <fieldset class="row mb-3" id="dingding_text">
@@ -577,7 +647,8 @@
                                               <div class="input-group-prepend">
                                                   <span class="input-group-text">消息地址</span>
                                               </div>
-                                              <input class="form-control" id="dingding_link_messageUrl" placeholder="消息URL"
+                                              <input class="form-control" id="dingding_link_messageUrl"
+                                                     placeholder="消息地址必须存在，否则将发送失败"
                                                      type="text">
                                           </div>
                                           <div class="input-group">
@@ -925,6 +996,7 @@
     const ipv6RecordType = "AAAA"
     const dingdingProviderType = "DING_DING"
     const serverJProviderType = "SERVER_J"
+    const larkProviderType = "LARK"
     // 默认类型
     let selectDnsProviderType = aliyunType
     let selectDnsRecordType = ipv4RecordType
@@ -1026,13 +1098,21 @@
     function setWebhookConfig() {
         let webhookConfig = [[${webhookConfig}]]
         let serverJMessage = webhookConfig.serverJMessage
-
         let dingdingMessageList = webhookConfig.dingDingMessageList
+        let larkMessage = webhookConfig.larkMessage;
+
+        if (larkMessage) {
+            document.getElementById('lark_enabled').checked = larkMessage.enabled ? serverJMessage.enabled : false
+            document.getElementById('lark_url').value = larkMessage.url ? larkMessage.url : ""
+            document.getElementById('lark_url_secret').value = larkMessage.secret ? larkMessage.secret : ""
+            document.getElementById('lark_content').value = larkMessage.content ? larkMessage.content.text ? larkMessage.content.text : "" : ""
+        }
+
         if (serverJMessage) {
-            document.getElementById('server_j_enabled').checked = serverJMessage.enabled? serverJMessage.enabled : false
-            document.getElementById('server_j_url').value = serverJMessage.url? serverJMessage.url : ""
-            document.getElementById('server_j_title').value = serverJMessage.title? serverJMessage.title : ""
-            document.getElementById('server_j_content').value = serverJMessage.content? serverJMessage.content : ""
+            document.getElementById('server_j_enabled').checked = serverJMessage.enabled ? serverJMessage.enabled : false
+            document.getElementById('server_j_url').value = serverJMessage.url ? serverJMessage.url : ""
+            document.getElementById('server_j_title').value = serverJMessage.title ? serverJMessage.title : ""
+            document.getElementById('server_j_content').value = serverJMessage.content ? serverJMessage.content : ""
         }
         if (dingdingMessageList) {
             for (let i = 0; i < dingdingMessageList.length; i++) {
@@ -1072,8 +1152,30 @@
                 "title": title,
                 "content": content,
                 "url": url ? encryptRSA(url) : "",
-                "enabled" : enabled
+                "enabled": enabled
             }
+            axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
+                .then(res => {
+                    confirm.show('Webhook配置保存成功', function () {
+                        window.location.reload()
+                    })
+                })
+        }
+
+        if (selectWebhookProviderType == larkProviderType) {
+            var content = document.getElementById('lark_content').value
+            var url = document.getElementById('lark_url').value
+            var secret = document.getElementById('lark_url_secret').value
+            var enabled = document.getElementById('lark_enabled').checked;
+            const data = {
+                "content": {
+                    "text": content
+                },
+                "url": url ? encryptRSA(url) : "",
+                "secret": secret ? encryptRSA(secret) : "",
+                "enabled": enabled
+            }
+
             axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
                 .then(res => {
                     confirm.show('Webhook配置保存成功', function () {
@@ -1091,16 +1193,16 @@
             var secret = document.getElementById('dingding_url_secret').value
             if (linkChecked) {
                 let data = {
-                    "url": url,
-                    'secret': secret,
-                    "enabled" : enabled,
-                    "link" : {
-                        "text" : document.getElementById('dingding_link_text').value,
-                        "title" : document.getElementById('dingding_link_title').value,
-                        "picUrl" : document.getElementById('dingding_link_picUrl').value,
-                        "messageUrl" : document.getElementById('dingding_link_messageUrl').value
+                    "url": url ? encryptRSA(url) : "",
+                    "secret": secret ? encryptRSA(secret) : "",
+                    "enabled": enabled,
+                    "link": {
+                        "text": document.getElementById('dingding_link_text').value,
+                        "title": document.getElementById('dingding_link_title').value,
+                        "picUrl": document.getElementById('dingding_link_picUrl').value,
+                        "messageUrl": document.getElementById('dingding_link_messageUrl').value
                     },
-                    "msgtype" : "link"
+                    "msgtype": "link"
                 }
                 axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
                     .then(res => {
@@ -1112,18 +1214,18 @@
 
             if (textChecked) {
                 let data = {
-                    "url": url,
-                    'secret': secret,
-                    "enabled" : enabled,
-                    "at" : {
-                        "atMobiles" : document.getElementById('dingding_text_atMobiles').value.split(','),
-                        "atUserIds" : document.getElementById('dingding_text_atUserIds').value.split(','),
-                        "isAtAll" : document.getElementById('dingding_text_isAtAll').checked
+                    "url": url ? encryptRSA(url) : "",
+                    "secret": secret ? encryptRSA(secret) : "",
+                    "enabled": enabled,
+                    "at": {
+                        "atMobiles": document.getElementById('dingding_text_atMobiles').value.split(','),
+                        "atUserIds": document.getElementById('dingding_text_atUserIds').value.split(','),
+                        "isAtAll": document.getElementById('dingding_text_isAtAll').checked
                     },
-                    "text" : {
-                        "content" : document.getElementById('dingding_text_content').value
+                    "text": {
+                        "content": document.getElementById('dingding_text_content').value
                     },
-                    "msgtype" : "text"
+                    "msgtype": "text"
                 }
                 axiosInstance.post('/api/webhook/config?type=' + selectWebhookProviderType, data)
                     .then(res => {
@@ -1135,17 +1237,17 @@
 
             if (markdownChecked) {
                 let data = {
-                    "url": url,
-                    'secret': secret,
-                    "enabled" : enabled,
-                    "markdown" : {
-                        "title" : document.getElementById('dingding_markdown_title').value,
-                        "text" : document.getElementById('dingding_markdown_text').value
+                    "url": url ? encryptRSA(url) : "",
+                    "secret": secret ? encryptRSA(secret) : "",
+                    "enabled": enabled,
+                    "markdown": {
+                        "title": document.getElementById('dingding_markdown_title').value,
+                        "text": document.getElementById('dingding_markdown_text').value
                     },
-                    "at" : {
-                        "atMobiles" : document.getElementById('dingding_markdown_atMobiles').value.split(','),
-                        "atUserIds" : document.getElementById('dingding_markdown_atUserIds').value.split(','),
-                        "isAtAll" : document.getElementById('dingding_markdown_isAtAll').checked
+                    "at": {
+                        "atMobiles": document.getElementById('dingding_markdown_atMobiles').value.split(','),
+                        "atUserIds": document.getElementById('dingding_markdown_atUserIds').value.split(','),
+                        "isAtAll": document.getElementById('dingding_markdown_isAtAll').checked
                     },
                     "msgtype" : "markdown"
                 }
@@ -1165,6 +1267,9 @@
         }
         if (providerType == serverJProviderType) {
             selectWebhookProviderType = serverJProviderType
+        }
+        if (providerType == larkProviderType) {
+            selectWebhookProviderType = larkProviderType
         }
     }
 
@@ -1191,6 +1296,10 @@
             var url = document.getElementById('dingding_url').value
             var secret = document.getElementById('dingding_url_secret').value
             if (linkChecked) {
+                if (document.getElementById('dingding_link_messageUrl').value == "") {
+                    confirm.show("The message address cannot be empty")
+                    return
+                }
                 let data = {
                     "link": {
                         "text": document.getElementById('dingding_link_text').value,
@@ -1242,6 +1351,19 @@
                         confirm.show(res.data.data)
                     })
             }
+        } else if (providerType == larkProviderType) {
+            var content = document.getElementById('lark_content').value;
+            var url = document.getElementById('lark_url').value;
+            var secret = document.getElementById('lark_url_secret').value;
+            let data = {
+                "content": {
+                    "text": content
+                }
+            }
+            axiosInstance.post("/api/webhook/test?type=" + selectWebhookProviderType + "&url=" + encryptByCBC(url) + "&secret=" + encryptByCBC(secret), data)
+                .then(res => {
+                    confirm.show(res.data.data)
+                })
         }
     }
 

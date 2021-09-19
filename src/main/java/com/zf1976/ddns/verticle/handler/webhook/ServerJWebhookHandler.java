@@ -5,17 +5,10 @@ import com.zf1976.ddns.util.ApiURLEncoderUtil;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 
 public class ServerJWebhookHandler extends AbstractWebhookHandler<ServerJMessage> {
 
-    private WebClient webClient;
-
     public ServerJWebhookHandler() {
-    }
-
-    public ServerJWebhookHandler(WebClient webClient) {
-        this.webClient = webClient;
     }
 
     @Override
@@ -25,7 +18,7 @@ public class ServerJWebhookHandler extends AbstractWebhookHandler<ServerJMessage
         }
         final var encodeUrl = this.encodeUrl(serverJMessage.getUrl(), serverJMessage.getTitle(), serverJMessage.getContent());
         this.clearPrivacy(serverJMessage);
-        return this.webClient.postAbs(encodeUrl).send();
+        return super.client.postAbs(encodeUrl).send();
     }
 
     private String encodeUrl(String url, String title, String content) {

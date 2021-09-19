@@ -7,7 +7,6 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 
@@ -17,13 +16,8 @@ import org.apache.http.HttpHeaders;
  */
 public class DingDingWebhookHandler extends AbstractWebhookHandler<DingDingMessage> {
 
-    private  WebClient webClient;
 
     public DingDingWebhookHandler() {
-    }
-
-    public DingDingWebhookHandler(WebClient webClient) {
-        this.webClient = webClient;
     }
 
     @Override
@@ -33,9 +27,9 @@ public class DingDingWebhookHandler extends AbstractWebhookHandler<DingDingMessa
         }
         final var signUrl = this.signUrl(dingDingMessage.getSecret(), dingDingMessage.getUrl());
         this.clearPrivacy(dingDingMessage);
-        return this.webClient.postAbs(signUrl)
-                             .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                             .sendBuffer(Json.encodeToBuffer(dingDingMessage));
+        return super.client.postAbs(signUrl)
+                .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .sendBuffer(Json.encodeToBuffer(dingDingMessage));
     }
 
     private String signUrl(String secret, String url) {
@@ -50,9 +44,9 @@ public class DingDingWebhookHandler extends AbstractWebhookHandler<DingDingMessa
     @Override
     protected void clearPrivacy(DingDingMessage dingDingMessage) {
         dingDingMessage.setSecret(null)
-                       .setUrl(null)
-                       .setEnabled(null)
-                       .setWebhookProviderType(null);
+                .setUrl(null)
+                .setEnabled(null)
+                .setWebhookProviderType(null);
     }
 
 }

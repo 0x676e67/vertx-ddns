@@ -4,6 +4,7 @@ import com.zf1976.ddns.api.signer.algorithm.Signer;
 import com.zf1976.ddns.config.DnsConfig;
 import com.zf1976.ddns.config.SecureConfig;
 import com.zf1976.ddns.config.webhook.DingDingMessage;
+import com.zf1976.ddns.config.webhook.LarkMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.enums.DnsProviderType;
 import com.zf1976.ddns.enums.DnsRecordType;
@@ -176,6 +177,7 @@ public class WebServerVerticle extends AbstractWebServerVerticle {
         });
     }
 
+    @SuppressWarnings("DuplicatedCode")
     protected void storeWebhookConfigHandler(RoutingContext ctx) {
         final var request = ctx.request();
         try {
@@ -186,29 +188,50 @@ public class WebServerVerticle extends AbstractWebServerVerticle {
                     final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), serverJMessage.getUrl());
                     serverJMessage.setUrl(decodeUrl);
                     Validator.of(serverJMessage)
-                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url");
+                            .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url");
                     this.readWebhookConfig()
-                        .compose(webhookConfig -> {
-                            webhookConfig.setServerJMessage(serverJMessage);
-                            return this.writeWebhookConfig(webhookConfig);
-                        })
-                        .onSuccess(v -> this.routeSuccessHandler(ctx))
-                        .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
+                            .compose(webhookConfig -> {
+                                webhookConfig.setServerJMessage(serverJMessage);
+                                return this.writeWebhookConfig(webhookConfig);
+                            })
+                            .onSuccess(v -> this.routeSuccessHandler(ctx))
+                            .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
+                }
+                case LARK -> {
+                    final var larkMessage = ctx.getBodyAsJson().mapTo(LarkMessage.class);
+                    final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), larkMessage.getUrl());
+                    final var decodeSecret = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), larkMessage.getSecret());
+                    larkMessage.setUrl(decodeUrl);
+                    larkMessage.setSecret(decodeSecret);
+                    Validator.of(larkMessage)
+                            .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
+                            .withValidated(v -> !StringUtil.isEmpty(v.getSecret()), "title webhook url secret cannot been empty");
+                    this.readWebhookConfig()
+                            .compose(webhookConfig -> {
+                                webhookConfig.setLarkMessage(larkMessage);
+                                return this.writeWebhookConfig(webhookConfig);
+                            })
+                            .onSuccess(v -> this.routeSuccessHandler(ctx))
+                            .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
                 }
                 case DING_DING -> {
                     final var dingDingMessage = ctx.getBodyAsJson().mapTo(DingDingMessage.class);
+                    final var decodeUrl = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), dingDingMessage.getUrl());
+                    final var decodeSecret = RsaUtil.decryptByPrivateKey(this.rsaKeyPair.getPrivateKey(), dingDingMessage.getSecret());
+                    dingDingMessage.setUrl(decodeUrl);
+                    dingDingMessage.setSecret(decodeSecret);
                     Validator.of(dingDingMessage)
-                             .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
-                             .withValidated(v -> !StringUtil.isEmpty(v.getSecret()), "title webhook url secret cannot been empty");
+                            .withValidated(v -> HttpUtil.isURL(v.getUrl()), "this is not url")
+                            .withValidated(v -> !StringUtil.isEmpty(v.getSecret()), "title webhook url secret cannot been empty");
                     this.readWebhookConfig()
-                        .compose(webhookConfig -> {
-                            final var dingDingMessageList = webhookConfig.getDingDingMessageList();
-                            dingDingMessageList.removeIf(v -> v.getMsgType().equals(dingDingMessage.getMsgType()));
-                            dingDingMessageList.add(dingDingMessage);
-                            return this.writeWebhookConfig(webhookConfig);
-                        })
-                        .onSuccess(v -> this.routeSuccessHandler(ctx))
-                        .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
+                            .compose(webhookConfig -> {
+                                final var dingDingMessageList = webhookConfig.getDingDingMessageList();
+                                dingDingMessageList.removeIf(v -> v.getMsgType().equals(dingDingMessage.getMsgType()));
+                                dingDingMessageList.add(dingDingMessage);
+                                return this.writeWebhookConfig(webhookConfig);
+                            })
+                            .onSuccess(v -> this.routeSuccessHandler(ctx))
+                            .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
                 }
             }
         } catch (Exception e) {
@@ -228,21 +251,37 @@ public class WebServerVerticle extends AbstractWebServerVerticle {
             final var url = AesUtil.decodeByCBC(request.getParam("url"), aesKey.getKey(), aesKey.getIv());
             switch (webhookProviderType) {
                 case SERVER_J -> this.webClient.postAbs(url)
-                                           .send()
-                                           .onSuccess(event -> this.routeSuccessHandler(ctx, "the message has been sent, please check it"))
-                                           .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+                        .send()
+                        .onSuccess(event -> this.routeSuccessHandler(ctx, event.bodyAsString()))
+                        .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
+                case LARK -> {
+                    final var secret = AesUtil.decodeByCBC(request.getParam("secret"), aesKey.getKey(), aesKey.getIv());
+                    final var timestamp = System.currentTimeMillis() / 1000;
+                    var stringToSign = timestamp + "\n" + secret;
+                    var signData = Signer.getSHA256Signer().signString("", stringToSign);
+                    final var sign = new String(Base64.encodeBase64(signData));
+                    final var buffer = ctx.getBodyAsJson()
+                            .put("timestamp", timestamp)
+                            .put("sign", sign)
+                            .put("msg_type", "text")
+                            .toBuffer();
+                    this.webClient.postAbs(url)
+                            .sendBuffer(buffer)
+                            .onSuccess(v -> this.routeSuccessHandler(ctx, v.bodyAsString()))
+                            .onFailure(err -> this.routeBadRequestHandler(ctx, err.getMessage()));
+                }
                 case DING_DING -> {
                     final var secret = AesUtil.decodeByCBC(request.getParam("secret"), aesKey.getKey(), aesKey.getIv());
                     long timestamp = System.currentTimeMillis();
                     String stringToSign = timestamp + "\n" + secret;
                     var signData = Signer.getSHA256Signer()
-                                         .signString(stringToSign, secret);
+                            .signString(stringToSign, secret);
                     String sign = ApiURLEncoderUtil.encode(new String(Base64.encodeBase64(signData)));
                     final String completeUrl = url + "&timestamp=" + timestamp + "&sign=" + sign;
                     this.webClient.postAbs(completeUrl)
-                                  .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                                  .sendBuffer(ctx.getBody())
-                                  .onSuccess(event -> this.routeSuccessHandler(ctx, "the message has been sent, please check it"))
+                            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                            .sendBuffer(ctx.getBody())
+                            .onSuccess(event -> this.routeSuccessHandler(ctx, event.bodyAsString()))
                                   .onFailure(err -> this.routeErrorHandler(ctx, err.getMessage()));
                 }
                 default -> throw new UnsupportedOperationException("not support：" + webhookProviderType + "message type");

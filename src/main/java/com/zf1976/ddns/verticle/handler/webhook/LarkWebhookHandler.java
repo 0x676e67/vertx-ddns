@@ -15,6 +15,11 @@ import org.apache.http.HttpHeaders;
  */
 public class LarkWebhookHandler extends AbstractWebhookHandler<LarkMessage> {
 
+
+    public LarkWebhookHandler() {
+
+    }
+
     @Override
     public Future<HttpResponse<Buffer>> send(LarkMessage larkMessage) {
         if (!larkMessage.getEnabled()) {

@@ -3,6 +3,7 @@ package com.zf1976.ddns.verticle.handler.webhook;
 import com.zf1976.ddns.config.WebhookConfig;
 import com.zf1976.ddns.config.webhook.BaseMessage;
 import com.zf1976.ddns.config.webhook.DingDingMessage;
+import com.zf1976.ddns.config.webhook.LarkMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.expression.ExpressionParser;
 import com.zf1976.ddns.expression.TemplateExpressionHandler;
@@ -68,7 +69,7 @@ public class CompositeWebhookHandler {
                 final var dingDingMessageList = webhookConfig.getDingDingMessageList();
                 if (!CollectionUtil.isEmpty(dingDingMessageList)) {
                     for (DingDingMessage dingDingMessage : dingDingMessageList) {
-                        if (dingDingMessage.getEnabled()) {
+                        if (dingDingMessage != null && dingDingMessage.getEnabled()) {
                             futureList.add(dingDingWebhookHandler.send(dingDingMessage));
                         }
                     }
@@ -94,6 +95,10 @@ public class CompositeWebhookHandler {
             for (DingDingMessage dingDingMessage : dingDingMessageList) {
                 this.expressionParser(dnsRecordLog, dingDingMessage);
             }
+        }
+        final var larkMessage = webhookConfig.getLarkMessage();
+        if (larkMessage != null) {
+            this.expressionParser(dnsRecordLog, larkMessage);
         }
         return Future.succeededFuture(webhookConfig);
     }
@@ -124,8 +129,13 @@ public class CompositeWebhookHandler {
             }
             case SERVER_J -> {
                 ServerJMessage serverJMessage = (ServerJMessage) baseMessage;
-                final var parserContent = this.expressionParser.replaceParser(dnsRecordLog, ((ServerJMessage) baseMessage).getContent());
+                final var parserContent = this.expressionParser.replaceParser(dnsRecordLog, serverJMessage.getContent());
                 serverJMessage.setContent(parserContent);
+            }
+            case LARK -> {
+                LarkMessage larkMessage = (LarkMessage) baseMessage;
+                final var parserContent = this.expressionParser.replaceParser(dnsRecordLog, larkMessage.getContent().getText());
+                larkMessage.getContent().setText(parserContent);
             }
         }
     }

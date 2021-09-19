@@ -63,21 +63,21 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
             localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_WRITE_HANDLER_ID))
                          .compose(writeHandlerId -> this.storeMemoryLog(writeHandlerId, recordLog))
                          .compose(writeHandlerId -> localAsyncMap.compose(shareMap -> shareMap.get(ApiConstants.SOCKJS_SELECT_PROVIDER_TYPE))
-                                                                 .compose(v -> this.checkDnsProviderType(writeHandlerId, v, recordLog)))
+                                 .compose(providerType -> this.checkDnsProviderType(writeHandlerId, providerType, recordLog)))
                          .onSuccess(writeHandlerId -> {
                              if (writeHandlerId != null) {
                                  eventBus.send(writeHandlerId, Json.encode(recordLog));
                              }
                              if (!(recordLog.getLogStatus() == LogStatus.RAW)) {
                                  this.compositeWebhookHandler.send(recordLog)
-                                                             .onSuccess(compositeFuture -> {
-                                                                 compositeFuture.onComplete(event -> {
-                                                                     if (event.failed()) {
-                                                                         log.error(event.cause());
-                                                                         eventBus.send(writeHandlerId, Json.encode(event.cause().getMessage()));
-                                                                     }
-                                                                 });
-                                                             });
+                                         .onSuccess(compositeFuture -> compositeFuture.onFailure(err -> {
+                                             log.error(err);
+                                             eventBus.send(writeHandlerId, Json.encode(err.getMessage()));
+                                         }))
+                                         .onFailure(err -> {
+                                             eventBus.send(writeHandlerId, Json.encode(DnsRecordLog.createFailLog(recordLog.getDnsProviderType(), err.getMessage())));
+                                             log.error(err);
+                                         });
                              }
                          })
                          .onFailure(err -> log.error(err.getMessage(), err.getCause()));
