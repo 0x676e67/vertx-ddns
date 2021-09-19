@@ -13,7 +13,11 @@ public enum WebhookProviderType {
     /**
      * DingDing（钉钉）
      */
-    DING_DING;
+    DING_DING,
+    /**
+     * 飞书
+     */
+    LARK;
 
     public static WebhookProviderType checkType(String value) {
         for (WebhookProviderType type : values()) {

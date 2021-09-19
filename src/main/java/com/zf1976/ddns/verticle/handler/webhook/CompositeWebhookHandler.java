@@ -61,8 +61,7 @@ public class CompositeWebhookHandler {
             if (webhookHandler instanceof ServerJWebhookHandler serverJWebhookHandler) {
                 final var serverJMessage = webhookConfig.getServerJMessage();
                 if (serverJMessage != null && serverJMessage.getEnabled()) {
-                    final var responseFuture = serverJWebhookHandler.send(serverJMessage);
-                    futureList.add(responseFuture);
+                    futureList.add(serverJWebhookHandler.send(serverJMessage));
                 }
             }
             if (webhookHandler instanceof DingDingWebhookHandler dingDingWebhookHandler) {
@@ -70,9 +69,15 @@ public class CompositeWebhookHandler {
                 if (!CollectionUtil.isEmpty(dingDingMessageList)) {
                     for (DingDingMessage dingDingMessage : dingDingMessageList) {
                         if (dingDingMessage.getEnabled()) {
-                            dingDingWebhookHandler.send(dingDingMessage);
+                            futureList.add(dingDingWebhookHandler.send(dingDingMessage));
                         }
                     }
+                }
+            }
+            if (webhookHandler instanceof LarkWebhookHandler larkWebhookHandler) {
+                final var larkMessage = webhookConfig.getLarkMessage();
+                if (larkMessage != null && larkMessage.getEnabled()) {
+                    futureList.add(larkWebhookHandler.send(larkMessage));
                 }
             }
         }

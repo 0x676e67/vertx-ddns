@@ -1,6 +1,7 @@
 package com.zf1976.ddns.config;
 
 import com.zf1976.ddns.config.webhook.DingDingMessage;
+import com.zf1976.ddns.config.webhook.LarkMessage;
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 
 import java.io.Serializable;
@@ -17,12 +18,23 @@ public class WebhookConfig implements Serializable {
 
     private List<DingDingMessage> dingDingMessageList;
 
+    private LarkMessage larkMessage;
+
     public WebhookConfig() {
         this.dingDingMessageList = new ArrayList<>(3);
     }
 
     public ServerJMessage getServerJMessage() {
         return serverJMessage;
+    }
+
+    public LarkMessage getLarkMessage() {
+        return larkMessage;
+    }
+
+    public WebhookConfig setLarkMessage(LarkMessage larkMessage) {
+        this.larkMessage = larkMessage;
+        return this;
     }
 
     public void setServerJMessage(ServerJMessage serverJMessage) {
@@ -33,9 +45,8 @@ public class WebhookConfig implements Serializable {
         return dingDingMessageList;
     }
 
-    public WebhookConfig setDingDingMessageList(List<DingDingMessage> dingDingMessageList) {
+    public void setDingDingMessageList(List<DingDingMessage> dingDingMessageList) {
         this.dingDingMessageList = dingDingMessageList;
-        return this;
     }
 
     @Override
@@ -43,6 +54,7 @@ public class WebhookConfig implements Serializable {
         return "WebhookConfig{" +
                 "serverJMessage=" + serverJMessage +
                 ", dingDingMessageList=" + dingDingMessageList +
+                ", larkMessage=" + larkMessage +
                 '}';
     }
 }

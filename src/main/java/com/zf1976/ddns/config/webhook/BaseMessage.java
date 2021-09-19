@@ -24,9 +24,8 @@ public class BaseMessage {
         return enabled;
     }
 
-    public BaseMessage setWebhookProviderType(WebhookProviderType webhookProviderType) {
+    public void setWebhookProviderType(WebhookProviderType webhookProviderType) {
         this.webhookProviderType = webhookProviderType;
-        return this;
     }
 
     public BaseMessage setEnabled(Boolean enabled) {

@@ -3,7 +3,6 @@ package com.zf1976.ddns.verticle.handler.webhook;
 import com.zf1976.ddns.api.signer.algorithm.Signer;
 import com.zf1976.ddns.config.webhook.DingDingMessage;
 import com.zf1976.ddns.util.ApiURLEncoderUtil;
-import com.zf1976.ddns.verticle.handler.spi.WebhookHandler;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -16,7 +15,7 @@ import org.apache.http.HttpHeaders;
  * @author mac
  * 2021/8/26 星期四 9:57 下午
  */
-public class DingDingWebhookHandler implements WebhookHandler<DingDingMessage> {
+public class DingDingWebhookHandler extends AbstractWebhookHandler<DingDingMessage> {
 
     private  WebClient webClient;
 
@@ -39,11 +38,6 @@ public class DingDingWebhookHandler implements WebhookHandler<DingDingMessage> {
                              .sendBuffer(Json.encodeToBuffer(dingDingMessage));
     }
 
-    @Override
-    public void initClient(WebClient client) {
-        this.webClient = client;
-    }
-
     private String signUrl(String secret, String url) {
         long timestamp = System.currentTimeMillis();
         String stringToSign = timestamp + "\n" + secret;
@@ -53,7 +47,8 @@ public class DingDingWebhookHandler implements WebhookHandler<DingDingMessage> {
         return url + "&timestamp=" + timestamp + "&sign=" + sign;
     }
 
-    private void clearPrivacy(DingDingMessage dingDingMessage) {
+    @Override
+    protected void clearPrivacy(DingDingMessage dingDingMessage) {
         dingDingMessage.setSecret(null)
                        .setUrl(null)
                        .setEnabled(null)

@@ -1,2 +1,3 @@
 com.zf1976.ddns.verticle.handler.webhook.DingDingWebhookHandler
 com.zf1976.ddns.verticle.handler.webhook.ServerJWebhookHandler
+com.zf1976.ddns.verticle.handler.webhook.LarkWebhookHandler

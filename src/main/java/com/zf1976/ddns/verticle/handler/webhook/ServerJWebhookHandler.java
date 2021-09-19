@@ -2,13 +2,12 @@ package com.zf1976.ddns.verticle.handler.webhook;
 
 import com.zf1976.ddns.config.webhook.ServerJMessage;
 import com.zf1976.ddns.util.ApiURLEncoderUtil;
-import com.zf1976.ddns.verticle.handler.spi.WebhookHandler;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
-public class ServerJWebhookHandler implements WebhookHandler<ServerJMessage> {
+public class ServerJWebhookHandler extends AbstractWebhookHandler<ServerJMessage> {
 
     private WebClient webClient;
 
@@ -25,12 +24,8 @@ public class ServerJWebhookHandler implements WebhookHandler<ServerJMessage> {
             return Future.succeededFuture();
         }
         final var encodeUrl = this.encodeUrl(serverJMessage.getUrl(), serverJMessage.getTitle(), serverJMessage.getContent());
+        this.clearPrivacy(serverJMessage);
         return this.webClient.postAbs(encodeUrl).send();
-    }
-
-    @Override
-    public void initClient(WebClient client) {
-        this.webClient = client;
     }
 
     private String encodeUrl(String url, String title, String content) {
@@ -40,4 +35,10 @@ public class ServerJWebhookHandler implements WebhookHandler<ServerJMessage> {
         return url + "?title=" + title + "&desp=" + content;
     }
 
+    @Override
+    protected void clearPrivacy(ServerJMessage serverJMessage) {
+        serverJMessage.setUrl(null)
+                .setEnabled(null)
+                .setWebhookProviderType(null);
+    }
 }
