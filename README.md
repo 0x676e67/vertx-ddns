@@ -199,7 +199,7 @@
 ## Docker中使用
 
 > Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
-> 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用，[官网](https://how-to.vertx.io/openj9-howto/)。
+> 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
 > 三种镜像大小`alpine` < `debian` < `ubuntu`。
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
