@@ -75,8 +75,8 @@ public class PeriodicVerticle extends AbstractDnsRecordSubject {
                                              eventBus.send(writeHandlerId, Json.encode(err.getMessage()));
                                          }))
                                          .onFailure(err -> {
-                                             eventBus.send(writeHandlerId, Json.encode(DnsRecordLog.createFailLog(recordLog.getDnsProviderType(), err.getMessage())));
                                              log.error(err);
+                                             eventBus.send(writeHandlerId, Json.encode(DnsRecordLog.createFailLog(recordLog.getDnsProviderType(), err.getMessage())));
                                          });
                              }
                          })

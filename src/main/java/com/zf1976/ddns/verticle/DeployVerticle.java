@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class DeployVerticle extends AbstractVerticle {
 
-    private final Logger log = LogManager.getLogger("[ConfigVerticle]");
+    private final Logger log = LogManager.getLogger("[DeployVerticle]");
     private final String[] args;
 
     public DeployVerticle(String[] args) {

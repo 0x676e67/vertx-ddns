@@ -2,14 +2,14 @@
 	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/blob/main/LICENSE">
 		<img src="https://img.shields.io/badge/license-MIT-blue.svg"/>
 	</a>
-	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
-		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
-	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg"/>
 	</a>
 	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml">
 		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml/badge.svg"/>
+	</a>
+	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
+		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
 	</a>
 	<a target="_blank" href="https://hub.docker.com/repository/docker/zf1976/vertx-ddns">
 		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
@@ -44,7 +44,7 @@
 - 支持查询、自动创建、删除DNS服务商域名解析记录  
 - 网页中配置，可设置 `登录用户名和密码` / `禁止从公网访问`
 - 支持Webhook，提供模版变量自定义消息内容
-- 支持24小时实时解析日志监控
+- 支持24小时实时解析日志监控（监控系统运行日志）
 
 ## 系统中使用
 > 这里只展示Linux系统安装部署，更多请查看[wiki](https://github.com/zf1976/vertx-ddns/wiki)
@@ -217,7 +217,7 @@
 - 若需要挂载日志文件到主机，则加上`-v /your_path:/root/logs`
 
 ### 开发自行编译
-> 确保拥有开发环境，以及Gradle包管理
+> 确保拥有开发环境，以及Gradle包管理环境（项目使用7.x版本，不强制使用相同版本）
 ```shell
 # 进入项目根目录
 cd vertx-ddns
@@ -232,6 +232,7 @@ cd vertx-ddns
 
 ```
 ### Webhook
+> 目前暂时支持，飞书（Lark）、钉钉、Server酱三种Webhook服务
 - 解析记录日志状态发生变化（成功失败、错误），回调提供的Webhook API
 - 消息内容支持模版变量，若消息内容为空或系统发送错误，则默认发送解析日志内容
 
