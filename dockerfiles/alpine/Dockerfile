@@ -42,4 +42,4 @@ EXPOSE 	8080
 ENV JVM_OPTS="-Xms128m -Xmx128m" \
     TZ=Asia/Shanghai
 
-CMD exec java ${JVM_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /root/vertx-ddns.jar
+CMD exec java ${JVM_OPTS} -Xvirtualized -Djava.security.egd=file:/dev/./urandom -jar /root/vertx-ddns.jar
