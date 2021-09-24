@@ -47,7 +47,7 @@
 - 支持24小时实时解析日志监控（监控系统运行日志）
 
 ## 系统中使用
-> 这里只展示Linux系统安装部署，更多请查看[wiki](https://github.com/zf1976/vertx-ddns/wiki)
+> 这里只展示Linux系统安装部署
 <details> <summary>环境要求</summary>
 	
 > 为了在使用过程中不出现意外的事故，给出下列推荐的配置
