@@ -248,16 +248,16 @@ cd vertx-ddns
 > DNS Provider：#provider，Status：#status   -----parser---->    DNS Provider：ALIYUN, Status：2021-08-28 15:14:01
 
 
+## 注
+- 默认登录的用户名密码：**vertx**
+- Windows、macOS系统下Docker不支持Docker的host模式
+- 默认禁止外网访问，如启动需要请编辑$HOME/.vertx_ddns/secure_config.json文件中notAllowWanAccess字段值为false，并重启服务
 
 ## 界面
 <img src="./img/img.png"/>
 <img src="./img/log.png"/>
 <img src="./img/webhook.png"/>
 
-## 注
-- 默认登录的用户名密码：**vertx**
-- Windows、macOS系统下Docker不支持Docker的host模式
-- 默认禁止外网访问，如启动需要请编辑$HOME/.vertx_ddns/secure_config.json文件中notAllowWanAccess字段值为false，并重启服务
 
 ## License
 
