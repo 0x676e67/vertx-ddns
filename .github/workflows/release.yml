@@ -5,7 +5,64 @@ on:
       - 'v*'
 
 jobs:
-  build-and-deploy-for-linux:
+  build-linux-v17-temurin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2.3.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - run: java -version
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Build with Gradle
+        run: ./gradlew shadowJar
+      - name: Build Runtime
+        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./runtime
+      - name: Rename Jar
+        run: mv ./build/libs/vertx-ddns-latest-all.jar ./build/libs/vertx-ddns.jar
+      - name: Copy Jar
+        run: cp ./build/libs/vertx-ddns.jar ./runtime/vertx-ddns.jar
+      - name: Copy install.sh
+        run: mv ./install.sh ./runtime
+      - name: Copy uninstall.sh
+        run: mv ./uninstall.sh ./runtime
+      - name: Create Zip
+        run: |
+          zip -q -r runtime.zip ./runtime/*
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release linux-runtime
+        id: upload-release-linux-runtime
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./runtime.zip
+          asset_name: runtime-17-temurin-linux.zip
+          asset_content_type: application/zip
+      - name: Upload Release jar
+        id: upload-release-jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/vertx-ddns.jar
+          asset_name: vertx-ddns-17-temurin.jar
+          asset_content_type: application/jar
+  build-linux-v16-openj9:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,18 +77,18 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew shadowJar
       - name: Build Runtime
-        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./ddns-runtime
+        run: $JAVA_HOME/bin/jlink --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported --output ./runtime
       - name: Rename Jar
         run: mv ./build/libs/vertx-ddns-latest-all.jar ./build/libs/vertx-ddns.jar
       - name: Copy Jar
-        run: cp ./build/libs/vertx-ddns.jar ./ddns-runtime/vertx-ddns.jar
+        run: cp ./build/libs/vertx-ddns.jar ./runtime/vertx-ddns.jar
       - name: Copy install.sh
-        run: mv ./install.sh ./ddns-runtime
+        run: mv ./install.sh ./runtime
       - name: Copy uninstall.sh
-        run: mv ./uninstall.sh ./ddns-runtime
+        run: mv ./uninstall.sh ./runtime
       - name: Create Zip
         run: |
-            zip -q -r ddns-runtime.zip ./ddns-runtime/*
+          zip -q -r runtime.zip ./runtime/*
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -48,9 +105,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./ddns-runtime.zip # to upload files
-          asset_name: ddns-runtime-linux.zip # file name after upload
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./runtime.zip
+          asset_name: runtime-16-openj9-linux.zip
           asset_content_type: application/zip
       - name: Upload Release jar
         id: upload-release-jar
@@ -58,7 +115,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./build/libs/vertx-ddns.jar # to upload files
-          asset_name: vertx-ddns.jar # file name after upload
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/vertx-ddns.jar
+          asset_name: vertx-ddns-16-openj9.jar
           asset_content_type: application/jar

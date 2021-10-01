@@ -104,10 +104,7 @@
   > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
   # 下载最新的Jar包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
-  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
-  
-  # 没有梯子的话加速可以使用加速镜像
-  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/vertx-ddns.jar -O vertx-ddns-latest.jar
+  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/{{jar_name}}.jar -O vertx-ddns-latest.jar
   
   # 启动测试
   java -jar vertx-ddns-latest.jar
