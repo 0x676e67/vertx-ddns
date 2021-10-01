@@ -1,7 +1,9 @@
 name: Github Release
 on:
   push:
-    tags: # 提交代码为tag 是以'v'开头的时候触发自动部署到服务端 如 git push tag v0.1.0
+    branches:
+      - main
+    tags: 
       - 'v*'
 
 jobs:
