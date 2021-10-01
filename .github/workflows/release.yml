@@ -5,8 +5,11 @@ on:
       - 'v*'
 
 jobs:
-  create-release:
+  build-release:
     runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create Release
         id: create_release
@@ -21,6 +24,8 @@ jobs:
 
   build-linux-v17-temurin:
     runs-on: ubuntu-latest
+    needs:
+      - build-release
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 17
@@ -53,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build-release.output.upload_url }}
           asset_path: ./runtime.zip
           asset_name: runtime-17-temurin-linux.zip
           asset_content_type: application/zip
@@ -63,13 +68,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build-release.output.upload_url }}
           asset_path: ./build/libs/vertx-ddns.jar
           asset_name: vertx-ddns-17-temurin.jar
           asset_content_type: application/jar
 
   build-linux-v16-openj9:
     runs-on: ubuntu-latest
+    needs:
+      - build-release
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 16
@@ -101,7 +108,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build-release.output.upload_url }}
           asset_path: ./runtime.zip
           asset_name: runtime-16-openj9-linux.zip
           asset_content_type: application/zip
@@ -111,7 +118,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build-release.output.upload_url }}
           asset_path: ./build/libs/vertx-ddns.jar
           asset_name: vertx-ddns-16-openj9.jar
           asset_content_type: application/jar
