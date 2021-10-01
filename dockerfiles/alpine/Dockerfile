@@ -15,7 +15,7 @@ COPY ${SOURCE_FILE} /vertx-ddns/src
 #RUN gradle assemble --info
 RUN gradle shadowJar
 
-FROM openjdk:16-jdk-alpine as jre-build
+FROM openjdk:17-alpine as jre-build
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
          --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
