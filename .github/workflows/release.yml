@@ -5,6 +5,20 @@ on:
       - 'v*'
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
   build-linux-v17-temurin:
     runs-on: ubuntu-latest
     steps:
@@ -32,16 +46,7 @@ jobs:
       - name: Create Zip
         run: |
           zip -q -r runtime.zip ./runtime/*
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+
       - name: Upload Release linux-runtime
         id: upload-release-linux-runtime
         uses: actions/upload-release-asset@v1
@@ -62,6 +67,7 @@ jobs:
           asset_path: ./build/libs/vertx-ddns.jar
           asset_name: vertx-ddns-17-temurin.jar
           asset_content_type: application/jar
+
   build-linux-v16-openj9:
     runs-on: ubuntu-latest
     steps:
@@ -89,16 +95,6 @@ jobs:
       - name: Create Zip
         run: |
           zip -q -r runtime.zip ./runtime/*
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
       - name: Upload Release linux-runtime
         id: upload-release-linux-runtime 
         uses: actions/upload-release-asset@v1
