@@ -60,11 +60,13 @@
   >
   > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的安装包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
-  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/ddns-runtime.zip
-  
+  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
+  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
+  # 例如选择版本v1.0.4、runtime-17-temurin-linux运行时版本
+  wget https://github.com/zf1976/vertx-ddns/releases/download/v1.0.4/runtime-17-temurin-linux.zip
+	
   # 没有梯子的话加速可以使用加速镜像
-  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/ddns-runtime.zip
+  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
   
   # 解压安装包
   unzip ddns-runtime.zip
