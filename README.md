@@ -5,7 +5,7 @@
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
 		<img src="https://img.shields.io/badge/JDK-16+-green.svg"/>
 	</a>
-	<a target="_blank" herf="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml">
+	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/actions">
 		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml/badge.svg"/>
 	</a>
 	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
