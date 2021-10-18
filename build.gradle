@@ -24,7 +24,7 @@ repositories {
 
 ext{
     jacksonVersion = '2.12.5'
-    vertxVersion = '4.1.4'
+    vertxVersion = '4.1.5'
     log4jVersion = "2.14.1"
     nettyVersion = "4.1.58.Final"
     apacheComponentVersion = '4.5.13'
