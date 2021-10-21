@@ -107,7 +107,11 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                               return CompositeFuture.all(aesKeyFuture, rsaKeyPairFuture, this.readSecureConfig());
 
                           })
-                          .compose(v -> {
+                          .compose(compositeFuture -> {
+                              if (compositeFuture.failed()) {
+                                  return Future.failedFuture(compositeFuture.cause());
+                              }
+
                               log.info("Initialize project working directory：" + projectWorkPath);
                               log.info("Initialize DNS configuration file：" + dnsConfigFilePath);
                               log.info("Initialize secure configuration file：" + secureFilePath);
@@ -116,12 +120,12 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                               log.info("Initialize aes key configuration file：" + aesKeyPath);
                               log.info("RSA key has been initialized");
                               log.info("AES key has been initialized");
-                              this.routeTemplateHandler(router, vertx);
-                              return this.initDnsServiceConfig();
+                              return this.routeTemplateHandler(router, vertx)
+                                         .compose(v -> this.initDnsServiceConfig());
                           });
      }
 
-    private void routeTemplateHandler(Router router, Vertx vertx) {
+    private Future<Void> routeTemplateHandler(Router router, Vertx vertx) {
         TemplateEngine templateEngine = ThymeleafTemplateEngine.create(vertx);
         TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         // 设置默认模版
@@ -135,6 +139,7 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
         // Static resource processing
         router.get("/*")
               .handler(StaticHandler.create());
+        return Future.succeededFuture();
     }
 
     protected void customTemplateHandler(RoutingContext ctx, TemplateHandler templateHandler) {
