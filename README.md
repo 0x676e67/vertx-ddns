@@ -205,7 +205,7 @@
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 若不挂载主机目录, 删除容器同时会删除配置
-- 在浏览器中打开`http://主机IP:8081`，修改你的配置，成功
+- 在浏览器中打开`http://主机IP:8081`，登录并修改你的配置
   ```shell
   # 拉取镜像运行，并随系统重启
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
