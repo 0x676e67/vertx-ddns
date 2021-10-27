@@ -19,6 +19,7 @@ configurations {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -56,7 +57,6 @@ jar {
 }
 
 import org.mikeneck.graalvm.BuildTypeSelector
-
 // test
 nativeImage {
     graalVmHome = System.getProperty("java.home")

@@ -2,18 +2,18 @@
 FROM gradle:jdk16-openj9 as gradle-build
 USER root
 WORKDIR /vertx-ddns
+ARG GRADLE=./gradle
 ARG GRADLE_SETTINGS=./settings.gradle
 ARG GRADLE_BUILD=./build.gradle
-# dependencies cache
-COPY ${GRADLE_SETTINGS} /vertx-ddns/settings.gradle
-COPY ${GRADLE_BUILD} /vertx-ddns/build.gradle
-RUN gradle assemble --info
-
-# Build project jar
+ARG GRADLEW=./gradlew
+COPY $GRADLE ./gradle
+COPY $GRADLEW ./gradlew
+COPY ${GRADLE_SETTINGS} ./settings.gradle
+COPY ${GRADLE_BUILD} ./build.gradle
 ARG SOURCE_FILE=./src
-COPY ${SOURCE_FILE} /vertx-ddns/src
-#RUN gradle assemble --info
-RUN gradle shadowJar
+COPY ${SOURCE_FILE} ./src
+# Build project jar
+RUN ./gradlew shadowJar --info
 
 FROM adoptopenjdk:16-jdk-openj9 as jre-build
 # Create a custom Java runtime
