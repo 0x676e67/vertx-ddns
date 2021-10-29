@@ -29,7 +29,6 @@ public class Application {
         initDepends(vertx);
         vertx.deployVerticle(new DeployVerticle(args));
     }
-
     private static void initDepends(Vertx vertx) {
         HttpUtil.initCustomWebClient(vertx);
     }
