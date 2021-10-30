@@ -19,24 +19,25 @@
 	</a>
 </p>
 
-## 简介
+### 简介
 基于`Vert.x`实现异步非阻塞的动态DNS解析服务，自动获取设备公网 `IPv4` 或 `IPv6` 地址或使用自定义的`IP`地址，并解析到对应的域名服务。
 
-- [vertx-ddns](#vertx-ddns)
+- [vertx-ddns](简介)
   - [功能](#功能)
+  - [聚合域名解析平台](#聚合域名解析平台)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
   - [开发&自行编译](#开发自行编译)
   - [Webhook](#Webhook)
   - [响应式布局](#界面)
   - [License](#License)
-
 <!-- /TOC -->
 
-## 功能
+### 功能
 
 - 支持Mac、Windows、Linux系统，支持ARM、x86架构
 - 支持的域名服务商 `Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`
+- 聚合域名解析平台
 - 支持接口/网卡获取IP
 - 支持以服务的方式运行
 - 默认间隔5分钟同步一次
@@ -49,13 +50,36 @@
 - 支持Webhook，提供模版变量自定义消息内容
 - 支持24小时实时解析日志监控（监控系统运行日志）
 
-## 系统中使用
+### 聚合域名解析（使用前必看）
+
+程序聚合了`Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`DNS服务平台的域名API操作。实现域名的远程增删查改操作，也就是说不需要每次都登录各平台的控制面板去操作域名解析了。实现了以下域名IP操作策略。
+- 使用前提
+  > 确保平台的API密钥对可用，例如Token、AccessKey ID、cessKey Secret等等
+  > 确保已经开启IPv4、IPv6域名解析设置
+
+- 获取IP方式有三种，`网卡`、`第三方API`、`自定义IP`，默认使用网卡或第三方API获取的IP
+- 自定义IP优先级高于从网卡、第三方API获取的IP，也就是说，假如你设置了自定义IP，域名最终解析到是你自定义的IP
+- 更新域名，在没有设置自定义IP情况下，最终域名会解析到选择从网卡、第三方API获取到的IP
+- 域名记录查询策略
+  > 以下`泛查询`，姑且认为就是输入主域名或子域名可以查询到所属主域名的所有域名解析记录，包括主域名的解析记录
+  - `Alidns`DNS支持准确查询（完整域名），也支持泛查询
+  - `Dnspod`DNS只支持准确查询，需要输入完整域名
+  - `Cloudflare`DNS只支持泛查询
+  - `华为云`DNS只支持泛查询
+- 域名记录删除策略
+  - 查询到域名，就可以删除域名解析记录
+- 域名记录更新策略
+  - 变更为从网卡或第三方API获取到的IP，如果使用自定义IP，那么只有自己修改自定义IP或者删除自定义IP才会更新记录
+- 域名记录新增策略
+  - 当域名记录不存在的时候，会把域名记录新增同步到DNS服务器
+
+
+### 系统中使用
 - 环境要求(这里只展示Linux系统安装部署)
-	
   > 为了在使用过程中不出现意外的事故，给出下列推荐的配置
+
   - Debian 10
   - 512 MB 以上内存
-
 
 <details> <summary>使用已构建的安装包</summary>
   
@@ -197,7 +221,7 @@
   ```
  </details>
 
-## Docker中使用
+### Docker中使用
 
 > Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
@@ -232,6 +256,7 @@ cd vertx-ddns
 ./gradlew shadowJar
 
 ```
+
 ### Webhook
 > 目前暂时支持，飞书（Lark）、钉钉、Server酱三种Webhook服务
 - 解析记录日志状态发生变化（成功失败、错误），回调提供的Webhook API
@@ -248,26 +273,26 @@ cd vertx-ddns
 - 示例
 > `DNS Provider：#provider，Status：#status`  -----parser---->  `DNS Provider：ALIYUN, Status：2021-08-28 15:14:01`
 
-
-## 注
+### 注
 - 默认登录的用户名密码：`vertx`
 - `Windows`、`macOS`系统下`Docker`不支持`host`模式
 - 默认禁止外网访问，如启动需要请编辑`$HOME/.vertx_ddns/secure_config.json`文件中`notAllowWanAccess`字段值为`false`，并重启服务
 
-## 界面
+### 界面
 <img src="./img/img.png"/>
 <img src="./img/log.png"/>
 <img src="./img/webhook.png"/>
 
+### License
 
-## License
+- [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
 
-[MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
+### 贡献
 
-## 贡献
+> 目前只有`我`自己在维护这个项目。希望能有更多人加入 :)
 
-目前只有`我`自己在维护这个项目。希望能有更多人加入 :)
+### JetBrains 开源证书支持
 
-感谢[Jetbrains](https://www.jetbrains.com/?from=mayi)制作的IDE，以及免费的开源许可证。
+> `vertx-ddns` 项目一直以来都是在 JetBrains 公司旗下的 IntelliJ IDEA Ultimate 集成开发环境中进行开发，基于 **free JetBrains Open Source license(s)** 正版免费授权，在此表达我的谢意。
 
-<img src="./img/jetbrains.png"/>
+<a href="https://www.jetbrains.com/?from=gnet" target="_blank"><img src="https://raw.githubusercontent.com/panjf2000/illustrations/master/jetbrains/jetbrains-variant-4.png" width="250" align="middle"/></a>
