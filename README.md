@@ -24,11 +24,12 @@
 
 - [vertx-ddns](简介)
   - [功能](#功能)
-  - [聚合域名解析](#聚合域名解析)
+  - [使用前必看](#使用前必看)
   - [系统中使用](#系统中使用)
   - [Docker中使用](#Docker中使用)
   - [开发&自行编译](#开发自行编译)
   - [Webhook](#Webhook)
+  - [FAQ](FAQ)
   - [响应式布局](#界面)
   - [License](#License)
 <!-- /TOC -->
@@ -50,9 +51,9 @@
 - 支持Webhook，提供模版变量自定义消息内容
 - 支持24小时实时解析日志监控（监控系统运行日志）
 
-### 聚合域名解析（使用前必看）
+### 使用前必看
 
-> 程序聚合了`Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`DNS服务平台的域名API操作。实现域名的远程增删查改操作，也就是说不需要每次都登录各平台的控制面板去操作域名解析了。
+> 程序提供了`Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`DNS服务平台的域名API操作。实现域名的远程增删查改操作，也就是说不需要每次都登录各平台的控制面板去操作域名解析了。
 > 如果你有需求。拥有家用服务器或NAS，需要动态域名解析，或者你不想每次登录DNS服务商的控制台（即你不一定要把域名解析到本机的IP），就达到添加、删除和修改解析的目的。那么该项目很适合你。
 
 - 使用前提
@@ -275,7 +276,7 @@ cd vertx-ddns
 - 示例
 > `DNS Provider：#provider，Status：#status`  -----parser---->  `DNS Provider：ALIYUN, Status：2021-08-28 15:14:01`
 
-### 注
+### FAQ
 - 默认登录的用户名密码：`vertx`
 - `Windows`、`macOS`系统下`Docker`不支持`host`模式
 - 默认禁止外网访问，如启动需要请编辑`$HOME/.vertx_ddns/secure_config.json`文件中`notAllowWanAccess`字段值为`false`，并重启服务
