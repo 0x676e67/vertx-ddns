@@ -29,7 +29,7 @@
   - [Docker中使用](#Docker中使用)
   - [开发&自行编译](#开发自行编译)
   - [Webhook](#Webhook)
-  - [FAQ](FAQ)
+  - [FAQ](#FAQ)
   - [响应式布局](#界面)
   - [License](#License)
 <!-- /TOC -->
