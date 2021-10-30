@@ -54,8 +54,8 @@
 
 程序聚合了`Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`DNS服务平台的域名API操作。实现域名的远程增删查改操作，也就是说不需要每次都登录各平台的控制面板去操作域名解析了。实现了以下域名IP操作策略。
 - 使用前提
-  > 确保平台的API密钥对可用，例如Token、AccessKey ID、cessKey Secret等等
-  > 确保已经开启IPv4、IPv6域名解析设置
+  - 确保平台的API密钥对可用，例如Token、AccessKey ID、cessKey Secret等等
+  - 确保已经开启IPv4、IPv6域名解析设置
 
 - 获取IP方式有三种，`网卡`、`第三方API`、`自定义IP`，默认使用网卡或第三方API获取的IP
 - 自定义IP优先级高于从网卡、第三方API获取的IP，也就是说，假如你设置了自定义IP，域名最终解析到是你自定义的IP
