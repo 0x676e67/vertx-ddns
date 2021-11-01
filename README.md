@@ -242,7 +242,7 @@
   ```shell
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
   ```
-- 若需要挂载日志文件到主机，则加上`-v /your_path:/root/logs`
+- 若需要挂载日志文件到主机，加上参数`-v /your_path:/vertx-ddns/logs`
 
 ### 开发自行编译
 > 确保拥有有JDK16版本开发环境环境（项目使用Gradle7.x版本，若安装有其他版本，不强制使用相同版本）
