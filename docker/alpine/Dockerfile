@@ -1,5 +1,5 @@
-# Debian ---- Openj9-jlink
-FROM adoptopenjdk:16-jdk-openj9 as jre-build
+# Alpine ---- OpenJDK-jlink
+FROM openjdk:17-alpine as jre-build
 USER root
 WORKDIR /vertx-ddns
 ARG GRADLE=./gradle
@@ -24,7 +24,7 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define your base image
-FROM debian:stretch-slim
+FROM alpine
 WORKDIR /vertx-ddns
 USER root
 MAINTAINER zf1976 <verticle@foxmail.com>
@@ -35,12 +35,11 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 ENV JAR_FILE=/vertx-ddns/build/libs/vertx-ddns-latest-all.jar
-
 COPY --from=jre-build /javaruntime $JAVA_HOME
 COPY --from=jre-build ${JAR_FILE} /vertx-ddns/vertx-ddns.jar
 
 # Continue with your application deployment
-RUN mkdir /root/logs
+RUN mkdir /vertx-ddns/logs
 EXPOSE 	8080
 ENV JVM_OPTS="-Xms128m -Xmx128m" \
     TZ=Asia/Shanghai

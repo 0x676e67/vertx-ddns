@@ -39,7 +39,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 COPY --from=jre-build ${JAR_FILE} /vertx-ddns/vertx-ddns.jar
 
 # Continue with your application deployment
-RUN mkdir /root/logs
+RUN mkdir /vertx-ddns/logs
 EXPOSE 	8080
 ENV JVM_OPTS="-Xms128m -Xmx128m" \
     TZ=Asia/Shanghai

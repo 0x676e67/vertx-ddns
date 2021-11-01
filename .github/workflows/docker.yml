@@ -36,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./docker/debian/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian
@@ -50,7 +50,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./dockerfiles/alpine/Dockerfile
+          file: ./docker/alpine/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:alpine
@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./dockerfiles/default/Dockerfile
+          file: ./docker/ubuntu/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:ubuntu
