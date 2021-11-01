@@ -36,7 +36,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 ENV JAR_FILE=/vertx-ddns/build/libs/vertx-ddns-latest-all.jar
 COPY --from=jre-build /javaruntime $JAVA_HOME
-COPY --from=jre-build ${JAR_FILE} /root/vertx-ddns.jar
+COPY --from=jre-build ${JAR_FILE} /vertx-ddns/vertx-ddns.jar
 
 # Continue with your application deployment
 RUN mkdir /root/logs
