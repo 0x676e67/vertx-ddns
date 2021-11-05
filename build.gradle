@@ -105,7 +105,7 @@ nativeImage {
     }
 }
 
-task resolveDependencies {
+task cacheDependencies {
     setDescription "Resolves all projects dependencies from the repository."
     setGroup "Build Server"
 
@@ -121,7 +121,6 @@ task resolveDependencies {
                         resolveDependencies(it)
                     }
         }
-        copyDependencies()
     }
 }
 
@@ -146,48 +145,5 @@ def resolveDependencies(Configuration it) {
     } catch (e) {
         println ">>> " + it
         println ">>>> " + e.message
-    }
-}
-
-static def copyDependencies() {
-    final String source =  System.getProperty("user.home") + "/.gradle/caches/modules-2/files-2.1"
-    final String destRoot = System.getProperty("user.home") + "/.m2/repository"
-    File rootFile = new File(source);
-    for (File file : rootFile.listFiles()) {
-        if (file.isDirectory() && file.getName()) {
-            // Convert package name to file hierarchy
-            String destDir = file.getName().replace(".", File.separator);
-            copyDependenciesFiles(file, source + File.separator + file.getName(), destRoot + File.separator + destDir)
-        }
-    }
-}
-
-static def copyDependenciesFiles(File rootFile, String source, String destRoot) {
-    for (File subFile : rootFile.listFiles()) {
-        if (subFile.getName() != ".DS_Store") {
-            if (subFile.isDirectory()) {
-                copyDependenciesFiles(subFile, source, destRoot)
-            } else {
-                File md5Dir = new File(subFile.getParent())
-                String copyPath = new File(md5Dir.getParent()).getAbsolutePath().replace(source, destRoot)
-                File copyDir = new File(copyPath);
-                if (!copyDir.exists()) {
-                    copyDir.mkdirs()
-                }
-                File destFile = new File(copyDir, subFile.getName())
-                // When copying, it is found that there may be multiple versions of the same package and the same version.
-                // Print out here that there are multiple dependent packages but do not copy
-                if (destFile.exists()) {
-                    System.out.println("exists dependencies: " + subFile.getAbsolutePath());
-                } else {
-                    try {
-                        System.out.println("source dirctrory: " + subFile.getAbsolutePath() + " >>>>> targer dirctrory: " + destFile.getAbsolutePath())
-                        Files.copy(subFile.toPath(), destFile.toPath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
     }
 }

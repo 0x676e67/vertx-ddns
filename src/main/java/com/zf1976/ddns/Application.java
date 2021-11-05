@@ -26,11 +26,7 @@ public class Application {
         }
         vertxOptions.setAddressResolverOptions(addressResolverOptions);
         final var vertx = Vertx.vertx(vertxOptions);
-        initDepends(vertx);
         vertx.deployVerticle(new DeployVerticle(args));
-    }
-    private static void initDepends(Vertx vertx) {
-        HttpUtil.initCustomWebClient(vertx);
     }
 
 }

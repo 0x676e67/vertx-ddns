@@ -1,6 +1,7 @@
 package com.zf1976.ddns.verticle;
 
 import com.zf1976.ddns.config.ConfigProperty;
+import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.ObjectUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -28,6 +29,7 @@ public class DeployVerticle extends AbstractVerticle {
         this.init()
             .compose(json -> {
                 final var deploymentOptions = new DeploymentOptions().setConfig(json);
+                HttpUtil.initCustomWebClient(vertx);
                 return Future.<Void>succeededFuture()
                         .compose(v -> vertx.deployVerticle(new WebServerVerticle(), deploymentOptions))
                         .compose(v -> vertx.deployVerticle(new LogVerticle(),deploymentOptions));
