@@ -24,8 +24,8 @@ repositories {
 }
 
 ext{
-    jacksonVersion = '2.12.5'
-    vertxVersion = '4.1.5'
+    jacksonVersion = '2.13.0'
+    vertxVersion = '4.2.0'
     log4jVersion = "2.14.1"
     nettyVersion = "4.1.58.Final"
     apacheComponentVersion = '4.5.13'
@@ -162,7 +162,7 @@ static def copyDependencies() {
     }
 }
 
-static void copyDependenciesFiles(File rootFile, String source, String destRoot) {
+static def copyDependenciesFiles(File rootFile, String source, String destRoot) {
     for (File subFile : rootFile.listFiles()) {
         if (subFile.getName() != ".DS_Store") {
             if (subFile.isDirectory()) {
