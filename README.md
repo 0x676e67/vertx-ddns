@@ -38,6 +38,7 @@
 
 - 支持Mac、Windows、Linux系统，支持ARM、x86架构
 - 支持的域名服务商 `Alidns(阿里云)` `Dnspod(腾讯云)` `Cloudflare` `华为云`
+- 支持AAAA/A类型记录
 - 聚合域名解析平台
 - 支持接口/网卡获取IP
 - 支持以服务的方式运行
