@@ -25,8 +25,8 @@ public class Application {
             addressResolverOptions.addServer(dnsServer);
         }
         vertxOptions.setAddressResolverOptions(addressResolverOptions);
-        final var vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(new DeployVerticle(args));
+        Vertx.vertx(vertxOptions)
+             .deployVerticle(new DeployVerticle(args));
     }
 
 }

@@ -4,6 +4,7 @@ package com.zf1976.ddns.api.provider.exception;
  * @author mac
  * 2021/8/9 星期一 10:36 下午
  */
+@SuppressWarnings("unused")
 public class InvalidDnsCredentialException extends RuntimeException{
 
     public InvalidDnsCredentialException(Throwable cause) {

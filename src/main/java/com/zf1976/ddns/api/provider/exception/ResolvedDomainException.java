@@ -4,6 +4,7 @@ package com.zf1976.ddns.api.provider.exception;
  * @author mac
  * 2021/8/11 星期三 5:07 下午
  */
+@SuppressWarnings("unused")
 public class ResolvedDomainException extends RuntimeException{
 
     public ResolvedDomainException(Throwable cause) {

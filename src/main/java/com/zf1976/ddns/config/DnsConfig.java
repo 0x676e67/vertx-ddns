@@ -92,12 +92,12 @@ public class DnsConfig implements Serializable {
         /**
          * 开启ipv4记录解析
          */
-        private Boolean enable;
+        private Boolean enable = Boolean.FALSE;
         /**
          * true:使用ip API获取本机ip
          * false:使用网卡获取本机ip
          */
-        private Boolean selectIpMethod;
+        private Boolean selectIpMethod = Boolean.TRUE;
         /**
          * ip API
          */
@@ -172,12 +172,12 @@ public class DnsConfig implements Serializable {
         /**
          * 开启ipv4记录解析
          */
-        private Boolean enable;
+        private Boolean enable = Boolean.FALSE;
         /**
          * true:使用ip API获取本机ip
          * false:使用网卡获取本机ip
          */
-        private Boolean selectIpMethod;
+        private Boolean selectIpMethod = Boolean.TRUE;
         /**
          * ip API
          */

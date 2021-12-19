@@ -4,6 +4,7 @@ package com.zf1976.ddns.api.provider.exception;
  * @author mac
  * @date 2021/8/9
  */
+@SuppressWarnings("unused")
 public class FoundDnsProviderException extends RuntimeException{
 
     public FoundDnsProviderException(Throwable cause) {
