@@ -24,7 +24,7 @@ repositories {
 }
 
 ext{
-    jacksonVersion = '2.13.0'
+    jacksonVersion = '2.13.1'
     vertxVersion = '4.2.2'
     log4jVersion = '2.17.0'
     nettyVersion = '4.1.58.Final'
@@ -58,7 +58,6 @@ jar {
 
 
 import org.mikeneck.graalvm.BuildTypeSelector
-import java.nio.file.Files
 
 nativeImage {
     graalVmHome = System.getProperty("java.home")
