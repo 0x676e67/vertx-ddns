@@ -37,6 +37,7 @@ import com.zf1976.ddns.enums.HttpMethod;
 import com.zf1976.ddns.pojo.DnspodDataResult;
 import com.zf1976.ddns.util.HttpUtil;
 import com.zf1976.ddns.util.LogUtil;
+import com.zf1976.ddns.util.StringUtil;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -283,7 +284,9 @@ public class DnspodDnsProvider extends AbstractDnsProvider<DnspodDataResult, Dns
             case DESCRIBE -> {
                 queryParam.put("RecordType", dnsRecordType.name());
                 queryParam.put("Domain", extractDomain[0]);
-                queryParam.put("Subdomain", "".equals(extractDomain[1]) ? "@" : extractDomain[1]);
+                if (!StringUtil.isEmpty(extractDomain[1])) {
+                    queryParam.put("Subdomain", extractDomain[1]);
+                }
             }
         }
         return queryParam;

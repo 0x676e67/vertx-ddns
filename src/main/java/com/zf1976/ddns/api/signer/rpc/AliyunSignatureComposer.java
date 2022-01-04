@@ -74,7 +74,6 @@ public class AliyunSignatureComposer implements RpcAPISignatureComposer {
 
     }
 
-
     @Override
     public String toSignatureUrl(String accessKeySecret,
                                  String urlPattern,
