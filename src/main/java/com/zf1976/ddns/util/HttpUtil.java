@@ -29,6 +29,7 @@ package com.zf1976.ddns.util;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +57,7 @@ public final class HttpUtil {
     private static WebClient webClient;
     private static final String DEFAULT_IPV4_API = "https://api-ipv4.ip.sb/ip";
     private static final String DEFAULT_IPV6_API = "https://api-ipv6.ip.sb/ip";
+    private static final String[] staticDomain = {"com.cn", "org.cn", "net.cn", "ac.cn", "eu.org"};
 
     public static void initCustomWebClient(Vertx vertx) {
         HttpUtil.webClient = WebClient.create(vertx);
@@ -158,18 +160,34 @@ public final class HttpUtil {
      * @return {@link String[]}
      */
     public static String[] extractDomain(String domain) {
-        if (StringUtil.isEmpty(domain) || isDomain(domain)) {
-            throw new RuntimeException("The domain name does not meet the specification");
-        }
         final var split = domain.split("\\.");
         final var length = split.length;
-        final String mainDomain = split[length-2] + "." + split[length-1];
+        if (StringUtil.isEmpty(domain) || isDomain(domain) || length <= 1 ){
+            throw new RuntimeException("The domain name does not meet the specification");
+        }
+
+        String mainDomain = split[length-2] + "." + split[length-1];
         String record = "";
-        if (length > 2) {
-            final var mainDomainIndex = domain.lastIndexOf(mainDomain);
+        for (String staticDomain : staticDomain) {
+            if (ObjectUtil.nullSafeEquals(staticDomain, mainDomain)) {
+                mainDomain = split[length - 3] + "." + mainDomain;
+                break;
+            }
+        }
+        final var mainDomainIndex = domain.lastIndexOf(mainDomain);
+        if (mainDomainIndex > 0 ) {
             record = domain.substring(0, mainDomainIndex - 1);
         }
+
         return new String[] {mainDomain, record};
+    }
+
+    public static void main(String[] args) {
+        final var strings = extractDomain("ww.www.com.cn");
+        System.out.println(Json.encode(strings));
+
+        final var strings1 = extractDomain("innas.work");
+        System.out.println(Json.encode(strings1));
     }
 
 
