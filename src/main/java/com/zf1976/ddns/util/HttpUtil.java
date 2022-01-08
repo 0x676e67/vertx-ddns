@@ -182,15 +182,6 @@ public final class HttpUtil {
         return new String[] {mainDomain, record};
     }
 
-    public static void main(String[] args) {
-        final var strings = extractDomain("ww.www.com.cn");
-        System.out.println(Json.encode(strings));
-
-        final var strings1 = extractDomain("innas.work");
-        System.out.println(Json.encode(strings1));
-    }
-
-
     /**
      * 获取真实ip地址
      *
