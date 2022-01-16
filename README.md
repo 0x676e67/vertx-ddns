@@ -3,7 +3,7 @@
 		<img src="https://img.shields.io/badge/license-MIT-blue.svg"/>
 	</a>
 	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
-		<img src="https://img.shields.io/badge/JDK-16+-green.svg"/>
+		<img src="https://img.shields.io/badge/JDK-17+-green.svg"/>
 	</a>
 	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/actions">
 		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/release.yml/badge.svg"/>
@@ -226,13 +226,13 @@
 
 ### Docker中使用
 
-> Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-16`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
+> Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
 > 三种镜像大小`alpine` < `debian` < `ubuntu`。
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 若不挂载主机目录, 删除容器同时会删除配置
-- 在浏览器中打开`http://ip:8081`，登录并修改你的配置
+- 在浏览器中打开`http://ip:8081`，登录并修改你的配置(默认账号密码：`vertx`)
   ```shell
   # 拉取镜像运行，并随系统重启
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
