@@ -1509,7 +1509,7 @@
                         }
                         document.getElementById("ipv4ApiInput").value = dnsConfig.ipv4Config.inputIpApi
                         document.getElementById("ipv4_domains").value = ipv4Domain
-                        document.getElementById("ipv6ApiInput").value = dnsConfig.ipv4Config.inputIpApi
+                        document.getElementById("ipv6ApiInput").value = dnsConfig.ipv6Config.inputIpApi
                         document.getElementById("ipv6_domains").value = ipv6Domain
                     }
                     switch (selectDnsProviderType) {
@@ -1720,7 +1720,7 @@
                         }
                     }
                     if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
-                        $("#selectIpv4Value").append("<option selected value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
+                        $("#selectIpv6Value").append("<option selected value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
                     } else {
                         $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
                     }
