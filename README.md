@@ -11,8 +11,8 @@
 	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/actions">
 		<img src="https://github.com/zf1976/vertx-ddns/actions/workflows/docker.yml/badge.svg"/>
 	</a>
-	<a href="https://github.com/zf1976/vertx-ddns/releases/latest">
-		<img alt="GitHub release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github">
+	<a target="_blank" href="https://github.com/zf1976/vertx-ddns/releases/latest">
+		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github">
 	</a>
 	<a target="_blank" href="https://hub.docker.com/r/zf1976/vertx-ddns">
 		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
