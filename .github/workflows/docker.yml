@@ -6,48 +6,6 @@ on:
       - 'v*'
 
 jobs:
-  build-arm64:
-    runs-on: self-hosted
-    steps:
-        - name: Check Out Repo
-        - uses: actions/checkout@v2
-        - name: Run `uname -a` in Kunpeng env
-          run: |
-            uname -a
-            cat /etc/os-release
-            lscpu | grep -E "Architecture|Model name|CPU\(s\):"
-
-        - name: Login to Docker Hub
-          uses: docker/login-action@v1
-          with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_TOKEN }}
-        - name: Set up Docker Buildx
-          id: build_arm64
-          uses: docker/setup-buildx-action@v1
-
-        - name: Cache Docker layers
-          uses: actions/cache@v2
-          with:
-            path: /tmp/.buildx-cache
-            key: ${{ runner.os }}-buildx-${{ github.sha }}
-            restore-keys: |
-              ${{ runner.os }}-buildx-
-
-        - name: Build aarch64 image and push
-          id: docker_build_aarch64
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/aarch64/Dockerfile
-            push: true
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:aarch64
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-        - name: Image digest
-          run: echo ${{ steps.docker_build_debian.outputs.digest }}
-
   build-amd64:
     runs-on: ubuntu-latest
     steps:
