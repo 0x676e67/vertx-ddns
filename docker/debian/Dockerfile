@@ -10,10 +10,8 @@ COPY $GRADLE ./gradle
 COPY $GRADLEW ./gradlew
 COPY ${GRADLE_SETTINGS} ./settings.gradle
 COPY ${GRADLE_BUILD} ./build.gradle
-# authorize
-RUN chmod +x ./gradlew
-# Cache dependencies
-RUN ./gradlew cacheDependencies --scan --info
+
+
 # Build project jar
 ARG SOURCE_FILE=./src
 COPY ${SOURCE_FILE} ./src
