@@ -1,5 +1,5 @@
 # Debian ---- Openj9-jlink
-FROM adoptopenjdk:16-jdk-openj9 as jre-build
+FROM openjdk:17.0.2-slim-buster as jre-build
 USER root
 WORKDIR /vertx-ddns
 ARG GRADLE=./gradle
@@ -24,7 +24,7 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define your base image
-FROM debian:stretch-slim
+FROM debian:buster-slim
 WORKDIR /vertx-ddns
 USER root
 MAINTAINER zf1976 <verticle@foxmail.com>
