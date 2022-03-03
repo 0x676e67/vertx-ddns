@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-amd64:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Run `uname -a` in Kunpeng env
         run: |
@@ -19,6 +19,8 @@ jobs:
           cat /etc/os-release
           lscpu | grep -E "Architecture|Model name|CPU\(s\):"
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       - name: Check Out Repo
         uses: actions/checkout@v2
 
@@ -47,6 +49,7 @@ jobs:
           context: ./
           file: ./docker/debian/Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64,linux/arm
           builder: ${{ steps.buildx.outputs.name }}
           tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian
           cache-from: type=local,src=/tmp/.buildx-cache
