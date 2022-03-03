@@ -13,7 +13,7 @@ jobs:
   build-arm64:
     runs-on: self-hosted
     steps:
-      - name: Check Out Repo
+      - name: 1
       - uses: actions/checkout@v2
       - name: Run `uname -a` in Kunpeng env
         run: |
@@ -21,7 +21,7 @@ jobs:
           cat /etc/os-release
           lscpu | grep -E "Architecture|Model name|CPU\(s\):"
 
-      - name: Login to Docker Hub
+      - name: 2
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -30,7 +30,7 @@ jobs:
         id: build_arm64
         uses: docker/setup-buildx-action@v1
 
-      - name: Cache Docker layers
+      - name: sad
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
