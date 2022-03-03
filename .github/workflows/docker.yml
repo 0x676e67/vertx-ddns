@@ -11,8 +11,13 @@ on:
 
 jobs:
   build-amd64:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
+      - name: Run `uname -a` in Kunpeng env
+        run: |
+          uname -a
+          cat /etc/os-release
+          lscpu | grep -E "Architecture|Model name|CPU\(s\):"
 
       - name: Check Out Repo
         uses: actions/checkout@v2
