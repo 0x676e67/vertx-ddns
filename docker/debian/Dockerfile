@@ -1,5 +1,7 @@
+
+
 # Debian ---- Openj9-jlink
-FROM openjdk:17.0.2-slim-buster as jre-build
+FROM adoptopenjdk:16-jdk-openj9 as jre-build
 USER root
 WORKDIR /vertx-ddns
 ARG GRADLE=./gradle
@@ -10,8 +12,10 @@ COPY $GRADLE ./gradle
 COPY $GRADLEW ./gradlew
 COPY ${GRADLE_SETTINGS} ./settings.gradle
 COPY ${GRADLE_BUILD} ./build.gradle
-
-
+# authorize
+RUN chmod +x ./gradlew
+# Cache dependencies
+RUN sh ./gradlew cacheDependencies --scan --info
 # Build project jar
 ARG SOURCE_FILE=./src
 COPY ${SOURCE_FILE} ./src
@@ -22,7 +26,7 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define your base image
-FROM debian:buster-slim
+FROM debian:stretch-slim
 WORKDIR /vertx-ddns
 USER root
 MAINTAINER zf1976 <verticle@foxmail.com>

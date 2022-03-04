@@ -22,7 +22,7 @@ jobs:
           draft: false
           prerelease: false
 
-  build-linux-v17-temurin:
+  build-v17-temurin-linux-amd64:
     runs-on: ubuntu-latest
     needs:
       - build-release
@@ -60,7 +60,7 @@ jobs:
         with:
           upload_url: ${{ needs.build-release.outputs.upload_url }}
           asset_path: ./runtime.zip
-          asset_name: runtime-17-temurin-linux.zip
+          asset_name: runtime-17-temurin-linux-amd64.zip
           asset_content_type: application/zip
       - name: Upload Release jar
         id: upload-release-jar
@@ -73,7 +73,7 @@ jobs:
           asset_name: vertx-ddns-17-temurin.jar
           asset_content_type: application/jar
 
-  build-linux-v16-openj9:
+  build-v16-openj9-linux-amd64:
     runs-on: ubuntu-latest
     needs:
       - build-release
@@ -110,7 +110,7 @@ jobs:
         with:
           upload_url: ${{ needs.build-release.outputs.upload_url }}
           asset_path: ./runtime.zip
-          asset_name: runtime-16-openj9-linux.zip
+          asset_name: runtime-16-openj9-linux-amd64.zip
           asset_content_type: application/zip
       - name: Upload Release jar
         id: upload-release-jar
