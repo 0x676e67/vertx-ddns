@@ -49,11 +49,10 @@ jobs:
           context: ./
           file: ./docker/debian/Dockerfile
           push: true
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64
           builder: ${{ steps.buildx.outputs.name }}
           tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:debian
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+
       - name: Image digest
         run: echo ${{ steps.docker_build_debian.outputs.digest }}
 
