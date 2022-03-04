@@ -2,8 +2,10 @@ name:  Docker Release
 
 on:
   push:
-    tags:
-      - 'v*'
+#    tags:
+#      - 'v*'
+    branches:
+      - test
 
 jobs:
   build:
