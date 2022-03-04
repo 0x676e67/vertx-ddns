@@ -1,14 +1,10 @@
-# Alpine ---- OpenJDK-jlink
-FROM eclipse-temurin:17-jdk-focal as jre-build
+# Debian ---- OpenJDK-jlink
+FROM openjdk:17.0.2-slim-buster as jre-build
 USER root
 WORKDIR /vertx-ddns
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
          --add-modules jdk.crypto.ec,java.base,java.compiler,java.logging,java.desktop,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml,jdk.jdi,jdk.unsupported \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
          --output /javaruntime
 
 # Define your base image
