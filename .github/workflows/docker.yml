@@ -11,13 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Run `uname -a` in Kunpeng env
-        run: |
-          uname -a
-          cat /etc/os-release
-          lscpu | grep -E "Architecture|Model name|CPU\(s\):"
 
       - name: Check Out Repo
         uses: actions/checkout@v2
@@ -52,7 +45,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
       - name: Build debian image and push
         id: docker_build_debian
         uses: docker/build-push-action@v2
