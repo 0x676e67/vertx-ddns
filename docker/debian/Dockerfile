@@ -1,5 +1,5 @@
-# Alpine ---- OpenJDK-jlink
-FROM eclipse-temurin:17-jdk-focal as jre-build
+# Debian ---- OpenJDK-jlink
+FROM openjdk:17.0.2-slim-buster as jre-build
 USER root
 WORKDIR /vertx-ddns
 # Create a custom Java runtime
