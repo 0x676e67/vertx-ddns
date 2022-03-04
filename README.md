@@ -226,7 +226,8 @@
 
 ### Docker中使用
   
-  由于官方提供运行环境镜像限制，目前只适配`amd64`、`arm64`、`ppc64le`,`s390x`,`armv7`几种架构平台，其中debian tag镜像支持五种，其它只支持`amd64`
+&emsp;&emsp;由于官方提供运行环境镜像限制，官方runtime适配`amd64`、`arm64`、`ppc64le`,`s390x`,`armv7`几种架构平台，`ppc64le`,`s390x`,`armv7`打jlink有点问题（我也没有这种设备），暂时不适配镜像，有需求用户可以自己拉`eclipse-temurin:17-jdk`镜像下来打包好部署就行了，其中debian tag镜像支持`amd64`、`arm64`，其它只支持`amd64`
+
 > Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
 > 三种镜像大小：`alpine` < `debian` < `ubuntu`，内存占用：`ubuntu` < `debian` < `alpine`
