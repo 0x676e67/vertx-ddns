@@ -22,7 +22,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
-      - name: Check Out Repo
+      - name: Check Out Repo test
       - uses: actions/checkout@v2
       - name: Set up JDK 16
         uses: actions/setup-java@v2
@@ -31,7 +31,7 @@ jobs:
           distribution: 'adopt-openj9'
       - run: java -version
 
-      - name: Validate Gradle wrapper
+      - name: Validate Gradle wrapper and build jar
         uses: gradle/wrapper-validation-action@v1
       - name: Build with Gradle
         run: ./gradlew shadowJar
