@@ -11,6 +11,7 @@
       "https://speed.neu6.edu.cn/getIP.php"
     ],
     "dnsServerList": [
+      "119.29.29.29",
       "223.5.5.5",
       "223.6.6.6",
       "180.76.76.76",
