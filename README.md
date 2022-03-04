@@ -113,7 +113,7 @@
   ```
 </details>
 
-<details> <summary>安装Java运行环境(Ubuntu/Debian)</summary>
+<details> <summary>x86平台示例，安装Java运行环境(Ubuntu/Debian)</summary>
 	
   > 若已经存在 Java 运行环境的可略过这一步。
   ```shell
@@ -225,16 +225,17 @@
  </details>
 
 ### Docker中使用
-
+  
+  由于官方提供运行环境镜像限制目前只有`amd64`、`arm64`两种架构平台的适配，其中debian tag镜像同时支持`amd64`、`arm64`，其它为amd64
 > Docker镜像提供了`ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
-> 三种镜像大小`alpine` < `debian` < `ubuntu`。
+> 三种镜像大小：`alpine` < `debian` < `ubuntu`，内存占用：`ubuntu` < `debian` < `alpine`
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 若不挂载主机目录, 删除容器同时会删除配置
 - 在浏览器中打开`http://ip:8081`，登录并修改你的配置(默认账号密码：`vertx`)
+  > 拉取镜像运行，并随系统重启
   ```shell
-  # 拉取镜像运行，并随系统重启
   docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
   ```
 
