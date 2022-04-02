@@ -250,7 +250,7 @@
 - 若需要挂载日志文件到主机，加上参数`-v /your_path:/vertx-ddns/logs`
 
 ### 开发自行编译
-> 确保拥有有JDK16版本开发环境环境（项目使用Gradle7.x版本，若安装有其他版本，不强制使用相同版本）
+> 确保拥有有JDK16+版本开发环境环境（项目使用Gradle7.x版本，若安装有其他版本，不强制使用相同版本）
 ```shell
 # 进入项目根目录
 cd vertx-ddns
@@ -292,10 +292,6 @@ cd vertx-ddns
 ### License
 
 - [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
-
-### 贡献
-
-> 目前只有`我`自己在维护这个项目。希望能有更多人加入 :)
 
 ### JetBrains 开源证书支持
 
