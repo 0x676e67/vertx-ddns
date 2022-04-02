@@ -299,8 +299,9 @@ public final class HttpUtil {
                 Enumeration<InetAddress> addresses = ni.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     ip = addresses.nextElement();
-                    if (!ip.isLoopbackAddress() && ip instanceof Inet6Address && ip.getHostAddress().indexOf(':') == -1) {
-                        networkIpList.add(ni.getName() + "(" + ip.getHostAddress() + ")");
+                    if (!ip.isLoopbackAddress() && ip instanceof Inet6Address && ip.getHostAddress().indexOf(':') != -1) {
+                        String hostAddress = ip.getHostAddress();
+                        networkIpList.add(ni.getName() + "(" + hostAddress.substring(0, hostAddress.indexOf('%')) + ")");
                     }
                 }
             }
