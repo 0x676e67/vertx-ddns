@@ -226,7 +226,10 @@
 
 ### Docker中使用
   
-&emsp;&emsp;docker镜像支持平台架构：`linux/amd64`,`linux/arm64/v8`,`linux/arm/v7`,`linux/ppc64le`,`linux/s390x`
+&emsp;&emsp;docker镜像支持平台架构：`linux/amd64`,`linux/arm64/v8`,`linux/arm/v7`,`linux/ppc64le`,`linux/s390x`。
+
+- 更多信息：https://hub.docker.com/r/zf1976/vertx-ddns/tags
+
 > 提供四种tag，分别是`vertx-ddns:latest`,`vertx-ddns:debian`,`vertx-ddns:ubuntu`,`vertx-ddns:alpine`
 > `Ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
@@ -237,12 +240,12 @@
 - 在浏览器中打开`http://ip:8081`，登录并修改你的配置(默认账号密码：`vertx`)
   > 拉取镜像运行，并随系统重启
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:debian
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:latest
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:debian
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:latest
   ```
 - 若需要挂载日志文件到主机，加上参数`-v /your_path:/vertx-ddns/logs`
 
