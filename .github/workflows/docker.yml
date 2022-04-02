@@ -85,3 +85,18 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Image digest
         run: echo ${{ steps.docker_build_ubuntu.outputs.digest }}
+
+      - name: Build image and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/Dockerfile
+          push: true
+          platforms: windows/amd64,linux/amd64,linux/arm64/v8,linux/arm/v7,linux/ppc64le,linux/s390x
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/vertx-ddns:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      - name: Image digest
+        run: echo ${{ steps.docker_build_ubuntu.outputs.digest }}
