@@ -9,8 +9,8 @@ group 'com.zf1976'
 version 'latest'
 
 // Specify compilation version
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 configurations {
     compileOnly {
