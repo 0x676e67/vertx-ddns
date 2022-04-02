@@ -230,7 +230,7 @@
 > 提供四种tag，分别是`vertx-ddns:latest`,`vertx-ddns:debian`,`vertx-ddns:ubuntu`,`vertx-ddns:alpine`
 > `Ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
 > 并且都经过`jlink`极简化，大幅减少了镜像体积， 使用OpenJ9能有效减少运行内存占用([官网](https://how-to.vertx.io/openj9-howto/))。
-> 四种`tag`镜像大小：`latest`<`alpine` < `debian` < `ubuntu`，实际使用中，17版本的runtime内存控制的最好，并且会归还内存于操作系统
+> 四种`tag`镜像大小：`latest`<`alpine` < `debian` < `ubuntu`，实际使用效果：17版本的runtime内存控制的最好，并且会归还内存于操作系统
 
 - 支持host模式，并且不需要再做端口映射（同时支持IPv4/IPv6）
 - 若不挂载主机目录, 删除容器同时会删除配置
