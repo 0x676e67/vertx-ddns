@@ -9,8 +9,8 @@ group 'com.zf1976'
 version 'latest'
 
 // Specify compilation version
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     compileOnly {
@@ -24,12 +24,12 @@ repositories {
 }
 
 ext{
-    jacksonVersion = '2.13.1'
-    vertxVersion = '4.2.2'
+    jacksonVersion = '2.13.2.1'
+    vertxVersion = '4.2.6'
     log4jVersion = '2.17.1'
     nettyVersion = '4.1.58.Final'
     apacheComponentVersion = '4.5.13'
-    caffeineVersion = '3.0.5'
+    caffeineVersion = '3.0.6'
 }
 
 dependencies {
