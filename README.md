@@ -14,8 +14,8 @@
 	<a target="_blank" href="https://github.com/gngpp/vertx-ddns/releases/latest">
 		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github">
 	</a>
-	<a target="_blank" href="https://hub.docker.com/r/gngpp/vertx-ddns">
-		<img src="https://img.shields.io/docker/pulls/gngpp/vertx-ddns">
+	<a target="_blank" href="https://hub.docker.com/r/zf1976/vertx-ddns">
+		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
 	</a>
 </p>
 
