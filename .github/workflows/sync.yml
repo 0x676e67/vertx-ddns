@@ -25,8 +25,8 @@ jobs:
       - name: Sync To Gitee
         uses: Yikun/hub-mirror-action@v1.0
         with:
-          src: github/zf1976
-          dst: gitee/zf1976
+          src: github/gngpp
+          dst: gitee/gngpp
           dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
           dst_token: ${{ secrets.GITEE_TOKEN }}
           cache_path: /github/workspace/hub-mirror-cache
