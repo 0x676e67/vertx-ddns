@@ -5,7 +5,7 @@ plugins {
     id 'org.mikeneck.graalvm-native-image' version 'v1.4.0'
 }
 
-group 'com.zf1976'
+group 'com.gngpp'
 version 'latest'
 
 // Specify compilation version
@@ -51,7 +51,7 @@ jar {
     manifest {
         attributes(
                 "Manifest-Version": 1.0,
-                'Main-Class': 'com.zf1976.ddns.Application'
+                'Main-Class': 'com.gngpp.ddns.Application'
         )
     }
 }
@@ -63,7 +63,7 @@ nativeImage {
     graalVmHome = System.getProperty("java.home")
     buildType { BuildTypeSelector build ->
         build.executable {
-            main = 'com.zf1976.ddns.Application'
+            main = 'com.gngpp.ddns.Application'
         }
     }
     executableName = 'my-native-application'

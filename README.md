@@ -14,8 +14,8 @@
 	<a target="_blank" href="https://github.com/gngpp/vertx-ddns/releases/latest">
 		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github">
 	</a>
-	<a target="_blank" href="https://hub.docker.com/r/zf1976/vertx-ddns">
-		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
+	<a target="_blank" href="https://hub.docker.com/r/gngpp/vertx-ddns">
+		<img src="https://img.shields.io/docker/pulls/gngpp/vertx-ddns">
 	</a>
 </p>
 
@@ -88,15 +88,15 @@
   
   > 无需安装Java运行环境，若存在运行环境也不影响
   >
-  > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
+  > <img alt="最新版本" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
-  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
+  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/gngpp/vertx-ddns/releases
+  wget https://github.com/gngpp/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
   # 例如选择版本v1.0.4、runtime-17-temurin-linux运行时版本
-  wget https://github.com/zf1976/vertx-ddns/releases/download/v1.0.4/runtime-17-temurin-linux.zip
+  wget https://github.com/gngpp/vertx-ddns/releases/download/v1.0.4/runtime-17-temurin-linux.zip
 	
   # 没有梯子的话加速可以使用加速镜像
-  wget https://github.91chifun.workers.dev/https://github.com//zf1976/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
+  wget https://github.91chifun.workers.dev/https://github.com//gngpp/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
   
   # 解压安装包
   unzip ddns-runtime.zip
@@ -133,10 +133,10 @@
 - 运行vertx-ddns
   > vertx-ddns 的整个应用程序只有一个 Jar 包，且不包含用户的任何配置，它放在任何目录都是可行的。vertx-ddns 所有配置文件都存放在`~/.vertx_ddns`目录下。你完全不需要担心安装包的安危，它仅仅是个服务而已。	
   > 
-  > <img alt="最新版本" src="https://img.shields.io/github/v/release/zf1976/vertx-ddns.svg?logo=github&style=flat-square">
+  > <img alt="最新版本" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的Jar包，{{version}} 为版本号，更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
-  wget https://github.com/zf1976/vertx-ddns/releases/download/{{version}}/{{jar_name}}.jar -O vertx-ddns-latest.jar
+  # 下载最新的Jar包，{{version}} 为版本号，更多下载地址请访问 https://github.com/gngpp/vertx-ddns/releases
+  wget https://github.com/gngpp/vertx-ddns/releases/download/{{version}}/{{jar_name}}.jar -O vertx-ddns-latest.jar
   
   # 启动测试
   java -jar vertx-ddns-latest.jar
@@ -165,7 +165,7 @@
   ```shell
   [Unit]
   Description=Vertx-DDNS Service
-  Documentation=https://github.com/zf1976/vertx-ddns/edit/main/README.md
+  Documentation=https://github.com/gngpp/vertx-ddns/edit/main/README.md
   After=network-online.target
   Wants=network-online.target
 
@@ -228,7 +228,7 @@
   
 &emsp;&emsp;docker镜像支持平台架构：`linux/amd64`,`linux/arm64/v8`,`linux/arm/v7`,`linux/ppc64le`,`linux/s390x`。
 
-- 更多信息：https://hub.docker.com/r/zf1976/vertx-ddns/tags
+- 更多信息：https://hub.docker.com/r/gngpp/vertx-ddns/tags
 - 提供四种tag，分别是`latest`,`debian`,`ubuntu`,`alpine`。
 
 > `ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
@@ -240,12 +240,12 @@
 - 在浏览器中打开`http://ip:8081`，登录并修改你的配置(默认账号密码：`vertx`)
   > 拉取镜像运行，并随系统重启
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:latest
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always gngpp/vertx-ddns:latest
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:latest
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns gngpp/vertx-ddns:latest
   ```
 - 若需要挂载日志文件到主机，加上参数`-v /your_path:/vertx-ddns/logs`
 
@@ -291,7 +291,7 @@ cd vertx-ddns
 
 ### License
 
-- [MIT License](https://raw.githubusercontent.com/zf1976/vertx-ddns/main/LICENSE)
+- [MIT License](https://raw.githubusercontent.com/gngpp/vertx-ddns/main/LICENSE)
 
 ### JetBrains 开源证书支持
 

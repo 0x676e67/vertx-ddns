@@ -11,9 +11,9 @@ RUN $JAVA_HOME/bin/jlink \
 FROM debian:buster-slim
 WORKDIR /vertx-ddns
 USER root
-MAINTAINER zf1976 <verticle@foxmail.com>
+MAINTAINER gngpp <verticle@foxmail.com>
 LABEL name=vertx-ddns
-LABEL url=https://github.com/zf1976/vertx-ddns
+LABEL url=https://github.com/gngpp/vertx-ddns
 
 ENV LANG C.UTF-8
 ENV JAVA_HOME=/opt/java/openjdk
