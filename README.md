@@ -14,8 +14,8 @@
 	<a target="_blank" href="https://github.com/gngpp/vertx-ddns/releases/latest">
 		<img alt="GitHub Release" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github">
 	</a>
-	<a target="_blank" href="https://hub.docker.com/r/gngpp/vertx-ddns">
-		<img src="https://img.shields.io/docker/pulls/gngpp/vertx-ddns">
+	<a target="_blank" href="https://hub.docker.com/r/zf1976/vertx-ddns">
+		<img src="https://img.shields.io/docker/pulls/zf1976/vertx-ddns">
 	</a>
 </p>
 
@@ -240,12 +240,12 @@
 - 在浏览器中打开`http://ip:8081`，登录并修改你的配置(默认账号密码：`vertx`)
   > 拉取镜像运行，并随系统重启
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always gngpp/vertx-ddns:latest
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always zf1976/vertx-ddns:latest
   ```
 
 - [可选] 挂载主机目录, 删除容器后配置不会丢失。可替换 `/root/.vertx_ddns` 默认用户权限root, 配置文件为隐藏文件
   ```shell
-  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns gngpp/vertx-ddns:latest
+  docker run -d -p 8081:8080 --name vertx-ddns --restart=always -v /your_path:/root/.vertx_ddns zf1976/vertx-ddns:latest
   ```
 - 若需要挂载日志文件到主机，加上参数`-v /your_path:/vertx-ddns/logs`
 
