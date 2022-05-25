@@ -288,7 +288,8 @@ public abstract class AbstractWebServerVerticle extends AbstractVerticle impleme
                        if (CollectionUtil.isEmpty(dnsConfigList)) {
                            List<DnsConfig> newDnsConfigList = new ArrayList<>();
                            newDnsConfigList.add(dnsConfig);
-                           return this.writeJsonToFile(absolutePath, Json.encodePrettily(newDnsConfigList));
+                           return this.writeJsonToFile(absolutePath, Json.encodePrettily(newDnsConfigList))
+                                      .compose(v -> newDnsRecordService(dnsConfigList));
                        } else {
                            try {
                                dnsConfigList.removeIf(config -> dnsConfig.getDnsProviderType()
