@@ -24,10 +24,11 @@
  * SOFTWARE.
  */
 
-package com.gngpp.ddns.verticle.provider;
+package com.gngpp.ddns.verticle.provider.impl;
 
 import com.gngpp.ddns.util.ObjectUtil;
 import com.gngpp.ddns.util.RsaUtil;
+import com.gngpp.ddns.verticle.provider.SecureProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

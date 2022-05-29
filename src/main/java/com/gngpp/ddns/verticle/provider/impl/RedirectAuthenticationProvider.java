@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package com.gngpp.ddns.verticle.provider;
+package com.gngpp.ddns.verticle.provider.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
