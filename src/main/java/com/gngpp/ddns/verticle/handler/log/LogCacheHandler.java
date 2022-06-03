@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package com.gngpp.ddns.verticle.handler;
+package com.gngpp.ddns.verticle.handler.log;
 
 import io.vertx.core.Future;
 

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package com.gngpp.ddns.verticle.handler;
+package com.gngpp.ddns.verticle.handler.log;
 
 import com.gngpp.ddns.pojo.DnsRecordLog;
 import com.gngpp.ddns.cache.AbstractMemoryLogCache;

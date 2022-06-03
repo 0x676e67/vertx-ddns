@@ -28,7 +28,7 @@ package com.gngpp.ddns.verticle;
 
 import com.gngpp.ddns.pojo.DnsRecordLog;
 import com.gngpp.ddns.verticle.codec.DnsRecordLogMessageCodec;
-import com.gngpp.ddns.verticle.handler.LogCacheHandler;
+import com.gngpp.ddns.verticle.handler.log.LogCacheHandler;
 import com.gngpp.ddns.verticle.handler.webhook.CompositeWebhookHandler;
 import com.gngpp.ddns.verticle.timer.AbstractDnsRecordSubject;
 import com.gngpp.ddns.verticle.timer.DnsRecordObserver;
