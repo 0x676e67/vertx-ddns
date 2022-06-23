@@ -257,7 +257,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                           return HttpUtil.getCurrentHostIpv4(ipv4Config.getInputIpApi());
                       } else {
                           // get ip from network
-                          return Future.succeededFuture(ipv4Config.getNetworkIp());
+                          return HttpUtil.getNetworkCardIpv4Ip(ipv4Config.getCard());
                       }
                   })
                   .onSuccess(resultIp -> this.resolveDnsRecordForIpv4Handler(dnsProviderType, ipv4Config, resultIp))
@@ -280,7 +280,7 @@ public abstract class AbstractDnsRecordService implements ResolveDnsRecordHandle
                       if (bool) {
                           return HttpUtil.getCurrentHostIpv4(ipv6Config.getInputIpApi());
                       } else {
-                          return Future.succeededFuture(ipv6Config.getNetworkIp());
+                          return HttpUtil.getNetworkCardIpv6Ip(ipv6Config.getCard());
                       }
                   })
                   .onSuccess(resultIp -> this.resolveDnsRecordForIpv6Handler(dnsProviderType, ipv6Config, resultIp))

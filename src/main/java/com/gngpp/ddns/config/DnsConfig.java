@@ -129,9 +129,9 @@ public class DnsConfig implements Serializable {
          */
         private String inputIpApi;
         /**
-         * 网卡IP
+         * 网卡
          */
-        private String networkIp;
+        private String card;
         /**
          * 记录解析列表
          */
@@ -173,12 +173,12 @@ public class DnsConfig implements Serializable {
             return this;
         }
 
-        public String getNetworkIp() {
-            return networkIp;
+        public String getCard() {
+            return card;
         }
 
-        public Ipv4Config setNetworkIp(String networkIp) {
-            this.networkIp = networkIp;
+        public Ipv4Config setCard(String card) {
+            this.card = card;
             return this;
         }
 
@@ -188,7 +188,7 @@ public class DnsConfig implements Serializable {
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
                     ", inputIpApi='" + inputIpApi + '\'' +
-                    ", networkIp='" + networkIp + '\'' +
+                    ", card='" + card + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }
@@ -209,9 +209,9 @@ public class DnsConfig implements Serializable {
          */
         private String inputIpApi;
         /**
-         * 网卡IP
+         * 网卡
          */
-        private String networkIp;
+        private String card;
         /**
          * 记录解析列表
          */
@@ -244,12 +244,12 @@ public class DnsConfig implements Serializable {
             return this;
         }
 
-        public String getNetworkIp() {
-            return networkIp;
+        public String getCard() {
+            return card;
         }
 
-        public Ipv6Config setNetworkIp(String networkIp) {
-            this.networkIp = networkIp;
+        public Ipv6Config setCard(String card) {
+            this.card = card;
             return this;
         }
 
@@ -268,7 +268,7 @@ public class DnsConfig implements Serializable {
                     "enable=" + enable +
                     ", selectIpMethod=" + selectIpMethod +
                     ", inputIpApi='" + inputIpApi + '\'' +
-                    ", networkIp='" + networkIp + '\'' +
+                    ", card='" + card + '\'' +
                     ", domainList=" + domainList +
                     '}';
         }

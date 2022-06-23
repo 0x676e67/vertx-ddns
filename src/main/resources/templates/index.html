@@ -1595,7 +1595,7 @@
                 "enable": document.getElementById("ipv4Enable").checked,
                 "selectIpMethod": document.getElementsByName("ipv4Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
                 "inputIpApi": document.getElementById("ipv4ApiInput").value,
-                "networkIp": ipv4Address ? ipv4Address.substring(ipv4Address.indexOf('(') + 1, ipv4Address.lastIndexOf(')')) : null,
+                "card": ipv4Address ? ipv4Address.substring(0, ipv4Address.indexOf('(')) : null,
                 "domainList": document.getElementById("ipv4_domains").value.split('\n')
             }
 
@@ -1603,7 +1603,7 @@
                 "enable": document.getElementById("ipv6Enable").checked,
                 "selectIpMethod": document.getElementsByName("ipv6Radios")[0].checked, // 第一个选择表示使用API获取ip 值为true
                 "inputIpApi": document.getElementById("ipv6ApiInput").value,
-                "networkIp": ipv6Address ? ipv6Address.substring(ipv6Address.indexOf('(') + 1, ipv6Address.lastIndexOf(')')) : null,
+                "card": ipv6Address ? ipv6Address.substring(0, ipv6Address.indexOf('(')) : null,
                 "domainList": document.getElementById("ipv6_domains").value.split('\n')
             }
 
@@ -1686,10 +1686,10 @@
                     let selected
                     for (let j = 0; j < dnsConfigList.length; j++) {
                         if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
-                            selected = dnsConfigList[j].ipv4Config.networkIp
+                            selected = dnsConfigList[j].ipv4Config.card
                         }
                     }
-                    if (selected == networkIpv4List[i].substring(networkIpv4List[i].indexOf('(') + 1, networkIpv4List[i].lastIndexOf(')'))) {
+                    if (selected == networkIpv4List[i].substring(0, networkIpv4List[i].indexOf('('))) {
                         $("#selectIpv4Value").append("<option selected value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
                     } else {
                         $("#selectIpv4Value").append("<option value=" + networkIpv4List[i] + ">" + networkIpv4List[i] + "</option>")
@@ -1716,10 +1716,10 @@
                     let selected
                     for (let j = 0; j < dnsConfigList.length; j++) {
                         if (dnsConfigList[j].dnsProviderType == selectDnsProviderType) {
-                            selected = dnsConfigList[j].ipv6Config.networkIp
+                            selected = dnsConfigList[j].ipv6Config.card
                         }
                     }
-                    if (selected == networkIpv6List[i].substring(networkIpv6List[i].indexOf('(') + 1, networkIpv6List[i].lastIndexOf(')'))) {
+                    if (selected == networkIpv6List[i].substring(0, networkIpv6List[i].indexOf('('))) {
                         $("#selectIpv6Value").append("<option selected value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")
                     } else {
                         $("#selectIpv6Value").append("<option value=" + networkIpv6List[i] + ">" + networkIpv6List[i] + "</option>")

@@ -251,6 +251,24 @@ public final class HttpUtil {
         return INNER_IP_PATTERN.matcher(ip).find();
     }
 
+    public static Future<String> getNetworkCardIpv4Ip(String card) {
+        for (String cardAndIp : getNetworkIpv4List()) {
+            if (cardAndIp.substring(0, cardAndIp.indexOf('(')).equals(card)) {
+                return Future.succeededFuture(cardAndIp.substring(cardAndIp.indexOf('(') + 1, cardAndIp.lastIndexOf(')')));
+            }
+        }
+        return Future.failedFuture("Not assigned to IPv4");
+    }
+
+    public static Future<String> getNetworkCardIpv6Ip(String card) {
+        for (String cardAndIp : getNetworkIpv6List()) {
+            if (cardAndIp.substring(0, cardAndIp.indexOf('(')).equals(card)) {
+                return Future.succeededFuture(cardAndIp.substring(cardAndIp.indexOf('(') + 1, cardAndIp.lastIndexOf(')')));
+            }
+        }
+        return Future.failedFuture("Not assigned to IPv6");
+    }
+
     /**
      * get ipv4 list
      *
