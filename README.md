@@ -258,7 +258,7 @@ cd vertx-ddns
 # Linux/Unix
 ./gradlew shadowJar
 
-# Windows，使用PowerShell，若使用cmd终端则把'/'替换为'\'
+# Windows，使用Terminal，若使用cmd终端则把'/'替换为'\'
 ./gradlew.bat shadowJar
 
 ```
