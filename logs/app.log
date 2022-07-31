@@ -1,0 +1,14 @@
+[m2022-07-31 22:05:28.785[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize project working directory：/Users/gngpp/.vertx_ddns[m
+[m2022-07-31 22:05:28.789[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize DNS configuration file：/Users/gngpp/.vertx_ddns/dns_config.json[m
+[m2022-07-31 22:05:28.789[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize secure configuration file：/Users/gngpp/.vertx_ddns/secure_config.json[m
+[m2022-07-31 22:05:28.789[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize webhook configuration file：/Users/gngpp/.vertx_ddns/webhook_config.json[m
+[m2022-07-31 22:05:28.789[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize rsa key configuration file：/Users/gngpp/.vertx_ddns/rsa_key.json[m
+[m2022-07-31 22:05:28.790[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mInitialize aes key configuration file：/Users/gngpp/.vertx_ddns/aes_key.json[m
+[m2022-07-31 22:05:28.790[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mRSA key has been initialized[m
+[m2022-07-31 22:05:28.790[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[AbstractWebServerVerticle][m - [1;32mAES key has been initialized[m
+[m2022-07-31 22:05:29.071[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[WebServerVerticle][m - [1;32mVertx web server initialized with port(s):8080(http)[m
+[m2022-07-31 22:05:29.071[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[WebServerVerticle][m - [1;32mVertx-DDNS is running at http://localhost:8080[m
+[m2022-07-31 22:05:29.096[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[WebServerVerticle][m - [1;32mPeriodicVerticle deploy complete![m
+[m2022-07-31 22:05:35.727[m [[1;31mvert.x-eventloop-thread-2[m] [1;31mERROR[m [1;35m[UsernamePasswordAuthenticationProvider][m - [1;32mwrong user name or password![m
+[m2022-07-31 22:05:44.724[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[UsernamePasswordAuthenticationProvider][m - [1;32mlogin in username: vertx[m
+[m2022-07-31 22:05:59.152[m [[32mvert.x-eventloop-thread-2[m] [32mINFO [m [1;35m[UsernamePasswordAuthenticationProvider][m - [1;32mlogin in username: admin[m

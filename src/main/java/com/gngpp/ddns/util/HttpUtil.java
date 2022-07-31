@@ -162,7 +162,7 @@ public final class HttpUtil {
         final var split = domain.split("\\.");
         final var length = split.length;
         if (StringUtil.isEmpty(domain) || isDomain(domain) || length <= 1 ){
-            if (split[0] != "*") {
+            if (split[0].trim() != "*") {
                 throw new RuntimeException("The domain name does not meet the specification");
             }
         }
