@@ -90,7 +90,7 @@
   >
   > <img alt="最新版本" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/gngpp/vertx-ddns/releases
+  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
   wget https://github.com/gngpp/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
   # 例如选择版本v1.0.4、runtime-17-temurin-linux运行时版本
   wget https://github.com/gngpp/vertx-ddns/releases/download/v1.0.4/runtime-17-temurin-linux.zip
