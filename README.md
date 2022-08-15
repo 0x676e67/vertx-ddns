@@ -90,7 +90,7 @@
   >
   > <img alt="最新版本" src="https://img.shields.io/github/v/release/gngpp/vertx-ddns.svg?logo=github&style=flat-square">
   ```shell
-  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/zf1976/vertx-ddns/releases
+  # 下载最新的安装包，{{version}} 为版本号、{{runtime-version}}为运行时安装包版本。更多下载地址请访问 https://github.com/gngpp/vertx-ddns/releases
   wget https://github.com/gngpp/vertx-ddns/releases/download/{{version}}/{{runtime-version}}.zip
   # 例如选择版本v1.0.4、runtime-17-temurin-linux运行时版本
   wget https://github.com/gngpp/vertx-ddns/releases/download/v1.0.4/runtime-17-temurin-linux.zip
@@ -228,7 +228,7 @@
   
 &emsp;&emsp;docker镜像支持平台架构：`linux/amd64`,`linux/arm64/v8`,`linux/arm/v7`,`linux/ppc64le`,`linux/s390x`。
 
-- 更多信息：https://hub.docker.com/r/gngpp/vertx-ddns/tags
+- 更多信息：https://hub.docker.com/r/zf1976/vertx-ddns/tags
 - 提供四种tag，分别是`latest`,`debian`,`ubuntu`,`alpine`。
 
 > `ubuntu --- OpenJ9-16`,`debian:buster-slim --- OpenJ9-16`，`alpine --- OpenJDK-17`，三种基础镜像系统所对应`JRE Runtime`的程序镜像，
