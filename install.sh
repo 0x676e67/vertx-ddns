@@ -30,7 +30,7 @@ C="$"
 MAINPID="MAINPID"
 VERTX_SERVICE_CONFIG="[Unit]
 Description=Vertx-DDNS Service
-Documentation=https://github.com/gngpp/vertx-ddns/edit/main/README.md
+Documentation=https://github.com/gngpp/vertx-ddns/blob/main/README.md
 After=network-online.target
 Wants=network-online.target
 
